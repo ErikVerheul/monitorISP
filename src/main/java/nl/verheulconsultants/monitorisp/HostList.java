@@ -31,11 +31,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class HostList {
 
+    static final Logger logger = LoggerFactory.getLogger(HostList.class);
     static List<Hosts> hosts;
 
     static void save(List<Hosts> selected, String fileName) {
@@ -44,7 +45,7 @@ class HostList {
             oos = new ObjectOutputStream(fout);
             oos.writeObject(selected);
         } catch (IOException ex) {
-            Logger.getLogger(HostList.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error(fileName + " can not be saved. The exception is ", ex);
         }
     }
 
@@ -56,7 +57,7 @@ class HostList {
             init();
         }
     }
-    
+
     static void init() {
         hosts = new ArrayList<>();
         hosts.add(new Hosts("1", "google-public-dns-a.google.com"));

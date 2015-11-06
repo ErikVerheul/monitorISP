@@ -29,31 +29,41 @@ public class Hosts implements Serializable {
 
     String id;
     String name;
+    boolean selected = false;
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Hosts(String id, String name) {
+    Hosts(String id, String name) {
         super();
         this.id = id;
         this.name = name;
     }
 
+    String getId() {
+        return id;
+    }
+
+    void setId(String id) {
+        this.id = id;
+    }
+
+    String getName() {
+        return name;
+    }
+
+    void setName(String name) {
+        this.name = name;
+    }
+    
+    boolean isSelected() {
+        return selected;
+    }
+    
+    void setSelected(boolean bool) {
+        selected = bool;
+    }
+    
+
     @Override
     public String toString() {
-        return "Host [id=" + id + ", name=" + name + "]";
+        return "Host [id = " + id + ", name = " + name + ", selected = " + selected + "]";
     }
 }
