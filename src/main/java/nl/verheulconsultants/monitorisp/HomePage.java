@@ -57,18 +57,14 @@ public class HomePage extends BasePage {
         }
 
         add(new Label("message", "The user dir is " + System.getProperty("user.dir")));
-        
+
         /**
          * Save the selected hosts on file with the 'save' button.
-         * Un-select and sort all hosts first before applying the new selection.
          */
         Form<?> form = new Form<Void>("form") {
             @Override
             protected void onSubmit() {
-                int i = 0;
                 for (Hosts h : HostList.hosts) {
-                    h.setId(Integer.toString(i));
-                    i++;
                     h.setSelected(false);
                 }
                 for (Hosts h : selected) {
@@ -85,7 +81,7 @@ public class HomePage extends BasePage {
         final Palette<Hosts> palette = new Palette<>("palette",
                 new ListModel<>(selected),
                 new CollectionModel<>(HostList.hosts),
-                renderer, 10, true, true);
+                renderer, 10, true, false);
 
         form.add(palette);
 
