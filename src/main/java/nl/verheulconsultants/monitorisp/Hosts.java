@@ -29,7 +29,6 @@ public class Hosts implements Serializable {
 
     String id;
     String name;
-    boolean selected = false;
 
     Hosts(String id, String name) {
         super();
@@ -53,17 +52,8 @@ public class Hosts implements Serializable {
         this.name = name;
     }
     
-    boolean isSelected() {
-        return selected;
-    }
-    
-    void setSelected(boolean bool) {
-        selected = bool;
-    }
-    
-
     @Override
     public String toString() {
-        return "Host [id = " + id + ", name = " + name + ", selected = " + selected + "]";
+        return "Host [id = " + id + ", name = " + name + "]";
     }
 }

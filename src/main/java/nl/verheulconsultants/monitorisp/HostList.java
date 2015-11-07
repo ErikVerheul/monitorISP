@@ -57,11 +57,20 @@ class HostList {
             init();
         }
     }
+    
+    static List readSelected(String fileName) throws IOException, ClassNotFoundException {
+        try (FileInputStream fin = new FileInputStream(fileName)) {
+            ObjectInputStream ois = new ObjectInputStream(fin);
+            return (List<Hosts>) ois.readObject();
+        } catch (FileNotFoundException ex) {
+            return new ArrayList<>();
+        }
+    }
 
     static void init() {
         hosts = new ArrayList<>();
-        hosts.add(new Hosts("1", "google-public-dns-a.google.com"));
-        hosts.add(new Hosts("2", "xs4all.nl"));
-        hosts.add(new Hosts("3", "uva.nl"));
+        hosts.add(new Hosts("1", "google-public-dns-a.google.com"));       
+        hosts.add(new Hosts("2", "uva.nl"));
+        hosts.add(new Hosts("3", "xs4all.nl"));       
     }
 }

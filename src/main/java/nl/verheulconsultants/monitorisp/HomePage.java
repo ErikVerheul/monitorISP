@@ -42,36 +42,36 @@ public class HomePage extends BasePage {
 
     private List<Hosts> selected = new ArrayList<>();
     private String hostsFile = "MonitorISPhosts";
+    private String selectedFile = "MonitorISPselected";
 
     public HomePage() {
         try {
             HostList.read(hostsFile);
-            for (Hosts h : HostList.hosts) {
-                if (h.isSelected()) {
-                    selected.add(h);
-                }
-            }
-            logger.info("The homepage is initiated and the hosts file is read.");
+            logger.info("The hosts file is read with values {}", HostList.hosts);
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("The hosts file {} can not be read. The exception is {}", hostsFile, ex);
+        }
+        
+        try {
+            selected = HostList.readSelected(selectedFile);            
+            logger.info("The selection file is read with values {}", selected);
+        } catch (IOException | ClassNotFoundException ex) {
+            logger.error("The selection file {} can not be read. The exception is {}", selected, ex);
         }
 
         add(new Label("message", "The user dir is " + System.getProperty("user.dir")));
 
         /**
-         * Save the selected hosts on file with the 'save' button.
+         * Save the selected hosts on file with the 'save' button. Mark the
+         * current selected items.
          */
         Form<?> form = new Form<Void>("form") {
             @Override
             protected void onSubmit() {
-                for (Hosts h : HostList.hosts) {
-                    h.setSelected(false);
-                }
-                for (Hosts h : selected) {
-                    h.setSelected(true);
-                }
                 HostList.save(HostList.hosts, hostsFile);
                 logger.info("The hosts file is saved with values {}", HostList.hosts);
+                HostList.save(selected, selectedFile);
+                logger.info("The selection file is saved with values {}", selected);
             }
         };
         add(form);
