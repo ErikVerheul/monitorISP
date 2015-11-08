@@ -37,9 +37,9 @@ import org.slf4j.LoggerFactory;
 class HostList {
 
     static final Logger logger = LoggerFactory.getLogger(HostList.class);
-    static List<Hosts> hosts;
+    static List<Host> hosts;
 
-    static void save(List<Hosts> selected, String fileName) {
+    static void save(List<Host> selected, String fileName) {
         ObjectOutputStream oos;
         try (FileOutputStream fout = new FileOutputStream(fileName)) {
             oos = new ObjectOutputStream(fout);
@@ -52,7 +52,7 @@ class HostList {
     static void read(String fileName) throws IOException, ClassNotFoundException {
         try (FileInputStream fin = new FileInputStream(fileName)) {
             ObjectInputStream ois = new ObjectInputStream(fin);
-            hosts = (List<Hosts>) ois.readObject();
+            hosts = (List<Host>) ois.readObject();
         } catch (FileNotFoundException ex) {
             init();
         }
@@ -61,7 +61,7 @@ class HostList {
     static List readSelected(String fileName) throws IOException, ClassNotFoundException {
         try (FileInputStream fin = new FileInputStream(fileName)) {
             ObjectInputStream ois = new ObjectInputStream(fin);
-            return (List<Hosts>) ois.readObject();
+            return (List<Host>) ois.readObject();
         } catch (FileNotFoundException ex) {
             return new ArrayList<>();
         }
@@ -69,8 +69,8 @@ class HostList {
 
     static void init() {
         hosts = new ArrayList<>();
-        hosts.add(new Hosts("1", "google-public-dns-a.google.com"));       
-        hosts.add(new Hosts("2", "uva.nl"));
-        hosts.add(new Hosts("3", "xs4all.nl"));       
+        hosts.add(new Host("0", "google-public-dns-a.google.com"));       
+        hosts.add(new Host("1", "uva.nl"));
+        hosts.add(new Host("2", "xs4all.nl"));       
     }
 }

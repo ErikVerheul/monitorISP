@@ -25,12 +25,12 @@ package nl.verheulconsultants.monitorisp;
 
 import java.io.Serializable;
 
-public class Hosts implements Serializable {
+public class Host implements Serializable {
 
     String id;
     String name;
 
-    Hosts(String id, String name) {
+    Host(String id, String name) {
         super();
         this.id = id;
         this.name = name;

@@ -31,8 +31,14 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.IValidationError;
+import org.apache.wicket.validation.IValidator;
+import org.apache.wicket.validation.ValidationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +46,7 @@ public class HomePage extends BasePage {
 
     static final Logger logger = LoggerFactory.getLogger(BasePage.class);
 
-    private List<Hosts> selected = new ArrayList<>();
+    private List<Host> selected = new ArrayList<>();
     private String hostsFile = "MonitorISPhosts";
     private String selectedFile = "MonitorISPselected";
 
@@ -51,9 +57,9 @@ public class HomePage extends BasePage {
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("The hosts file {} can not be read. The exception is {}", hostsFile, ex);
         }
-        
+
         try {
-            selected = HostList.readSelected(selectedFile);            
+            selected = HostList.readSelected(selectedFile);
             logger.info("The selection file is read with values {}", selected);
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("The selection file {} can not be read. The exception is {}", selected, ex);
@@ -65,7 +71,7 @@ public class HomePage extends BasePage {
          * Save the selected hosts on file with the 'save' button. Mark the
          * current selected items.
          */
-        Form<?> form = new Form<Void>("form") {
+        Form<?> form1 = new Form<Void>("form1") {
             @Override
             protected void onSubmit() {
                 HostList.save(HostList.hosts, hostsFile);
@@ -74,17 +80,67 @@ public class HomePage extends BasePage {
                 logger.info("The selection file is saved with values {}", selected);
             }
         };
-        add(form);
+        add(form1);
 
-        IChoiceRenderer<Hosts> renderer = new ChoiceRenderer<>("name", "id");
+        IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
 
-        final Palette<Hosts> palette = new Palette<>("palette",
+        final Palette<Host> palette = new Palette<>("palette",
                 new ListModel<>(selected),
                 new CollectionModel<>(HostList.hosts),
                 renderer, 10, true, false);
 
-        form.add(palette);
+        form1.add(palette);
 
+        /**
+         * Enter a new host URL if needed.
+         */
+        final TextField<String> url = new TextField<>("new-host", Model.of(""));
+        url.setRequired(false);
+        url.add(new MyUrlValidator());
+
+        Form<?> form2 = new Form<Void>("form2") {
+            @Override
+            protected void onSubmit() {
+                final String urlValue = url.getModelObject();
+                HostList.hosts.add(new Host(Integer.toString(HostList.hosts.size()), urlValue));
+                logger.info("The hosts file has now the values {}", HostList.hosts);
+            }
+        };
+        add(form2);
+        form2.add(url);
+
+    }
+}
+
+class MyUrlValidator implements IValidator<String> {
+
+    @Override
+    public void validate(IValidatable<String> validatable) {
+        String url = validatable.getValue();
+        if (!isValid(url)) {
+            validatable.error(decorate(new ValidationError(this), validatable));
+        }
+    }
+    /**
+     * Check for a valid url but omit checking the protocol header.
+     * 
+     * @param urlString
+     * @return 
+     */
+    boolean isValid(String urlString) {
+        //Assigning the url format regular expression
+        String urlPattern = "^[a-zA-Z0-9_/\\-\\.]+\\.([A-Za-z/]{2,5})[a-zA-Z0-9_/\\&\\?\\=\\-\\.\\~\\%]*";
+        return urlString.matches(urlPattern);
+    }
+
+    /**
+     * Allows subclasses to decorate reported errors
+     *
+     * @param error
+     * @return decorated error
+     */
+    protected IValidationError decorate(IValidationError error, IValidatable<String> validatable) {
+        return error;
     }
 
 }
