@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package nl.verheulconsultants.monitorisp;
+package nl.verheulconsultants.monitorisp.ui;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,12 +86,12 @@ public class HomePage extends BasePage {
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
 
-        final Palette<Host> palette = new Palette<>("palette",
+        final Palette<Host> palette1 = new Palette<>("palette1",
                 new ListModel<>(selected),
                 new CollectionModel<>(HostList.hosts),
                 renderer, 10, true, false);
 
-        form1.add(palette);
+        form1.add(palette1);
 
         /**
          * Add a form with a button with onSubmit implementation to remove selected hosts.

@@ -21,16 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package nl.verheulconsultants.monitorisp;
+package nl.verheulconsultants.monitorisp.ui;
 
-import org.apache.wicket.markup.html.WebPage;
+import java.io.Serializable;
 
-public abstract class BasePage extends WebPage {
+public class Host implements Serializable {
 
-    public BasePage() {
+    String id;
+    String name;
+
+    Host(String id, String name) {
         super();
-        add(new HeaderPanel("headerpanel", "Welcome To Wicket"));
-        add(new FooterPanel("footerpanel", "Powered by Wicket and the NetBeans Wicket Plugin"));
+        this.id = id;
+        this.name = name;
     }
 
+    String getId() {
+        return id;
+    }
+
+    void setId(String id) {
+        this.id = id;
+    }
+
+    String getName() {
+        return name;
+    }
+
+    void setName(String name) {
+        this.name = name;
+    }
+    
+    @Override
+    public String toString() {
+        return "Host [id = " + id + ", name = " + name + "]";
+    }
 }

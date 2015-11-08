@@ -4,7 +4,7 @@
  * Created on November 4, 2015, 10:06 AM
  */
  
-package nl.verheulconsultants.monitorisp;           
+package nl.verheulconsultants.monitorisp.ui;           
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
