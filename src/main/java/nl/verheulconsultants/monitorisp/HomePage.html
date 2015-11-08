@@ -20,12 +20,22 @@
                     <span wicket:id="palette"></span>
 
                 </p>
+                <label>(mandatory) When done, always save before you continue </label>
                 <input type="submit" value="Save" />
             </form>
-        
+            
+            
             <form wicket:id="form2">
                 <p>
-                    <label>Add a host URL to the table </label> 
+                    <label>(optional) Remove the selected hosts from the table </label>
+                    <input wicket:id="button1" type="submit" value="Remove" />
+                </p>
+            </form>
+            
+
+            <form wicket:id="form3">
+                <p>
+                    <label>(optional) Add a host URL to the table </label> 
                     <br /> 
 
                     <input type="text" wicket:id="new-host" size="30"/>

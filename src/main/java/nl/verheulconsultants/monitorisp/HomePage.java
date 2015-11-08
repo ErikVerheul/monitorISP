@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
@@ -91,6 +92,26 @@ public class HomePage extends BasePage {
 
         form1.add(palette);
 
+        // Add a form with an onSubmit implementation that sets a message
+        Form<?> form2 = new Form<Void>("form2") {
+            @Override
+            protected void onSubmit() {
+                info("Form.onSubmit executed");
+            }
+        };
+
+        Button button1 = new Button("button1") {
+            @Override
+            public void onSubmit() {
+                if (selected != null) {
+                    HostList.hosts.removeAll(selected);
+                }
+                logger.info("These hosts should be removed {}", selected);
+            }
+        };
+        add(form2);
+        form2.add(button1);
+
         /**
          * Enter a new host URL if needed.
          */
@@ -98,16 +119,18 @@ public class HomePage extends BasePage {
         url.setRequired(false);
         url.add(new MyUrlValidator());
 
-        Form<?> form2 = new Form<Void>("form2") {
+        Form<?> form3 = new Form<Void>("form3") {
             @Override
             protected void onSubmit() {
                 final String urlValue = url.getModelObject();
-                HostList.hosts.add(new Host(Integer.toString(HostList.hosts.size()), urlValue));
+                if (urlValue != null) {
+                    HostList.hosts.add(new Host(Integer.toString(HostList.hosts.size()), urlValue));
+                }
                 logger.info("The hosts file has now the values {}", HostList.hosts);
             }
         };
-        add(form2);
-        form2.add(url);
+        add(form3);
+        form3.add(url);
 
     }
 }
@@ -121,11 +144,12 @@ class MyUrlValidator implements IValidator<String> {
             validatable.error(decorate(new ValidationError(this), validatable));
         }
     }
+
     /**
      * Check for a valid url but omit checking the protocol header.
-     * 
+     *
      * @param urlString
-     * @return 
+     * @return
      */
     boolean isValid(String urlString) {
         //Assigning the url format regular expression

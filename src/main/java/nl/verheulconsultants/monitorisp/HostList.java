@@ -53,6 +53,7 @@ class HostList {
         try (FileInputStream fin = new FileInputStream(fileName)) {
             ObjectInputStream ois = new ObjectInputStream(fin);
             hosts = (List<Host>) ois.readObject();
+            if (hosts.isEmpty()) init();
         } catch (FileNotFoundException ex) {
             init();
         }
