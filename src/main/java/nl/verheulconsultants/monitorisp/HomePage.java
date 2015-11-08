@@ -52,25 +52,26 @@ public class HomePage extends BasePage {
     private String selectedFile = "MonitorISPselected";
 
     public HomePage() {
+        // Load the saved host table.
         try {
             HostList.read(hostsFile);
             logger.info("The hosts file is read with values {}", HostList.hosts);
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("The hosts file {} can not be read. The exception is {}", hostsFile, ex);
         }
-
+        // Load the saved selected items.
         try {
             selected = HostList.readSelected(selectedFile);
             logger.info("The selection file is read with values {}", selected);
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("The selection file {} can not be read. The exception is {}", selected, ex);
         }
-
+        // Show a message.
         add(new Label("message", "The user dir is " + System.getProperty("user.dir")));
 
         /**
-         * Save the selected hosts on file with the 'save' button. Mark the
-         * current selected items.
+         * Add a form with a palette with Save button to select hosts to use for the service 
+         * or (optional) to be removed from the host list.
          */
         Form<?> form1 = new Form<Void>("form1") {
             @Override
@@ -92,13 +93,10 @@ public class HomePage extends BasePage {
 
         form1.add(palette);
 
-        // Add a form with an onSubmit implementation that sets a message
-        Form<?> form2 = new Form<Void>("form2") {
-            @Override
-            protected void onSubmit() {
-                info("Form.onSubmit executed");
-            }
-        };
+        /**
+         * Add a form with a button with onSubmit implementation to remove selected hosts.
+         */     
+        Form<?> form2 = new Form<>("form2");
 
         Button button1 = new Button("button1") {
             @Override
@@ -113,7 +111,7 @@ public class HomePage extends BasePage {
         form2.add(button1);
 
         /**
-         * Enter a new host URL if needed.
+         * Add a form where we can enter a new host URL if needed.
          */
         final TextField<String> url = new TextField<>("new-host", Model.of(""));
         url.setRequired(false);
