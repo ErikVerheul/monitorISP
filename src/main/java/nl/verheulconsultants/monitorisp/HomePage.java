@@ -129,7 +129,31 @@ public class HomePage extends BasePage {
         };
         add(form3);
         form3.add(url);
+        
+        /**
+         * Add a form with a buttons to start and stop the service.
+         */     
+        Form<?> form4 = new Form<>("form4");
 
+        Button button2 = new Button("button2") {
+            @Override
+            public void onSubmit() {
+                // add the action
+                logger.info("The is started with hosts {}", selected);
+            }
+        };
+        
+        Button button3 = new Button("button3") {
+            @Override
+            public void onSubmit() {
+                // add the action
+                logger.info("The sevice is stopped");
+            }
+        };
+        
+        add(form4);
+        form4.add(button2);
+        form4.add(button3);
     }
 }
 

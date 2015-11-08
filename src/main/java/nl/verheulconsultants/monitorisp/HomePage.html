@@ -22,16 +22,14 @@
                 </p>
                 <label>(mandatory) When done, always save before you continue </label>
                 <input type="submit" value="Save" />
-            </form>
-            
+            </form>           
             
             <form wicket:id="form2">
                 <p>
                     <label>(optional) Remove the selected hosts from the table </label>
                     <input wicket:id="button1" type="submit" value="Remove" />
                 </p>
-            </form>
-            
+            </form>            
 
             <form wicket:id="form3">
                 <p>
@@ -41,8 +39,17 @@
                     <input type="text" wicket:id="new-host" size="30"/>
 
                 </p>
-
             </form>
+            
+            <form wicket:id="form4">
+                <p>
+                    <label>Start the service </label>
+                    <input wicket:id="button2" type="submit" value="Start" />
+                    <label>Stop the service </label>
+                    <input wicket:id="button3" type="submit" value="Stop" />
+                </p>
+            </form>
+            
         </wicket:extend> 
     </body> 
 </html>
