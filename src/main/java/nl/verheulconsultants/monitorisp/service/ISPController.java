@@ -1,5 +1,5 @@
 /*
- * Switch to the other ISP is the current ISP is not reachable. When on the backup ISP try to revert to the primary ISP.
+ * Monitor the availability of the ISP by checking if at leat one of a list of hosts on the Internet can be reached. 
  */
 package nl.verheulconsultants.monitorisp.service;
 
@@ -18,14 +18,17 @@ import org.slf4j.LoggerFactory;
  * @author erik
  */
 public class ISPController extends Thread {
+
     static final Logger logger = LoggerFactory.getLogger(ISPController.class);
     private boolean done = false;
     private boolean stop = false;
     private boolean exit = false;
+    private boolean canReachISP = true;
     List<String> hosts = new ArrayList<>();
-    long lastContactWithAnyHost = System.currentTimeMillis();
-    long successfulChecks = 0L;
-    long failedChecks = 0L;
+
+    public Status getStatus() {
+        return new Status();
+    }
 
     public boolean isRunning() {
         return !done;
@@ -55,19 +58,35 @@ public class ISPController extends Thread {
         done = false;
         stop = false;
         logger.info("De controller is gestart.");
+        long loopStart;
+        long loopEnd;
 
         do {
             if (hosts.size() > 0) {
                 while (!stop) {
-                    if (!checkISP()) {
+                    loopStart = System.currentTimeMillis();
+                    if (checkISP()) {
+                        canReachISP = true;
+                        Status.lastContactWithAnyHost = System.currentTimeMillis();
+                    } else {
+                        if (canReachISP) {
+                            Status.numberOfInterruptions++;
+                        }
+                        canReachISP = false;
                         logger.warn("De ISP is niet bereikbaar.");
+                        Status.lastFailWithAnyHost = System.currentTimeMillis();
                     }
                     waitMilis(5000);  // wait 5 seconds to check the ISP connection again
+                    loopEnd = System.currentTimeMillis();
+                    if (!canReachISP) {
+                        Status.totalISPunavailability = Status.totalISPunavailability + loopEnd - loopStart;
+                    }
                 }
             }
             if (!done) {
                 logger.info("De controller is gestopt.\n");
-                logger.info("Er zijn {} connectie checks uitgevoerd, waarvan {} succesvol.", (successfulChecks+failedChecks), successfulChecks);
+                logger.info("Er zijn {} connectie checks uitgevoerd, waarvan {} succesvol.",
+                        (Status.successfulChecks + Status.failedChecks), Status.successfulChecks);
             }
             done = true;
             // wait for instructions to restart or to exit completely
@@ -91,12 +110,11 @@ public class ISPController extends Thread {
         for (String host : hosts) {
             // test a TCP connection on port 80 with the destination host and a time-out of 2000 ms.
             if (testConnection(host, 80, 2000)) {
-                lastContactWithAnyHost = System.currentTimeMillis();
                 hostFound = true;
-                successfulChecks++;
+                Status.successfulChecks++;
                 break; // when successfull there is no need to try the other hosts
             } else {
-                failedChecks++;
+                Status.failedChecks++;
                 waitMilis(1000);  // wait 1 second before contacting the next host in the list
             }
         }
@@ -159,9 +177,9 @@ public class ISPController extends Thread {
     void waitMilis(long ms) {
         try {
             Thread.sleep(ms);
-        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ignore1) {
-            // is OK, interrupt by thread cancellation
+        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
+            logger.info("A thread sleep was interrupted because of {}", ex);
         }
-        
+
     }
 }

@@ -26,6 +26,7 @@ package nl.verheulconsultants.monitorisp.ui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import nl.verheulconsultants.monitorisp.service.Status;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -180,6 +181,8 @@ public class HomePage extends BasePage {
         add(form4);
         form4.add(button2);
         form4.add(button3);
+        
+        Status status = WicketApplication.controller.getStatus();
     }
 }
 
