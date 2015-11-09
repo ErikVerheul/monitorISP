@@ -66,20 +66,27 @@ public class HomePage extends BasePage {
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("The selection file {} can not be read. The exception is {}", selected, ex);
         }
+
         // Show a message.
         add(new Label("message", "The user dir is " + System.getProperty("user.dir")));
 
         /**
-         * Add a form with a palette with Save button to select hosts to use for the service 
-         * or (optional) to be removed from the host list.
+         * Add a form with a palette with Save button to select hosts to use for
+         * the service or (optional) to be removed from the host list.
          */
         Form<?> form1 = new Form<Void>("form1") {
             @Override
             protected void onSubmit() {
-                HostList.save(HostList.hosts, hostsFile);
-                logger.info("The hosts file is saved with values {}", HostList.hosts);
-                HostList.save(selected, selectedFile);
-                logger.info("The selection file is saved with values {}", selected);
+                if (HostList.save(HostList.hosts, hostsFile)) {
+                    logger.info("The hosts file is saved with values {}", HostList.hosts);
+                } else {
+                    logger.error("The hosts file could not be saved with values {}", HostList.hosts);
+                }
+                if (HostList.save(selected, selectedFile)) {
+                    logger.error("The selection is saved with values {}", selected);
+                } else {
+                    logger.error("The selection file could not be saved with values {}", selected);
+                }
             }
         };
         add(form1);
@@ -94,8 +101,9 @@ public class HomePage extends BasePage {
         form1.add(palette1);
 
         /**
-         * Add a form with a button with onSubmit implementation to remove selected hosts.
-         */     
+         * Add a form with a button with onSubmit implementation to remove
+         * selected hosts.
+         */
         Form<?> form2 = new Form<>("form2");
 
         Button button1 = new Button("button1") {
@@ -129,28 +137,40 @@ public class HomePage extends BasePage {
         };
         add(form3);
         form3.add(url);
-        
+
         /**
          * Add a form with a buttons to start and stop the service.
-         */     
+         */
         Form<?> form4 = new Form<>("form4");
 
         Button button2 = new Button("button2") {
             @Override
             public void onSubmit() {
-                // add the action
-                logger.info("The is started with hosts {}", selected);
+                List hosts = new <String>ArrayList();
+                for (Host h : selected) {
+                    hosts.add(h.getName());
+                }
+                if (!hosts.isEmpty()) {
+                    WicketApplication.controller.doInBackground(hosts);
+                    logger.info("The service is started with hosts {}", hosts);
+                } else {
+                    logger.warn("The service CANNOT be started with no hosts defined.");
+                }
             }
         };
-        
+
         Button button3 = new Button("button3") {
             @Override
             public void onSubmit() {
-                // add the action
-                logger.info("The sevice is stopped");
+                if (WicketApplication.controller != null) {
+                    WicketApplication.controller.stopTemporarely();
+                    logger.info("The service is stopped.");
+                } else {
+                    logger.info("Can not stop, the controller is not running.");
+                }
             }
         };
-        
+
         add(form4);
         form4.add(button2);
         form4.add(button3);

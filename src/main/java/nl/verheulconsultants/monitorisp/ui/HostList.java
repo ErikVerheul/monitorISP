@@ -39,13 +39,21 @@ class HostList {
     static final Logger logger = LoggerFactory.getLogger(HostList.class);
     static List<Host> hosts;
 
-    static void save(List<Host> selected, String fileName) {
+    /**
+     * Saves a list of hosts in a file with name FileName.
+     * @param hosts
+     * @param fileName
+     * @return true if successful
+     */
+    static boolean save(List<Host> hosts, String fileName) {
         ObjectOutputStream oos;
         try (FileOutputStream fout = new FileOutputStream(fileName)) {
             oos = new ObjectOutputStream(fout);
-            oos.writeObject(selected);
+            oos.writeObject(hosts);
+            return true;
         } catch (IOException ex) {
-            logger.error(fileName + " can not be saved. The exception is ", ex);
+            logger.error(fileName + " can not be saved. The exception is {}", ex);
+            return false;
         }
     }
 

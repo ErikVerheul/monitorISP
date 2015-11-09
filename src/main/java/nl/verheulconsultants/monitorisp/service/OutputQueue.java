@@ -19,11 +19,11 @@ public class OutputQueue {
     BlockingQueue<String> queue;
 
     OutputQueue() {
-        queue = new LinkedBlockingQueue<String>();
+        queue = new LinkedBlockingQueue<>();
     }
 
     OutputQueue(int size) {
-        queue = new LinkedBlockingQueue<String>();
+        queue = new LinkedBlockingQueue<>();
         if (size > 0 && size <= maxSize) {
             this.size = size;
         }

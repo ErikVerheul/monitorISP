@@ -23,6 +23,7 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
+import nl.verheulconsultants.monitorisp.service.ISPController;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
@@ -36,7 +37,7 @@ import org.apache.wicket.request.resource.PackageResourceReference;
  * @see nl.verheulconsultants.monitorisp.Start#main(String[])
  */
 public class WicketApplication extends WebApplication {
-
+    static ISPController controller = new ISPController();
     /**
      * @return HomePage
      * @see org.apache.wicket.Application#getHomePage()
