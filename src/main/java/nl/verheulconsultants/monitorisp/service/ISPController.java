@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
  * @author erik
  */
 public class ISPController extends Thread {
-
     static final Logger logger = LoggerFactory.getLogger(ISPController.class);
     private boolean done = false;
     private boolean stop = false;
@@ -27,10 +26,6 @@ public class ISPController extends Thread {
     long lastContactWithAnyHost = System.currentTimeMillis();
     long successfulChecks = 0L;
     long failedChecks = 0L;
-
-    public ISPController() {
-
-    }
 
     public boolean isRunning() {
         return !done;
@@ -50,8 +45,8 @@ public class ISPController extends Thread {
         exit = true;
     }
 
-    public boolean isDone() {
-        return done;
+    public boolean isStoppedTemporarely() {
+        return stop;
     }
 
     @Override
@@ -164,10 +159,9 @@ public class ISPController extends Thread {
     void waitMilis(long ms) {
         try {
             Thread.sleep(ms);
-        } catch (java.util.concurrent.CancellationException ignore1) {
+        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ignore1) {
             // is OK, interrupt by thread cancellation
-        } catch (java.lang.InterruptedException ignore2) {
-            // is OK, interrupt caused by thread cancellation
         }
+        
     }
 }

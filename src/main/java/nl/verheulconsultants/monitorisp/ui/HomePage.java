@@ -151,8 +151,13 @@ public class HomePage extends BasePage {
                     hosts.add(h.getName());
                 }
                 if (!hosts.isEmpty()) {
-                    WicketApplication.controller.doInBackground(hosts);
-                    logger.info("The service is started with hosts {}", hosts);
+                    if (WicketApplication.controller.isStoppedTemporarely()) {
+                        WicketApplication.controller.restart();
+                        logger.info("The service is restarted with hosts {}", hosts);
+                    } else {
+                        WicketApplication.controller.doInBackground(hosts);
+                        logger.info("The service is started with hosts {}", hosts);
+                    }                  
                 } else {
                     logger.warn("The service CANNOT be started with no hosts defined.");
                 }
@@ -162,9 +167,10 @@ public class HomePage extends BasePage {
         Button button3 = new Button("button3") {
             @Override
             public void onSubmit() {
-                if (WicketApplication.controller != null) {
+                if (WicketApplication.controller != null
+                        && WicketApplication.controller.isRunning()) {
                     WicketApplication.controller.stopTemporarely();
-                    logger.info("The service is stopped.");
+                    logger.info("The service is stopped temporarely.");
                 } else {
                     logger.info("Can not stop, the controller is not running.");
                 }
