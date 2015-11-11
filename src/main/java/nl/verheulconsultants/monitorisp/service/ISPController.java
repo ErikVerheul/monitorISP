@@ -76,7 +76,7 @@ public class ISPController extends Thread {
          * true
          */
         do {
-            if (selectedHostsURLs.size() > 0) {
+            if (!selectedHostsURLs.isEmpty()) {
                 /**
                  * Inner loop checking if connections to the hosts are possible
                  * When loping busyCheckingConnections = true
@@ -104,7 +104,7 @@ public class ISPController extends Thread {
                 if (Status.busyCheckingConnections) {
                     logger.info("The controller has stopped.\n");
                     logger.info("{} Connection checks are executed, {} were successful.",
-                            (Status.successfulChecks + Status.failedChecks), Status.successfulChecks);
+                            Status.successfulChecks + Status.failedChecks, Status.successfulChecks);
                 }
                 Status.busyCheckingConnections = false;
             } else {

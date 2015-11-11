@@ -68,23 +68,7 @@ public class HomePage extends BasePage {
 
     public HomePage() {
         // Load the saved host table.
-        try {
-            if (HostList.readHosts(hostsFile)) {
-                logger.info("The hosts file is read with values {}", HostList.hosts);
-            } else {
-                logger.error("The hosts file {} could not be read, instead these {} default values were set.", hostsFile, HostList.hosts);
-            }
-        } catch (ClassNotFoundException ex) {
-            logger.error("The hosts file {} could not be read or initiated. The exception is {}", hostsFile, ex);
-        }
-
-        // Load the saved selected items.
-        try {
-            selected = HostList.readSelected(selectedFile);
-            logger.info("The selection file is read with values {}", selected);
-        } catch (IOException | ClassNotFoundException ex) {
-            logger.error("The selection file {} could not be read. The exception is {}", selected, ex);
-        }
+        loadHosts();
 
         // Show a message.
         add(new Label("message1", "The application home dir is " + appHomeDir));
@@ -97,7 +81,7 @@ public class HomePage extends BasePage {
         Form<?> form1 = new Form<Void>("paletteForm") {
             @Override
             protected void onSubmit() {
-                if (selected.size() > 0) {
+                if (!selected.isEmpty()) {
                     if (HostList.save(HostList.hosts, hostsFile)) {
                         logger.info("The hosts file is saved with values {}", HostList.hosts);
                     } else {
@@ -246,6 +230,29 @@ public class HomePage extends BasePage {
         add(listContainer);
 
     } // just keep randomizing the values, for display, so you can see it's updating.
+
+    /**
+     * Load the saved host tables
+     */
+    private void loadHosts() {
+        try {
+            if (HostList.readHosts(hostsFile)) {
+                logger.info("The hosts file is read with values {}", HostList.hosts);
+            } else {
+                logger.error("The hosts file {} could not be read, instead these {} default values were set.", hostsFile, HostList.hosts);
+            }
+        } catch (ClassNotFoundException ex) {
+            logger.error("The hosts file {} could not be read or initiated. The exception is {}", hostsFile, ex);
+        }
+
+        // Load the saved selected items.
+        try {
+            selected = HostList.readSelected(selectedFile);
+            logger.info("The selection file is read with values {}", selected);
+        } catch (IOException | ClassNotFoundException ex) {
+            logger.error("The selection file {} could not be read. The exception is {}", selected, ex);
+        }
+    }
 
     private List getData() {
         List ret = new ArrayList();

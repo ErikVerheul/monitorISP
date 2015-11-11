@@ -25,7 +25,7 @@ package nl.verheulconsultants.monitorisp.service;
 
 public class Status {
 
-        public static long startOfService = System.currentTimeMillis();
+        public final static long startOfService = System.currentTimeMillis();
         public static long lastContactWithAnyHost = System.currentTimeMillis();
         public static long lastFail = 0L;
         public static long successfulChecks = 0L;

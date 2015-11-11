@@ -21,8 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
-package nl.verheulconsultants.monitorisp.ui;           
+package nl.verheulconsultants.monitorisp.ui;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -31,12 +30,11 @@ public class HeaderPanel extends Panel {
 
     /**
      * Construct.
+     *
      * @param componentName name of the component
      * @param exampleTitle title of the example
      */
-
-    public HeaderPanel(String componentName, String exampleTitle)
-    {
+    public HeaderPanel(String componentName, String exampleTitle) {
         super(componentName);
         add(new Label("exampleTitle", exampleTitle));
     }
