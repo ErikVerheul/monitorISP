@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class OutputQueue {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputQueue.class);
     private int size = 50;
-    final private int maxSize = 1000;
+    private static final int maxSize = 1000;
     BlockingQueue<String> queue;
 
     OutputQueue() {
