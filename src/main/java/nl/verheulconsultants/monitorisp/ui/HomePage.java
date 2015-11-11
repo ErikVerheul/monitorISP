@@ -72,10 +72,10 @@ public class HomePage extends BasePage {
             if (HostList.readHosts(hostsFile)) {
                 logger.info("The hosts file is read with values {}", HostList.hosts);
             } else {
-                logger.error("The hosts file {} could not be read", hostsFile);
+                logger.error("The hosts file {} could not be read, instead these {} default values were set.", hostsFile, HostList.hosts);
             }
-        } catch (IOException | ClassNotFoundException ex) {
-            logger.error("The hosts file {} could not be read. The exception is {}", hostsFile, ex);
+        } catch (ClassNotFoundException ex) {
+            logger.error("The hosts file {} could not be read or initiated. The exception is {}", hostsFile, ex);
         }
 
         // Load the saved selected items.
@@ -221,7 +221,7 @@ public class HomePage extends BasePage {
             }
         };
 
-        ListView listView = new ListView("hateList", listViewModel) {
+        ListView listView = new ListView("listView", listViewModel) {
             @Override
             protected void populateItem(final ListItem item) {
                 MyListItem mli = (MyListItem) item.getModelObject();

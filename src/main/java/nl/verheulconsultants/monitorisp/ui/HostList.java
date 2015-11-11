@@ -56,20 +56,25 @@ class HostList {
             return false;
         }
     }
-
-    static boolean readHosts(String fileName) throws IOException, ClassNotFoundException {
+    /**
+     * 
+     * @param fileName
+     * @return true if the file was read, false if the defaults were initiated
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
+    static boolean readHosts(String fileName) throws ClassNotFoundException {
         try (FileInputStream fin = new FileInputStream(fileName)) {
             ObjectInputStream ois = new ObjectInputStream(fin);
             hosts = (List<Host>) ois.readObject();
-            if (hosts != null && hosts.isEmpty()) {
+            if (hosts.isEmpty()) {
                 init();
-                return true;
-            } else {
                 return false;
-            }          
-        } catch (FileNotFoundException ex) {
-            init();
+            }
             return true;
+        } catch (IOException ex) {
+            init();
+            return false;
         }
     }
     
@@ -84,8 +89,9 @@ class HostList {
 
     static void init() {
         hosts = new ArrayList<>();
-        hosts.add(new Host("0", "google-public-dns-a.google.com"));       
+        hosts.add(new Host("0", "willfailconnection.com"));       
         hosts.add(new Host("1", "uva.nl"));
-        hosts.add(new Host("2", "xs4all.nl"));       
+        hosts.add(new Host("2", "xs4all.nl"));
+        hosts.add(new Host("3", "vu.nl"));
     }
 }
