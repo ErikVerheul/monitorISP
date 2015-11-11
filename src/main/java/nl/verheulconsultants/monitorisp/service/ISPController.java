@@ -1,5 +1,5 @@
 /*
- * Monitor the availability of the ISP by checking if at leat one of a list of hosts on the Internet can be reached. 
+ * Monitor the availability of the ISP by checking if at leat one of a list of selectedHostsURLs on the Internet can be reached. 
  */
 package nl.verheulconsultants.monitorisp.service;
 
@@ -13,89 +13,114 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author erik
- */
 public class ISPController extends Thread {
 
     static final Logger logger = LoggerFactory.getLogger(ISPController.class);
-    private boolean done = false;
+    private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
-    private boolean canReachISP = true;
-    List<String> hosts = new ArrayList<>();
+    List<String> selectedHostsURLs = new ArrayList<>();
 
-    public Status getStatus() {
-        return new Status();
-    }
-
+    /**
+     * The service has started and is running.
+     *
+     * @return true if running.
+     */
     public boolean isRunning() {
-        return !done;
+        return running;
     }
 
-    public void stopTemporarely() {
+    /**
+     * The service is busy checking connections.
+     *
+     * @return true if running.
+     */
+    public boolean isBusyCheckingConnections() {
+        return Status.busyCheckingConnections;
+    }
+
+    /**
+     * Stop checking connections temporarily.
+     */
+    public void stopTemporarily() {
         stop = true;
     }
 
-    public void restart() {
-        done = false;
+    /**
+     * Restart after temporarily stop.
+     */
+    public void restart(List<String> hosts) {
+        this.selectedHostsURLs = hosts;
         stop = false;
     }
 
+    /**
+     * Stop the service thread completely.
+     */
     public void exit() {
         stop = true;
         exit = true;
     }
 
-    public boolean isStoppedTemporarely() {
-        return stop;
-    }
-
     @Override
     @SuppressWarnings("static-access")
     public void run() {
-        done = false;
+        running = true;
         stop = false;
         logger.info("De controller is gestart.");
         long loopStart;
         long loopEnd;
 
+        /**
+         * Outer loop is always loping unless exit = true. When loping started =
+         * true
+         */
         do {
-            if (hosts.size() > 0) {
+            if (selectedHostsURLs.size() > 0) {
+                /**
+                 * Inner loop checking if connections to the hosts are possible
+                 * When loping busyCheckingConnections = true
+                 */
                 while (!stop) {
+                    Status.busyCheckingConnections = true;
                     loopStart = System.currentTimeMillis();
-                    if (checkISP()) {
-                        canReachISP = true;
+                    if (checkISP(selectedHostsURLs)) {
+                        Status.canReachISP = true;
                         Status.lastContactWithAnyHost = System.currentTimeMillis();
                     } else {
-                        if (canReachISP) {
+                        if (Status.canReachISP) {
                             Status.numberOfInterruptions++;
                         }
-                        canReachISP = false;
-                        logger.warn("De ISP is niet bereikbaar.");
-                        Status.lastFailWithAnyHost = System.currentTimeMillis();
+                        Status.canReachISP = false;
+                        logger.warn("The ISP cannot be reached.");
+                        Status.lastFail = System.currentTimeMillis();
                     }
                     waitMilis(5000);  // wait 5 seconds to check the ISP connection again
                     loopEnd = System.currentTimeMillis();
-                    if (!canReachISP) {
+                    if (!Status.canReachISP) {
                         Status.totalISPunavailability = Status.totalISPunavailability + loopEnd - loopStart;
                     }
                 }
+                if (Status.busyCheckingConnections) {
+                    logger.info("The controller has stopped.\n");
+                    logger.info("{} Connection checks are executed, {} were successful.",
+                            (Status.successfulChecks + Status.failedChecks), Status.successfulChecks);
+                }
+                Status.busyCheckingConnections = false;
+            } else {
+                logger.warn("Cannot run the service with an empty host list");
+                exit = true;
+                break;
             }
-            if (!done) {
-                logger.info("De controller is gestopt.\n");
-                logger.info("Er zijn {} connectie checks uitgevoerd, waarvan {} succesvol.",
-                        (Status.successfulChecks + Status.failedChecks), Status.successfulChecks);
-            }
-            done = true;
             // wait for instructions to restart or to exit completely
             waitMilis(1000);
         } while (!exit);
+
+        running = false;
     }
 
-    public void doInBackground(List hosts) {
-        this.hosts = hosts;
+    public void doInBackground(List<String> hosts) {
+        this.selectedHostsURLs = hosts;
         start();
     }
 
@@ -105,14 +130,14 @@ public class ISPController extends Thread {
      * @return true if a host can be contacted and false if not one host from
      * the list can be reached.
      */
-    boolean checkISP() {
+    boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
-        for (String host : hosts) {
+        for (String host : hURLs) {
             // test a TCP connection on port 80 with the destination host and a time-out of 2000 ms.
             if (testConnection(host, 80, 2000)) {
                 hostFound = true;
                 Status.successfulChecks++;
-                break; // when successfull there is no need to try the other hosts
+                break; // when successfull there is no need to try the other selectedHostsURLs
             } else {
                 Status.failedChecks++;
                 waitMilis(1000);  // wait 1 second before contacting the next host in the list

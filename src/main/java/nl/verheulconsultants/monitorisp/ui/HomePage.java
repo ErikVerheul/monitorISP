@@ -25,18 +25,31 @@ package nl.verheulconsultants.monitorisp.ui;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.Status;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.LogManager;
+import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.util.time.Duration;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidationError;
 import org.apache.wicket.validation.IValidator;
@@ -46,51 +59,62 @@ import org.slf4j.LoggerFactory;
 
 public class HomePage extends BasePage {
 
-    static final Logger logger = LoggerFactory.getLogger(BasePage.class);
+    static final Logger logger = LoggerFactory.getLogger(HomePage.class);
 
     private List<Host> selected = new ArrayList<>();
-    private String hostsFile = "MonitorISPhosts";
-    private String selectedFile = "MonitorISPselected";
+    private String appHomeDir = "C:\\MonitorISP\\";
+    private String hostsFile = appHomeDir + "MonitorISPhosts";
+    private String selectedFile = appHomeDir + "MonitorISPselected";
 
     public HomePage() {
         // Load the saved host table.
         try {
-            HostList.read(hostsFile);
-            logger.info("The hosts file is read with values {}", HostList.hosts);
+            if (HostList.readHosts(hostsFile)) {
+                logger.info("The hosts file is read with values {}", HostList.hosts);
+            } else {
+                logger.error("The hosts file {} could not be read", hostsFile);
+            }
         } catch (IOException | ClassNotFoundException ex) {
-            logger.error("The hosts file {} can not be read. The exception is {}", hostsFile, ex);
+            logger.error("The hosts file {} could not be read. The exception is {}", hostsFile, ex);
         }
+
         // Load the saved selected items.
         try {
             selected = HostList.readSelected(selectedFile);
             logger.info("The selection file is read with values {}", selected);
         } catch (IOException | ClassNotFoundException ex) {
-            logger.error("The selection file {} can not be read. The exception is {}", selected, ex);
+            logger.error("The selection file {} could not be read. The exception is {}", selected, ex);
         }
 
         // Show a message.
-        add(new Label("message", "The user dir is " + System.getProperty("user.dir")));
+        add(new Label("message1", "The application home dir is " + appHomeDir));
+        add(new Label("message2", "The log file is located here " + getLogFileName()));
 
         /**
          * Add a form with a palette with Save button to select hosts to use for
          * the service or (optional) to be removed from the host list.
          */
-        Form<?> form1 = new Form<Void>("form1") {
+        Form<?> form1 = new Form<Void>("paletteForm") {
             @Override
             protected void onSubmit() {
-                if (HostList.save(HostList.hosts, hostsFile)) {
-                    logger.info("The hosts file is saved with values {}", HostList.hosts);
+                if (selected.size() > 0) {
+                    if (HostList.save(HostList.hosts, hostsFile)) {
+                        logger.info("The hosts file is saved with values {}", HostList.hosts);
+                    } else {
+                        logger.error("The hosts file could not be saved with values {}", HostList.hosts);
+                    }
+                    if (HostList.save(selected, selectedFile)) {
+                        logger.error("The selection is saved with values {}", selected);
+                    } else {
+                        logger.error("The selection file could not be saved with values {}", selected);
+                    }
                 } else {
-                    logger.error("The hosts file could not be saved with values {}", HostList.hosts);
-                }
-                if (HostList.save(selected, selectedFile)) {
-                    logger.error("The selection is saved with values {}", selected);
-                } else {
-                    logger.error("The selection file could not be saved with values {}", selected);
+                    error("Please select one or more hosts.");
                 }
             }
         };
         add(form1);
+        add(new FeedbackPanel("feedback"));
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
 
@@ -105,15 +129,17 @@ public class HomePage extends BasePage {
          * Add a form with a button with onSubmit implementation to remove
          * selected hosts.
          */
-        Form<?> form2 = new Form<>("form2");
+        Form<?> form2 = new Form<>("removeForm");
 
-        Button button1 = new Button("button1") {
+        Button button1 = new Button("removeButton") {
             @Override
             public void onSubmit() {
                 if (selected != null) {
                     HostList.hosts.removeAll(selected);
+                    logger.info("These hosts are removed {}", selected);
+                } else {
+                    error("Please select one or more hosts.");
                 }
-                logger.info("These hosts should be removed {}", selected);
             }
         };
         add(form2);
@@ -126,7 +152,7 @@ public class HomePage extends BasePage {
         url.setRequired(false);
         url.add(new MyUrlValidator());
 
-        Form<?> form3 = new Form<Void>("form3") {
+        Form<?> form3 = new Form<Void>("addForm") {
             @Override
             protected void onSubmit() {
                 final String urlValue = url.getModelObject();
@@ -142,35 +168,39 @@ public class HomePage extends BasePage {
         /**
          * Add a form with a buttons to start and stop the service.
          */
-        Form<?> form4 = new Form<>("form4");
+        Form<?> form4 = new Form<>("startStopForm");
 
-        Button button2 = new Button("button2") {
+        Button button2 = new Button("startButton") {
             @Override
             public void onSubmit() {
-                List hosts = new <String>ArrayList();
+                List selectedHostsURLs = new <String>ArrayList();
                 for (Host h : selected) {
-                    hosts.add(h.getName());
+                    selectedHostsURLs.add(h.getName());
                 }
-                if (!hosts.isEmpty()) {
-                    if (WicketApplication.controller.isStoppedTemporarely()) {
-                        WicketApplication.controller.restart();
-                        logger.info("The service is restarted with hosts {}", hosts);
+                if (!selectedHostsURLs.isEmpty()) {
+                    if (WicketApplication.controller.isRunning()) {
+                        if (!WicketApplication.controller.isBusyCheckingConnections()) {
+                            WicketApplication.controller.restart(selectedHostsURLs);
+                            logger.info("The service is restarted for checking connections with hosts {}", selectedHostsURLs);
+                        } else {
+                            logger.info("CANNOT start twice, the service is allready checking connections with {}", selectedHostsURLs);
+                        }
                     } else {
-                        WicketApplication.controller.doInBackground(hosts);
-                        logger.info("The service is started with hosts {}", hosts);
-                    }                  
+                        WicketApplication.controller.doInBackground(selectedHostsURLs);
+                        logger.info("The service is started for checking connections with hosts {}", selectedHostsURLs);
+                    }
                 } else {
-                    logger.warn("The service CANNOT be started with no hosts defined.");
+                    logger.warn("The service CANNOT be started with no hosts defined to check the connection.");
                 }
             }
         };
 
-        Button button3 = new Button("button3") {
+        Button button3 = new Button("stopButton") {
             @Override
             public void onSubmit() {
                 if (WicketApplication.controller != null
-                        && WicketApplication.controller.isRunning()) {
-                    WicketApplication.controller.stopTemporarely();
+                        && WicketApplication.controller.isBusyCheckingConnections()) {
+                    WicketApplication.controller.stopTemporarily();
                     logger.info("The service is stopped temporarely.");
                 } else {
                     logger.info("Can not stop, the controller is not running.");
@@ -181,8 +211,153 @@ public class HomePage extends BasePage {
         add(form4);
         form4.add(button2);
         form4.add(button3);
-        
-        Status status = WicketApplication.controller.getStatus();
+
+        //get the list of items to display from provider (database, etc)
+        //in the form of a LoadableDetachableModel
+        IModel listViewModel = new LoadableDetachableModel() {
+            @Override
+            protected Object load() {
+                return getData();
+            }
+        };
+
+        ListView listView = new ListView("hateList", listViewModel) {
+            @Override
+            protected void populateItem(final ListItem item) {
+                MyListItem mli = (MyListItem) item.getModelObject();
+                item.add(new Label("Name", mli.name));
+                item.add(new Label("Value", mli.value));
+                item.add(new Label("Index", mli.index));
+            }
+        };
+
+        //encapsulate the ListView in a WebMarkupContainer in order for it to update
+        WebMarkupContainer listContainer = new WebMarkupContainer("theContainer");
+
+        //generate a markup-id so the contents can be updated through an AJAX call
+        listContainer.setOutputMarkupId(
+                true);
+        listContainer.add(
+                new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
+        // add the list view to the container
+        listContainer.add(listView);
+
+        // finally add the container to the page
+        add(listContainer);
+
+    } // just keep randomizing the values, for display, so you can see it's updating.
+
+    private List getData() {
+        List ret = new ArrayList();
+
+        MyListItem x0 = new MyListItem();
+        x0.name = "startOfService";
+        x0.value = new Date(Status.startOfService).toString();
+        x0.index = 1;
+        ret.add(x0);
+
+        MyListItem x1 = new MyListItem();
+        x1.name = "lastContactWithAnyHost";
+        x1.value = new Date(Status.lastContactWithAnyHost).toString();
+        x1.index = 2;
+        ret.add(x1);
+
+        MyListItem x2 = new MyListItem();
+        x2.name = "lastFail";
+        if (Status.lastFail > 0) {
+            x2.value = new Date(Status.lastFail).toString();
+        } else {
+            x2.value = "No failure yet";
+        }
+        x2.index = 3;
+        ret.add(x2);
+
+        MyListItem x3 = new MyListItem();
+        x3.name = "numberOfInterruptions";
+        x3.value = Long.toString(Status.numberOfInterruptions);
+        x3.index = 4;
+        ret.add(x3);
+
+        MyListItem x4 = new MyListItem();
+        x4.name = "failedChecks";
+        x4.value = Long.toString(Status.failedChecks);
+        x4.index = 5;
+        ret.add(x4);
+
+        MyListItem x5 = new MyListItem();
+        x5.name = "successfulChecks";
+        x5.value = Long.toString(Status.successfulChecks);
+        x5.index = 6;
+        ret.add(x5);
+
+        MyListItem x6 = new MyListItem();
+        x6.name = "totalISPunavailability";
+        x6.value = millisToTime(Status.totalISPunavailability);
+        x6.index = 7;
+        ret.add(x6);
+
+        MyListItem x7 = new MyListItem();
+        x7.name = "INTERNET UP?";
+        if (Status.busyCheckingConnections) {
+            x7.value = Boolean.toString(Status.canReachISP);
+        } else {
+            x7.value = "UNKNOWN, conroller is not running";
+        }
+        x7.index = 8;
+        ret.add(x7);
+
+        return ret;
+
+    }
+
+    // a very simple model object just to have something concrete for an example
+    private class MyListItem {
+
+        public String name;
+        public String value;
+        public int index;
+    }
+
+    String millisToTime(long millis) {
+        long second = 0;
+        long minute = 0;
+        long hour = 0;
+        if (millis > 0) {
+            second = (millis / 1000) % 60;
+            minute = (millis / (1000 * 60)) % 60;
+            hour = (millis / (1000 * 60 * 60)) % 24;
+        }
+        return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
+    }
+
+    public static List<org.apache.log4j.Logger> getLoggers() throws IOException {
+        List<org.apache.log4j.Logger> listOfloggers = new ArrayList<>();
+        listOfloggers.add(LogManager.getRootLogger());
+        Enumeration<?> loggers = LogManager.getLoggerRepository().getCurrentLoggers();
+        while (loggers.hasMoreElements()) {
+            org.apache.log4j.Logger loggerLocal = (org.apache.log4j.Logger) loggers.nextElement();
+            listOfloggers.add(loggerLocal);
+        }
+        return listOfloggers;
+    }
+
+    private String getLogFileName() {
+        FileAppender fileAppender = null;
+
+        Enumeration appenders = LogManager.getRootLogger().getAllAppenders();
+
+        while (appenders.hasMoreElements()) {
+            Appender currAppender = (Appender) appenders.nextElement();
+            if (currAppender instanceof FileAppender) {
+                fileAppender = (FileAppender) currAppender;
+            }
+        }
+
+        if (fileAppender != null) {
+            return fileAppender.getFile();
+        } else {
+            return "Log file location not found.";
+        }
     }
 }
 

@@ -57,13 +57,19 @@ class HostList {
         }
     }
 
-    static void read(String fileName) throws IOException, ClassNotFoundException {
+    static boolean readHosts(String fileName) throws IOException, ClassNotFoundException {
         try (FileInputStream fin = new FileInputStream(fileName)) {
             ObjectInputStream ois = new ObjectInputStream(fin);
             hosts = (List<Host>) ois.readObject();
-            if (hosts.isEmpty()) init();
+            if (hosts != null && hosts.isEmpty()) {
+                init();
+                return true;
+            } else {
+                return false;
+            }          
         } catch (FileNotFoundException ex) {
             init();
+            return true;
         }
     }
     
