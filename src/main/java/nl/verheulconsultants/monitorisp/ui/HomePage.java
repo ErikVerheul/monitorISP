@@ -23,12 +23,12 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
+import static nl.verheulconsultants.monitorisp.service.Status.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
-import nl.verheulconsultants.monitorisp.service.Status;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -253,20 +253,20 @@ public class HomePage extends BasePage {
 
         MyListItem x0 = new MyListItem();
         x0.name = "startOfService";
-        x0.value = new Date(Status.startOfService).toString();
+        x0.value = new Date(startOfService).toString();
         x0.index = 1;
         ret.add(x0);
 
         MyListItem x1 = new MyListItem();
         x1.name = "lastContactWithAnyHost";
-        x1.value = new Date(Status.lastContactWithAnyHost).toString();
+        x1.value = new Date(lastContactWithAnyHost).toString();
         x1.index = 2;
         ret.add(x1);
 
         MyListItem x2 = new MyListItem();
         x2.name = "lastFail";
-        if (Status.lastFail > 0) {
-            x2.value = new Date(Status.lastFail).toString();
+        if (lastFail > 0) {
+            x2.value = new Date(lastFail).toString();
         } else {
             x2.value = "No failure yet";
         }
@@ -275,32 +275,32 @@ public class HomePage extends BasePage {
 
         MyListItem x3 = new MyListItem();
         x3.name = "numberOfInterruptions";
-        x3.value = Long.toString(Status.numberOfInterruptions);
+        x3.value = Long.toString(numberOfInterruptions);
         x3.index = 4;
         ret.add(x3);
 
         MyListItem x4 = new MyListItem();
         x4.name = "failedChecks";
-        x4.value = Long.toString(Status.failedChecks);
+        x4.value = Long.toString(failedChecks);
         x4.index = 5;
         ret.add(x4);
 
         MyListItem x5 = new MyListItem();
         x5.name = "successfulChecks";
-        x5.value = Long.toString(Status.successfulChecks);
+        x5.value = Long.toString(successfulChecks);
         x5.index = 6;
         ret.add(x5);
 
         MyListItem x6 = new MyListItem();
         x6.name = "totalISPunavailability";
-        x6.value = millisToTime(Status.totalISPunavailability);
+        x6.value = millisToTime(totalISPunavailability);
         x6.index = 7;
         ret.add(x6);
 
         MyListItem x7 = new MyListItem();
         x7.name = "INTERNET UP?";
-        if (Status.busyCheckingConnections) {
-            x7.value = Boolean.toString(Status.canReachISP);
+        if (busyCheckingConnections) {
+            x7.value = Boolean.toString(canReachISP);
         } else {
             x7.value = "UNKNOWN, conroller is not running";
         }

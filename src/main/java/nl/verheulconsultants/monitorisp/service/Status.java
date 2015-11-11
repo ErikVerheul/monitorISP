@@ -25,13 +25,13 @@ package nl.verheulconsultants.monitorisp.service;
 
 public class Status {
 
-        public final static long startOfService = System.currentTimeMillis();
-        public static long lastContactWithAnyHost = System.currentTimeMillis();
-        public static long lastFail = 0L;
-        public static long successfulChecks = 0L;
-        public static long failedChecks = 0L;
-        public static long numberOfInterruptions = 0L;
-        public static long totalISPunavailability = 0L;
-        public static boolean canReachISP = true;
-        public static boolean busyCheckingConnections = false;
-    }
+    public static long startOfService = System.currentTimeMillis();
+    public static long lastContactWithAnyHost = System.currentTimeMillis();
+    public static long lastFail = 0L;
+    public static long successfulChecks = 0L;
+    public static long failedChecks = 0L;
+    public static long numberOfInterruptions = 0L;
+    public static long totalISPunavailability = 0L;
+    public static boolean canReachISP = true;
+    public static boolean busyCheckingConnections = false;
+}
