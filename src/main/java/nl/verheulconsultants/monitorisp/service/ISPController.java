@@ -202,7 +202,6 @@ public class ISPController extends Thread {
      *
      * @param ms the sleep time
      */
-//    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "I know what I'm doing")
     void waitMilis(long ms) {
         try {
             Thread.sleep(ms);

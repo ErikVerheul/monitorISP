@@ -35,12 +35,14 @@ import org.apache.wicket.request.resource.PackageResourceReference;
  * application without deploying, run the Start class.
  *
  * @see nl.verheulconsultants.monitorisp.Start#main(String[])
- * 
- * A class and a method is overridden to show how an adapted java script can be used.
- * For now, no changes to the Wicket 6.20 version are made.
+ *
+ * A class and a method is overridden to show how an adapted java script can be
+ * used. For now, no changes to the Wicket 6.20 version are made.
  */
 public class WicketApplication extends WebApplication {
+
     static ISPController controller = new ISPController();
+
     /**
      * @return HomePage
      * @see org.apache.wicket.Application#getHomePage()
