@@ -59,12 +59,96 @@ import org.slf4j.LoggerFactory;
 
 public class HomePage extends BasePage {
 
-    static final Logger logger = LoggerFactory.getLogger(HomePage.class);
-
+    static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private List<Host> selected = new ArrayList<>();
     private String appHomeDir = "C:\\MonitorISP\\";
     private String hostsFile = appHomeDir + "MonitorISPhosts";
     private String selectedFile = appHomeDir + "MonitorISPselected";
+    
+    /**
+     * Add a form with a palette with Save button to select hosts to use for the
+     * service or (optional) to be removed from the host list.
+     */
+    Form<?> form1 = new Form<Void>("paletteForm") {
+        @Override
+        protected void onSubmit() {
+            if (!selected.isEmpty()) {
+                if (HostList.save(HostList.hosts, hostsFile)) {
+                    LOGGER.info("The hosts file is saved with values {}", HostList.hosts);
+                } else {
+                    LOGGER.error("The hosts file could not be saved with values {}", HostList.hosts);
+                }
+                if (HostList.save(selected, selectedFile)) {
+                    LOGGER.error("The selection is saved with values {}", selected);
+                } else {
+                    LOGGER.error("The selection file could not be saved with values {}", selected);
+                }
+            } else {
+                error("Please select one or more hosts.");
+            }
+        }
+    };
+    
+    /**
+     * Add a form with a button with onSubmit implementation to remove selected
+     * hosts.
+     */
+    Form<?> form2 = new Form<>("removeForm");
+    Button button1 = new Button("removeButton") {
+        @Override
+        public void onSubmit() {
+            if (selected != null) {
+                HostList.hosts.removeAll(selected);
+                LOGGER.info("These hosts are removed {}", selected);
+            } else {
+                error("Please select one or more hosts.");
+            }
+        }
+    };
+    
+    /**
+     * Add a form where we can enter a new host URL if needed.
+     */
+    final TextField<String> url = new TextField<>("new-host", Model.of(""));
+    Form<?> form3 = new Form<Void>("addForm") {
+        @Override
+        protected void onSubmit() {
+            final String urlValue = url.getModelObject();
+            if (urlValue != null) {
+                HostList.hosts.add(new Host(Integer.toString(HostList.hosts.size()), urlValue));
+            }
+            LOGGER.info("The hosts file has now the values {}", HostList.hosts);
+        }
+    };
+    
+    /**
+     * Add a form with a buttons to start and stop the service.
+     */
+    Form<?> form4 = new Form<>("startStopForm");
+    Button button2 = new Button("startButton") {
+        @Override
+        public void onSubmit() {
+            List selectedHostsURLs = new <String>ArrayList();
+            for (Host h : selected) {
+                selectedHostsURLs.add(h.getName());
+            }
+            if (!selectedHostsURLs.isEmpty()) {
+                if (WicketApplication.controller.isRunning()) {
+                    if (!WicketApplication.controller.isBusyCheckingConnections()) {
+                        WicketApplication.controller.restart(selectedHostsURLs);
+                        LOGGER.info("The service is restarted for checking connections with hosts {}", selectedHostsURLs);
+                    } else {
+                        LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", selectedHostsURLs);
+                    }
+                } else {
+                    WicketApplication.controller.doInBackground(selectedHostsURLs);
+                    LOGGER.info("The service is started for checking connections with hosts {}", selectedHostsURLs);
+                }
+            } else {
+                LOGGER.warn("The service CANNOT be started with no hosts defined to check the connection.");
+            }
+        }
+    };
 
     public HomePage() {
         // Load the saved host table.
@@ -74,29 +158,6 @@ public class HomePage extends BasePage {
         add(new Label("message1", "The application home dir is " + appHomeDir));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
 
-        /**
-         * Add a form with a palette with Save button to select hosts to use for
-         * the service or (optional) to be removed from the host list.
-         */
-        Form<?> form1 = new Form<Void>("paletteForm") {
-            @Override
-            protected void onSubmit() {
-                if (!selected.isEmpty()) {
-                    if (HostList.save(HostList.hosts, hostsFile)) {
-                        logger.info("The hosts file is saved with values {}", HostList.hosts);
-                    } else {
-                        logger.error("The hosts file could not be saved with values {}", HostList.hosts);
-                    }
-                    if (HostList.save(selected, selectedFile)) {
-                        logger.error("The selection is saved with values {}", selected);
-                    } else {
-                        logger.error("The selection file could not be saved with values {}", selected);
-                    }
-                } else {
-                    error("Please select one or more hosts.");
-                }
-            }
-        };
         add(form1);
         add(new FeedbackPanel("feedback"));
 
@@ -106,78 +167,16 @@ public class HomePage extends BasePage {
                 new ListModel<>(selected),
                 new CollectionModel<>(HostList.hosts),
                 renderer, 10, true, false);
-
         form1.add(palette1);
 
-        /**
-         * Add a form with a button with onSubmit implementation to remove
-         * selected hosts.
-         */
-        Form<?> form2 = new Form<>("removeForm");
-
-        Button button1 = new Button("removeButton") {
-            @Override
-            public void onSubmit() {
-                if (selected != null) {
-                    HostList.hosts.removeAll(selected);
-                    logger.info("These hosts are removed {}", selected);
-                } else {
-                    error("Please select one or more hosts.");
-                }
-            }
-        };
         add(form2);
         form2.add(button1);
 
-        /**
-         * Add a form where we can enter a new host URL if needed.
-         */
-        final TextField<String> url = new TextField<>("new-host", Model.of(""));
         url.setRequired(false);
         url.add(new MyUrlValidator());
 
-        Form<?> form3 = new Form<Void>("addForm") {
-            @Override
-            protected void onSubmit() {
-                final String urlValue = url.getModelObject();
-                if (urlValue != null) {
-                    HostList.hosts.add(new Host(Integer.toString(HostList.hosts.size()), urlValue));
-                }
-                logger.info("The hosts file has now the values {}", HostList.hosts);
-            }
-        };
         add(form3);
         form3.add(url);
-
-        /**
-         * Add a form with a buttons to start and stop the service.
-         */
-        Form<?> form4 = new Form<>("startStopForm");
-
-        Button button2 = new Button("startButton") {
-            @Override
-            public void onSubmit() {
-                List selectedHostsURLs = new <String>ArrayList();
-                for (Host h : selected) {
-                    selectedHostsURLs.add(h.getName());
-                }
-                if (!selectedHostsURLs.isEmpty()) {
-                    if (WicketApplication.controller.isRunning()) {
-                        if (!WicketApplication.controller.isBusyCheckingConnections()) {
-                            WicketApplication.controller.restart(selectedHostsURLs);
-                            logger.info("The service is restarted for checking connections with hosts {}", selectedHostsURLs);
-                        } else {
-                            logger.info("CANNOT start twice, the service is allready checking connections with {}", selectedHostsURLs);
-                        }
-                    } else {
-                        WicketApplication.controller.doInBackground(selectedHostsURLs);
-                        logger.info("The service is started for checking connections with hosts {}", selectedHostsURLs);
-                    }
-                } else {
-                    logger.warn("The service CANNOT be started with no hosts defined to check the connection.");
-                }
-            }
-        };
 
         Button button3 = new Button("stopButton") {
             @Override
@@ -185,9 +184,9 @@ public class HomePage extends BasePage {
                 if (WicketApplication.controller != null
                         && WicketApplication.controller.isBusyCheckingConnections()) {
                     WicketApplication.controller.stopTemporarily();
-                    logger.info("The service is stopped temporarely.");
+                    LOGGER.info("The service is stopped temporarely.");
                 } else {
-                    logger.info("Can not stop, the controller is not running.");
+                    LOGGER.info("Can not stop, the controller is not running.");
                 }
             }
         };
@@ -217,40 +216,35 @@ public class HomePage extends BasePage {
 
         //encapsulate the ListView in a WebMarkupContainer in order for it to update
         WebMarkupContainer listContainer = new WebMarkupContainer("theContainer");
-
         //generate a markup-id so the contents can be updated through an AJAX call
-        listContainer.setOutputMarkupId(
-                true);
-        listContainer.add(
-                new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
+        listContainer.setOutputMarkupId(true);
+        listContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
         // add the list view to the container
         listContainer.add(listView);
-
         // finally add the container to the page
         add(listContainer);
-
-    } // just keep randomizing the values, for display, so you can see it's updating.
+    }
 
     /**
-     * Load the saved host tables
+     * Load the saved host tables if available.
      */
     private void loadHosts() {
         try {
             if (HostList.readHosts(hostsFile)) {
-                logger.info("The hosts file is read with values {}", HostList.hosts);
+                LOGGER.info("The hosts file is read with values {}", HostList.hosts);
             } else {
-                logger.error("The hosts file {} could not be read, instead these {} default values were set.", hostsFile, HostList.hosts);
+                LOGGER.error("The hosts file {} could not be read, instead these {} default values were set.", hostsFile, HostList.hosts);
             }
         } catch (ClassNotFoundException ex) {
-            logger.error("The hosts file {} could not be read or initiated. The exception is {}", hostsFile, ex);
+            LOGGER.error("The hosts file {} could not be read or initiated. The exception is {}", hostsFile, ex);
         }
 
         // Load the saved selected items.
         try {
             selected = HostList.readSelected(selectedFile);
-            logger.info("The selection file is read with values {}", selected);
+            LOGGER.info("The selection file is read with values {}", selected);
         } catch (IOException | ClassNotFoundException ex) {
-            logger.error("The selection file {} could not be read. The exception is {}", selected, ex);
+            LOGGER.error("The selection file {} could not be read. The exception is {}", selected, ex);
         }
     }
 

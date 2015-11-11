@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class ISPController extends Thread {
 
-    static final Logger logger = LoggerFactory.getLogger(ISPController.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
@@ -48,6 +48,7 @@ public class ISPController extends Thread {
 
     /**
      * Restart after temporarily stop.
+     * @param hosts
      */
     public void restart(List<String> hosts) {
         this.selectedHostsURLs = hosts;
@@ -67,7 +68,7 @@ public class ISPController extends Thread {
     public void run() {
         running = true;
         stop = false;
-        logger.info("De controller is gestart.");
+        LOGGER.info("De controller is gestart.");
         long loopStart;
         long loopEnd;
 
@@ -92,7 +93,7 @@ public class ISPController extends Thread {
                             Status.numberOfInterruptions++;
                         }
                         Status.canReachISP = false;
-                        logger.warn("The ISP cannot be reached.");
+                        LOGGER.warn("The ISP cannot be reached.");
                         Status.lastFail = System.currentTimeMillis();
                     }
                     waitMilis(5000);  // wait 5 seconds to check the ISP connection again
@@ -102,13 +103,13 @@ public class ISPController extends Thread {
                     }
                 }
                 if (Status.busyCheckingConnections) {
-                    logger.info("The controller has stopped.\n");
-                    logger.info("{} Connection checks are executed, {} were successful.",
+                    LOGGER.info("The controller has stopped.\n");
+                    LOGGER.info("{} Connection checks are executed, {} were successful.",
                             Status.successfulChecks + Status.failedChecks, Status.successfulChecks);
                 }
                 Status.busyCheckingConnections = false;
             } else {
-                logger.warn("Cannot run the service with an empty host list");
+                LOGGER.warn("Cannot run the service with an empty host list");
                 exit = true;
                 break;
             }
@@ -161,14 +162,14 @@ public class ISPController extends Thread {
         try {
             inetAddress = InetAddress.getByName(host);
         } catch (UnknownHostException e) {
-            logger.info("De host {} is onbekend. Oorzaak = {}", new Object[]{host, e});
+            LOGGER.info("De host {} is onbekend. Oorzaak = {}", new Object[]{host, e});
             return false;
         }
 
         try {
             socketAddress = new InetSocketAddress(inetAddress, port);
         } catch (IllegalArgumentException e) {
-            logger.info("De poort {} kan niet valide zijn. Oorzaak = {}", new Object[]{port, e});
+            LOGGER.info("De poort {} kan niet valide zijn. Oorzaak = {}", new Object[]{port, e});
             return false;
         }
 
@@ -177,17 +178,17 @@ public class ISPController extends Thread {
             sc = SocketChannel.open();
             sc.configureBlocking(true);
             sc.socket().connect(socketAddress, timeout);
-            logger.debug("{}/{} is bereikbaar.", new Object[]{host, inetAddress.getHostAddress()});
+            LOGGER.debug("{}/{} is bereikbaar.", new Object[]{host, inetAddress.getHostAddress()});
             return true;
         } catch (IOException e) {
-            logger.info("{}/{} is niet bereikbaar. De oorzaak is {}", new Object[]{host, inetAddress.getHostAddress(), e});
+            LOGGER.info("{}/{} is niet bereikbaar. De oorzaak is {}", new Object[]{host, inetAddress.getHostAddress(), e});
             return false;
         } finally {
             if (sc != null) {
                 try {
                     sc.close();
                 } catch (IOException e) {
-                    logger.warn("Het socket kanaal met host {} kon niet worden gesloten. De oorzaak is {}", new Object[]{host, e});
+                    LOGGER.warn("Het socket kanaal met host {} kon niet worden gesloten. De oorzaak is {}", new Object[]{host, e});
                 }
             }
         }
@@ -203,7 +204,7 @@ public class ISPController extends Thread {
         try {
             Thread.sleep(ms);
         } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
-            logger.info("A thread sleep was interrupted because of {}", ex);
+            LOGGER.info("A thread sleep was interrupted because of {}", ex);
         }
 
     }

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author erik
  */
 public class OutputQueue {
-    static final Logger logger = LoggerFactory.getLogger(OutputQueue.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(OutputQueue.class);
     private int size = 50;
     private int maxSize = 1000;
     BlockingQueue<String> queue;
@@ -54,7 +54,7 @@ public class OutputQueue {
         try {
             queue.put(s);
         } catch (InterruptedException e) {
-            System.out.println(s + " not added to queue, error: " + e);
+            LOGGER.warn("{} not added to queue, error: {}", s, e);
         }
     }
 

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 class HostList {
 
-    static final Logger logger = LoggerFactory.getLogger(HostList.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(HostList.class);
     static List<Host> hosts;
 
     /**
@@ -52,7 +52,7 @@ class HostList {
             oos.writeObject(hosts);
             return true;
         } catch (IOException ex) {
-            logger.error(fileName + " can not be saved. The exception is {}", ex);
+            LOGGER.error(fileName + " can not be saved. The exception is {}", ex);
             return false;
         }
     }
