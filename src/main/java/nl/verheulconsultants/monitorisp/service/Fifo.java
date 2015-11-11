@@ -22,7 +22,7 @@ public class Fifo implements FifoMBean {
     }
 
     @Override
-    public void setSize(int size) throws IllegalArgumentException {
+    public void setSize(int size) {
         outputQueue.setSize(size);
     }
 

@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
  * @author erik
  */
 public class OutputQueue {
-    static final Logger LOGGER = LoggerFactory.getLogger(OutputQueue.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutputQueue.class);
     private int size = 50;
-    private int maxSize = 1000;
+    final private int maxSize = 1000;
     BlockingQueue<String> queue;
 
     OutputQueue() {
@@ -35,7 +35,7 @@ public class OutputQueue {
         }
     }
 
-    public void setSize(int newSize) throws IllegalArgumentException {
+    public void setSize(int newSize) {
         if (newSize <= 0 || newSize > maxSize) {
             throw new IllegalArgumentException("Output lines range must be >= 1 and <= " + maxSize);
         }

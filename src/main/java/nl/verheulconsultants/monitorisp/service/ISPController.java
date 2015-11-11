@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class ISPController extends Thread {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
@@ -96,7 +96,8 @@ public class ISPController extends Thread {
                         LOGGER.warn("The ISP cannot be reached.");
                         Status.lastFail = System.currentTimeMillis();
                     }
-                    waitMilis(5000);  // wait 5 seconds to check the ISP connection again
+                    // wait 5 seconds to check the ISP connection again
+                    waitMilis(5000);
                     loopEnd = System.currentTimeMillis();
                     if (!Status.canReachISP) {
                         Status.totalISPunavailability = Status.totalISPunavailability + loopEnd - loopStart;
@@ -138,10 +139,12 @@ public class ISPController extends Thread {
             if (testConnection(host, 80, 2000)) {
                 hostFound = true;
                 Status.successfulChecks++;
-                break; // when successfull there is no need to try the other selectedHostsURLs
+                // when successfull there is no need to try the other selectedHostsURLs
+                break;
             } else {
                 Status.failedChecks++;
-                waitMilis(1000);  // wait 1 second before contacting the next host in the list
+                // wait 1 second before contacting the next host in the list
+                waitMilis(1000);
             }
         }
         return hostFound;

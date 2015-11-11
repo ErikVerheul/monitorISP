@@ -36,7 +36,11 @@ import org.slf4j.LoggerFactory;
 
 class HostList {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(HostList.class);
+    private HostList() {
+        
+    }
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostList.class);
     static List<Host> hosts;
 
     /**

@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
 
 public class HomePage extends BasePage {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private List<Host> selected = new ArrayList<>();
     private String appHomeDir = "C:\\MonitorISP\\";
     private String hostsFile = appHomeDir + "MonitorISPhosts";
@@ -314,9 +314,9 @@ public class HomePage extends BasePage {
     // a very simple model object just to have something concrete for an example
     private class MyListItem {
 
-        public String name;
-        public String value;
-        public int index;
+        String name;
+        String value;
+        int index;
     }
 
     String millisToTime(long millis) {
