@@ -23,7 +23,7 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Status {
     
@@ -40,5 +40,5 @@ public class Status {
     public static long totalISPunavailability = 0L;
     public static boolean canReachISP = true;
     public static boolean busyCheckingConnections = false;
-    public static ArrayList<Outage> outages;
+    public static List outages;
 }

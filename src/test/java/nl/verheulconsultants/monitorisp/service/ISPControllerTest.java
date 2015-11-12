@@ -58,6 +58,7 @@ public class ISPControllerTest {
     @After
     public void tearDown() {
          instance.exit();
+         waitMilis(200);
     }
 
     /**
@@ -105,7 +106,7 @@ public class ISPControllerTest {
         waitMilis(70);
         assertTrue(!instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        waitMilis(200);
+        waitMilis(2000);
         assertTrue(instance.isBusyCheckingConnections());                 
     }
 
@@ -137,32 +138,57 @@ public class ISPControllerTest {
     }
 
     /**
-     * Test of doInBackground method, of class ISPController.
+     * Test of doInBackground method, of class ISPController with valid URL.
      */
     @Test
-    public void testDoInBackground() {
+    public void testDoInBackground1() {
         System.out.println("doInBackground");
 
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        waitMilis(20);
-        assertTrue(instance.isRunning());
-        instance.exit();
-        waitMilis(70);
-        assertTrue(!instance.isRunning());
+        waitMilis(7000);
+        assertTrue(Status.successfulChecks > 0);
+    }
+    
+    /**
+     * Test of doInBackground method, of class ISPController with non-valid URL.
+     */
+    @Test
+    public void testDoInBackground2() {
+        System.out.println("doInBackground");
+
+        List<String> hosts = new ArrayList();
+        hosts.add("willnotconnect.com");
+
+        instance.doInBackground(hosts);
+        waitMilis(7000);
+        assertTrue(Status.failedChecks > 0);
     }
 
     /**
-     * Test of checkISP method, of class ISPController.
+     * Test of checkISP method, of class ISPController with valid URL.
      */
     @Test
-    public void testCheckISP() {
+    public void testCheckISP1() {
         System.out.println("checkISP");
         List<String> hURLs = new ArrayList();
         hURLs.add("uva.nl");
         boolean expResult = true;
+        boolean result = instance.checkISP(hURLs);
+        assertEquals(expResult, result);
+    }
+    
+    /**
+     * Test of checkISP method, of class ISPController with non-valid URL.
+     */
+    @Test
+    public void testCheckISP2() {
+        System.out.println("checkISP");
+        List<String> hURLs = new ArrayList();
+        hURLs.add("willnotconnect.com");
+        boolean expResult = false;
         boolean result = instance.checkISP(hURLs);
         assertEquals(expResult, result);
     }
