@@ -24,7 +24,6 @@
 package nl.verheulconsultants.monitorisp.service;
 
 import java.util.ArrayList;
-import static nl.verheulconsultants.monitorisp.service.Status.*;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -38,6 +37,7 @@ import org.slf4j.LoggerFactory;
 public class ISPControllerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
+    ISPController instance;
 
     public ISPControllerTest() {
     }
@@ -52,10 +52,12 @@ public class ISPControllerTest {
 
     @Before
     public void setUp() {
+        instance = new ISPController();
     }
 
     @After
     public void tearDown() {
+         instance.exit();
     }
 
     /**
@@ -64,7 +66,6 @@ public class ISPControllerTest {
     @Test
     public void testIsRunning() {
         System.out.println("isRunning");
-        ISPController instance = new ISPController();
         boolean expResult = false;
         boolean result = instance.isRunning();
         assertEquals(expResult, result);
@@ -80,15 +81,12 @@ public class ISPControllerTest {
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
 
-        ISPController instance = new ISPController();
-
         instance.doInBackground(hosts);
         waitMilis(10);
         assertTrue(instance.isBusyCheckingConnections());
         instance.stopTemporarily();
         waitMilis(70);
-        assertTrue(!instance.isBusyCheckingConnections());
-        instance.exit();      
+        assertTrue(!instance.isBusyCheckingConnections());   
     }
 
     /**
@@ -101,17 +99,14 @@ public class ISPControllerTest {
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
         
-        ISPController instance = new ISPController();
-        
         instance.doInBackground(hosts);
         waitMilis(10);
         instance.stopTemporarily();
         waitMilis(70);
         assertTrue(!instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        waitMilis(70);
-        assertTrue(instance.isBusyCheckingConnections());
-        instance.exit();                     
+        waitMilis(100);
+        assertTrue(instance.isBusyCheckingConnections());                 
     }
 
     /**
@@ -123,8 +118,6 @@ public class ISPControllerTest {
 
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-
-        ISPController instance = new ISPController();
         instance.doInBackground(hosts);
         instance.exit();
         assertTrue(!instance.isRunning());
@@ -136,7 +129,6 @@ public class ISPControllerTest {
     @Test
     public void testRun() {
         System.out.println("run");
-        ISPController instance = new ISPController();
         instance.start();
         assert(instance.isAlive());
         instance.exit();
@@ -144,19 +136,6 @@ public class ISPControllerTest {
         assert(!instance.isAlive());
     }
 
-    /**
-     * Test of innerLoop method, of class ISPController.
-     */
-//    @Test
-//    public void testInnerLoop() {
-//        System.out.println("innerLoop");
-//        ISPController instance = new ISPController();
-//        instance.addHostUrl("uva.nl");
-//        instance.innerLoop();
-//        assertTrue(busyCheckingConnections);
-//        assertTrue(successfulChecks > 0);
-//        instance.stopTemporarily();
-//    }
     /**
      * Test of doInBackground method, of class ISPController.
      */
@@ -166,8 +145,6 @@ public class ISPControllerTest {
 
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-
-        ISPController instance = new ISPController();
 
         instance.doInBackground(hosts);
         waitMilis(10);
@@ -185,27 +162,9 @@ public class ISPControllerTest {
         System.out.println("checkISP");
         List<String> hURLs = new ArrayList();
         hURLs.add("uva.nl");
-        ISPController instance = new ISPController();
         boolean expResult = true;
         boolean result = instance.checkISP(hURLs);
         assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of waitMilis method, of class ISPController. When interrupted with a
-     * stop.
-     */
-    @Test
-    public void testWaitMilis() {
-        System.out.println("waitMilis");
-        long ms = 1000L;
-        ISPController instance = new ISPController();
-        long start = System.currentTimeMillis();
-        instance.waitMilis(ms);
-        instance.stopTemporarily();
-        waitMilis(12L);
-        assertTrue(System.currentTimeMillis() - start < 15L);
-
     }
 
     /**

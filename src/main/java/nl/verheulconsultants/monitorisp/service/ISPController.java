@@ -219,7 +219,7 @@ public class ISPController extends Thread {
      */
     void waitMilis(long ms) {
         int sliceNr = 100;
-        long slice = ms % sliceNr;
+        long slice = ms / sliceNr;
         for (int i = 0; i < sliceNr && !exit && !stop; i++) {
             try {
                 Thread.sleep(slice);
