@@ -19,7 +19,7 @@ public class ISPController extends Thread {
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
-    List<String> selectedHostsURLs = new ArrayList<>();
+    private List<String> selectedHostsURLs = new ArrayList<>();
 
     /**
      * The service has started and is running.
@@ -48,6 +48,7 @@ public class ISPController extends Thread {
 
     /**
      * Restart after temporarily stop.
+     *
      * @param hosts
      */
     public void restart(List<String> hosts) {
@@ -69,8 +70,6 @@ public class ISPController extends Thread {
         running = true;
         stop = false;
         LOGGER.info("De controller is gestart.");
-        long loopStart;
-        long loopEnd;
 
         /**
          * Outer loop is always loping unless exit = true. When loping started =
@@ -78,37 +77,7 @@ public class ISPController extends Thread {
          */
         do {
             if (!selectedHostsURLs.isEmpty()) {
-                /**
-                 * Inner loop checking if connections to the hosts are possible
-                 * When loping busyCheckingConnections = true
-                 */
-                while (!stop) {
-                    Status.busyCheckingConnections = true;
-                    loopStart = System.currentTimeMillis();
-                    if (checkISP(selectedHostsURLs)) {
-                        Status.canReachISP = true;
-                        Status.lastContactWithAnyHost = System.currentTimeMillis();
-                    } else {
-                        if (Status.canReachISP) {
-                            Status.numberOfInterruptions++;
-                        }
-                        Status.canReachISP = false;
-                        LOGGER.warn("The ISP cannot be reached.");
-                        Status.lastFail = System.currentTimeMillis();
-                    }
-                    // wait 5 seconds to check the ISP connection again
-                    waitMilis(5000);
-                    loopEnd = System.currentTimeMillis();
-                    if (!Status.canReachISP) {
-                        Status.totalISPunavailability = Status.totalISPunavailability + loopEnd - loopStart;
-                    }
-                }
-                if (Status.busyCheckingConnections) {
-                    LOGGER.info("The controller has stopped.\n");
-                    LOGGER.info("{} Connection checks are executed, {} were successful.",
-                            Status.successfulChecks + Status.failedChecks, Status.successfulChecks);
-                }
-                Status.busyCheckingConnections = false;
+                innerLoop();
             } else {
                 LOGGER.warn("Cannot run the service with an empty host list");
                 exit = true;
@@ -119,6 +88,51 @@ public class ISPController extends Thread {
         } while (!exit);
 
         running = false;
+    }
+
+    /**
+     * Inner loop checking if connections to the hosts are possible When loping
+     * busyCheckingConnections = true Registers the periods when no connections
+     * could be made.
+     */
+    void innerLoop() {
+        long loopStart;
+        long loopEnd;
+        while (!exit && !stop) {
+            long outageStart = 0L;
+            long outageEnd = 0L;
+            Status.busyCheckingConnections = true;
+            loopStart = System.currentTimeMillis();
+            if (checkISP(selectedHostsURLs)) {
+                Status.canReachISP = true;
+                Status.lastContactWithAnyHost = System.currentTimeMillis();
+                if (outageStart > 0) {
+                    outageEnd = Status.lastContactWithAnyHost;
+                    Status.outages.add(new Outage(outageStart, outageEnd));
+                    outageStart = 0L;
+                }
+            } else {
+                if (Status.canReachISP) {
+                    Status.numberOfInterruptions++;
+                    outageStart = System.currentTimeMillis();
+                }
+                Status.canReachISP = false;
+                LOGGER.warn("The ISP cannot be reached.");
+                Status.lastFail = System.currentTimeMillis();
+            }
+            // wait 5 seconds to check the ISP connection again
+            waitMilis(5000);
+            loopEnd = System.currentTimeMillis();
+            if (!Status.canReachISP) {
+                Status.totalISPunavailability = Status.totalISPunavailability + loopEnd - loopStart;
+            }
+        }
+        if (Status.busyCheckingConnections) {
+            LOGGER.info("The controller has stopped.\n");
+            LOGGER.info("{} Connection checks are executed, {} were successful.",
+                    Status.successfulChecks + Status.failedChecks, Status.successfulChecks);
+        }
+        Status.busyCheckingConnections = false;
     }
 
     public void doInBackground(List<String> hosts) {
@@ -198,16 +212,21 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Put this thread to sleep for ms miliseconds
+     * Put this thread to sleep for ms miliseconds. Slice the sleep to exit fast
+     * in case of a stop or exit.
      *
      * @param ms the sleep time
      */
     void waitMilis(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
-            LOGGER.info("A thread sleep was interrupted because of {}", ex);
+        int sliceNr = 100;
+        long slice = ms % sliceNr;
+        for (int i = 0; i < sliceNr && !exit && !stop; i++) {
+            try {
+                Thread.sleep(slice);
+            } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
+                LOGGER.info("A thread sleep was interrupted because of {}", ex);
+            }
         }
-
     }
+    
 }

@@ -23,22 +23,21 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-import java.util.ArrayList;
+public class Outage {
 
-public class Status {
-    
-    private Status() {
-        
+    long start;
+    long end;
+
+    Outage(long start, long end) {
+        this.start = start;
+        this.end = end;
     }
 
-    public static long startOfService = System.currentTimeMillis();
-    public static long lastContactWithAnyHost = System.currentTimeMillis();
-    public static long lastFail = 0L;
-    public static long successfulChecks = 0L;
-    public static long failedChecks = 0L;
-    public static long numberOfInterruptions = 0L;
-    public static long totalISPunavailability = 0L;
-    public static boolean canReachISP = true;
-    public static boolean busyCheckingConnections = false;
-    public static ArrayList<Outage> outages;
+    long getStart() {
+        return start;
+    }
+    
+    long getEnd() {
+        return end;
+    }
 }
