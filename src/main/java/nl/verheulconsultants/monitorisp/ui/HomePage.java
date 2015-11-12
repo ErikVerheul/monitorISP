@@ -61,9 +61,6 @@ public class HomePage extends BasePage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private List<Host> selected = new ArrayList<>();
-    private String appHomeDir = "C:\\MonitorISP\\";
-    private String hostsFile = appHomeDir + "MonitorISPhosts";
-    private String selectedFile = appHomeDir + "MonitorISPselected";
     
     /**
      * Add a form with a palette with Save button to select hosts to use for the
@@ -360,38 +357,4 @@ public class HomePage extends BasePage {
             return "Log file location not found.";
         }
     }
-}
-
-class MyUrlValidator implements IValidator<String> {
-
-    @Override
-    public void validate(IValidatable<String> validatable) {
-        String url = validatable.getValue();
-        if (!isValid(url)) {
-            validatable.error(decorate(new ValidationError(this), validatable));
-        }
-    }
-
-    /**
-     * Check for a valid url but omit checking the protocol header.
-     *
-     * @param urlString
-     * @return
-     */
-    boolean isValid(String urlString) {
-        //Assigning the url format regular expression
-        String urlPattern = "^[a-zA-Z0-9_/\\-\\.]+\\.([A-Za-z/]{2,5})[a-zA-Z0-9_/\\&\\?\\=\\-\\.\\~\\%]*";
-        return urlString.matches(urlPattern);
-    }
-
-    /**
-     * Allows subclasses to decorate reported errors
-     *
-     * @param error
-     * @return decorated error
-     */
-    protected IValidationError decorate(IValidationError error, IValidatable<String> validatable) {
-        return error;
-    }
-
 }

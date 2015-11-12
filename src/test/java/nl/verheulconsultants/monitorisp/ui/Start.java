@@ -1,4 +1,4 @@
-package nl.verheulconsultants.monitorisp;
+package nl.verheulconsultants.monitorisp.ui;
 
 import org.apache.wicket.util.time.Duration;
 import org.eclipse.jetty.server.Server;

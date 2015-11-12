@@ -1,7 +1,5 @@
-package nl.verheulconsultants.monitorisp;
+package nl.verheulconsultants.monitorisp.ui;
 
-import nl.verheulconsultants.monitorisp.ui.HomePage;
-import nl.verheulconsultants.monitorisp.ui.WicketApplication;
 import org.apache.wicket.util.tester.WicketTester;
 import org.junit.Before;
 import org.junit.Test;
