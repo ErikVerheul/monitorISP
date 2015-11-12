@@ -1,5 +1,5 @@
 /*
- * Monitor the availability of the ISP by checking if at leat one of a list of selectedHostsURLs on the Internet can be reached. 
+ * Monitor the availability of the ISP by checking if at least one of a list of selectedHostsURLs on the Internet can be reached. 
  */
 package nl.verheulconsultants.monitorisp.service;
 
@@ -69,7 +69,7 @@ public class ISPController extends Thread {
     public void run() {
         running = true;
         stop = false;
-        LOGGER.info("De controller is gestart.");
+        LOGGER.info("The controller has started.");
 
         /**
          * Outer loop is always loping unless exit = true. When loping started =
@@ -179,14 +179,14 @@ public class ISPController extends Thread {
         try {
             inetAddress = InetAddress.getByName(host);
         } catch (UnknownHostException e) {
-            LOGGER.info("De host {} is onbekend. Oorzaak = {}", new Object[]{host, e});
+            LOGGER.info("The host {} is unknown. Cause = {}", new Object[]{host, e});
             return false;
         }
 
         try {
             socketAddress = new InetSocketAddress(inetAddress, port);
         } catch (IllegalArgumentException e) {
-            LOGGER.info("De poort {} kan niet valide zijn. Oorzaak = {}", new Object[]{port, e});
+            LOGGER.info("The port {} can not be valid. Cause = {}", new Object[]{port, e});
             return false;
         }
 
@@ -195,17 +195,17 @@ public class ISPController extends Thread {
             sc = SocketChannel.open();
             sc.configureBlocking(true);
             sc.socket().connect(socketAddress, timeout);
-            LOGGER.debug("{}/{} is bereikbaar.", new Object[]{host, inetAddress.getHostAddress()});
+            LOGGER.debug("{}/{} cannot be reached.", new Object[]{host, inetAddress.getHostAddress()});
             return true;
         } catch (IOException e) {
-            LOGGER.info("{}/{} is niet bereikbaar. De oorzaak is {}", new Object[]{host, inetAddress.getHostAddress(), e});
+            LOGGER.info("{}/{} cannot be reached. The cause is {}", new Object[]{host, inetAddress.getHostAddress(), e});
             return false;
         } finally {
             if (sc != null) {
                 try {
                     sc.close();
                 } catch (IOException e) {
-                    LOGGER.warn("Het socket kanaal met host {} kon niet worden gesloten. De oorzaak is {}", new Object[]{host, e});
+                    LOGGER.warn("The socket channel with host {} could not be closed. The cause is {}", new Object[]{host, e});
                 }
             }
         }
