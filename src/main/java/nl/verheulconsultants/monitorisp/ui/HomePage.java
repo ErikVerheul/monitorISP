@@ -50,10 +50,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.util.time.Duration;
-import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.IValidationError;
-import org.apache.wicket.validation.IValidator;
-import org.apache.wicket.validation.ValidationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,12 +66,12 @@ public class HomePage extends BasePage {
         @Override
         protected void onSubmit() {
             if (!selected.isEmpty()) {
-                if (HostList.save(HostList.hosts, hostsFile)) {
+                if (HostList.save(HostList.hosts, HOSTSFILENAME)) {
                     LOGGER.info("The hosts file is saved with values {}", HostList.hosts);
                 } else {
                     LOGGER.error("The hosts file could not be saved with values {}", HostList.hosts);
                 }
-                if (HostList.save(selected, selectedFile)) {
+                if (HostList.save(selected, SELECTEDHOSTSFILENAME)) {
                     LOGGER.error("The selection is saved with values {}", selected);
                 } else {
                     LOGGER.error("The selection file could not be saved with values {}", selected);
@@ -152,7 +148,7 @@ public class HomePage extends BasePage {
         loadHosts();
 
         // Show a message.
-        add(new Label("message1", "The application home dir is " + appHomeDir));
+        add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
 
         add(form1);
@@ -227,18 +223,18 @@ public class HomePage extends BasePage {
      */
     private void loadHosts() {
         try {
-            if (HostList.readHosts(hostsFile)) {
+            if (HostList.readHosts(HOSTSFILENAME)) {
                 LOGGER.info("The hosts file is read with values {}", HostList.hosts);
             } else {
-                LOGGER.error("The hosts file {} could not be read, instead these {} default values were set.", hostsFile, HostList.hosts);
+                LOGGER.error("The hosts file {} could not be read, instead these {} default values were set.", HOSTSFILENAME, HostList.hosts);
             }
         } catch (ClassNotFoundException ex) {
-            LOGGER.error("The hosts file {} could not be read or initiated. The exception is {}", hostsFile, ex);
+            LOGGER.error("The hosts file {} could not be read or initiated. The exception is {}", HOSTSFILENAME, ex);
         }
 
         // Load the saved selected items.
         try {
-            selected = HostList.readSelected(selectedFile);
+            selected = HostList.readSelected(SELECTEDHOSTSFILENAME);
             LOGGER.info("The selection file is read with values {}", selected);
         } catch (IOException | ClassNotFoundException ex) {
             LOGGER.error("The selection file {} could not be read. The exception is {}", selected, ex);

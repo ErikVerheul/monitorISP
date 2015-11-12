@@ -43,7 +43,7 @@ public class HostListTest {
 
         List<Host> hosts = new ArrayList();
         hosts.add(new Host(Integer.toString(1), "uva.nl"));
-        String fileName = hostsFile;
+        String fileName = HOSTSFILENAME;
         boolean expResult = true;
         boolean result = HostList.save(hosts, fileName);
         assertEquals(expResult, result);
@@ -58,7 +58,7 @@ public class HostListTest {
     public void testReadHosts() throws Exception {
         System.out.println("readHosts");
 
-        String fileName = hostsFile;
+        String fileName = HOSTSFILENAME;
         boolean expResult = true;
         boolean result = HostList.readHosts(fileName);
         assertEquals(expResult, result);
@@ -72,7 +72,7 @@ public class HostListTest {
     public void testReadSelected() throws Exception {
         System.out.println("readSelected");
 
-        String fileName = selectedFile;
+        String fileName = SELECTEDHOSTSFILENAME;
         List result = HostList.readSelected(fileName);
         assertTrue(!result.isEmpty());
     }

@@ -30,9 +30,9 @@ public class Status {
     private Status() {
         
     }
-    public static final String appHomeDir = "C:\\MonitorISP\\";
-    public static final String hostsFile = appHomeDir + "MonitorISPhosts";
-    public static final String selectedFile = appHomeDir + "MonitorISPselected";
+    public static final String APPHOMEDIR = "C:\\MonitorISP\\";
+    public static final String HOSTSFILENAME = APPHOMEDIR + "MonitorISPhosts";
+    public static final String SELECTEDHOSTSFILENAME = APPHOMEDIR + "MonitorISPselected";
     public static long startOfService = System.currentTimeMillis();
     public static long lastContactWithAnyHost = System.currentTimeMillis();
     public static long lastFail = 0L;
