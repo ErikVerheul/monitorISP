@@ -301,7 +301,6 @@ public class HomePage extends BasePage {
         ret.add(x7);
 
         return ret;
-
     }
 
     // a very simple model object just to have something concrete for an example
@@ -322,17 +321,6 @@ public class HomePage extends BasePage {
             hour = (millis / (1000 * 60 * 60)) % 24;
         }
         return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
-    }
-
-    public static List<org.apache.log4j.Logger> getLoggers() throws IOException {
-        List<org.apache.log4j.Logger> listOfloggers = new ArrayList<>();
-        listOfloggers.add(LogManager.getRootLogger());
-        Enumeration<?> loggers = LogManager.getLoggerRepository().getCurrentLoggers();
-        while (loggers.hasMoreElements()) {
-            org.apache.log4j.Logger loggerLocal = (org.apache.log4j.Logger) loggers.nextElement();
-            listOfloggers.add(loggerLocal);
-        }
-        return listOfloggers;
     }
 
     private String getLogFileName() {

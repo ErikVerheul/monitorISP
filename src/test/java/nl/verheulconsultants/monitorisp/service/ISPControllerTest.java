@@ -77,7 +77,7 @@ public class ISPControllerTest {
         assertTrue(instance.isBusyCheckingConnections());
         instance.stopTemporarily();
         waitMilis(100);
-        assertTrue(!instance.isBusyCheckingConnections());   
+        assertFalse(instance.isBusyCheckingConnections());   
     }
 
     /**
@@ -94,7 +94,7 @@ public class ISPControllerTest {
         waitMilis(20);
         instance.stopTemporarily();
         waitMilis(70);
-        assertTrue(!instance.isBusyCheckingConnections());
+        assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
         waitMilis(2000);
         assertTrue(instance.isBusyCheckingConnections());                 
@@ -111,7 +111,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         instance.doInBackground(hosts);
         instance.exit();
-        assertTrue(!instance.isRunning());
+        assertFalse(instance.isRunning());
     }
 
     /**

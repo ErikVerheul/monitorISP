@@ -58,6 +58,16 @@ public class MyUrlValidatorTest {
         result = instance.isValid(urlString);
         assertEquals(expResult, result);
         
+        urlString = "abc";
+        expResult = false;
+        result = instance.isValid(urlString);
+        assertEquals(expResult, result);
+        
+        urlString = "a%b.nl";
+        expResult = false;
+        result = instance.isValid(urlString);
+        assertEquals(expResult, result);
+        
         /**
          * Protocol addition is not allowed in this check.
          * We are just creating a connection.

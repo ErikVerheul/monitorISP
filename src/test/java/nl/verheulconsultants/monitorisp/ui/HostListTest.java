@@ -74,7 +74,7 @@ public class HostListTest {
 
         String fileName = SELECTEDHOSTSFILENAME;
         List result = HostList.readSelected(fileName);
-        assertTrue(!result.isEmpty());
+        assertFalse(result.isEmpty());
     }
 
     /**
