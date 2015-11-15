@@ -31,8 +31,7 @@ public class Status {
         
     }
     public static final String APPHOMEDIR = "C:\\MonitorISP\\";
-    public static final String HOSTSFILENAME = APPHOMEDIR + "MonitorISPhosts";
-    public static final String SELECTEDHOSTSFILENAME = APPHOMEDIR + "MonitorISPselected";
+    public static final String MODELFILENAME = APPHOMEDIR + "MonitorISPhosts";
     public static long startOfService = System.currentTimeMillis();
     public static long lastContactWithAnyHost = System.currentTimeMillis();
     public static long lastFail = 0L;

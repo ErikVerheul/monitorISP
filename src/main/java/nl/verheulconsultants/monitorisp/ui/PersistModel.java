@@ -24,78 +24,66 @@
 package nl.verheulconsultants.monitorisp.ui;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.wicket.model.util.CollectionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class HostList {
-    
-    private HostList() {
-        
-    }
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(HostList.class);
-    static List<Host> hosts;
+class PersistModel {   
+    private static final Logger LOGGER = LoggerFactory.getLogger(PersistModel.class);
 
     /**
-     * Saves a list of hosts in a file with name FileName.
-     * @param hosts
+     * Saves the model in a file.
+     * 
+     * @param model
      * @param fileName
      * @return true if successful
      */
-    static boolean save(List<Host> hosts, String fileName) {
+    static boolean saveModel(CollectionModel model, String fileName) {
         ObjectOutputStream oos;
         try (FileOutputStream fout = new FileOutputStream(fileName)) {
             oos = new ObjectOutputStream(fout);
-            oos.writeObject(hosts);
+            oos.writeObject(model);
             return true;
         } catch (IOException ex) {
             LOGGER.error(fileName + " can not be saved. The exception is {}", ex);
             return false;
         }
     }
+    
     /**
+     * Loads the model in a file.
      * 
      * @param fileName
-     * @return true if the file was read, false if the defaults were initiated
-     * @throws IOException
+     * @return the loaded model or a fresh default instantiation when not found.
      * @throws ClassNotFoundException 
      */
-    static boolean readHosts(String fileName) throws ClassNotFoundException {
+    static CollectionModel loadModel(String fileName) {
+        CollectionModel model;
         try (FileInputStream fin = new FileInputStream(fileName)) {
             ObjectInputStream ois = new ObjectInputStream(fin);
-            hosts = (List<Host>) ois.readObject();
-            if (hosts.isEmpty()) {
-                init();
-                return false;
-            }
-            return true;
+            model = (CollectionModel) ois.readObject();
+            return model;
         } catch (IOException ex) {
-            init();
-            return false;
+            return init();
+        } catch (ClassNotFoundException ex2) {
+            LOGGER.error("Unexpected internal error {}, default model loaded.", ex2);
+            return init();
         }
     }
     
-    static List readSelected(String fileName) throws IOException, ClassNotFoundException {
-        try (FileInputStream fin = new FileInputStream(fileName)) {
-            ObjectInputStream ois = new ObjectInputStream(fin);
-            return (List<Host>) ois.readObject();
-        } catch (FileNotFoundException ex) {
-            return new ArrayList<>();
-        }
-    }
-
-    static void init() {
-        hosts = new ArrayList<>();
+    private static CollectionModel init() {
+        List<Host> hosts = new ArrayList<>();
         hosts.add(new Host("0", "willfailconnection.com"));       
         hosts.add(new Host("1", "uva.nl"));
         hosts.add(new Host("2", "xs4all.nl"));
         hosts.add(new Host("3", "vu.nl"));
+        CollectionModel model = new CollectionModel<>(hosts);
+        return model;
     }
 }

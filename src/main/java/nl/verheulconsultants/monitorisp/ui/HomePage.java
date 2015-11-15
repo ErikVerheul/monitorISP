@@ -24,11 +24,12 @@
 package nl.verheulconsultants.monitorisp.ui;
 
 import static nl.verheulconsultants.monitorisp.service.Status.*;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadModel;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -57,7 +58,9 @@ public class HomePage extends BasePage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private List<Host> selected = new ArrayList<>();
-    
+    final Palette<Host> palette1;
+    private CollectionModel<Host> theModel;
+
     /**
      * Add a form with a palette with Save button to select hosts to use for the
      * service or (optional) to be removed from the host list.
@@ -66,58 +69,43 @@ public class HomePage extends BasePage {
         @Override
         protected void onSubmit() {
             if (!selected.isEmpty()) {
-                if (HostList.save(HostList.hosts, HOSTSFILENAME)) {
-                    LOGGER.info("The hosts file is saved with values {}", HostList.hosts);
+                if (PersistModel.saveModel(theModel, MODELFILENAME)) {
+                    LOGGER.info("The model is saved with values {}", theModel);
                 } else {
-                    LOGGER.error("The hosts file could not be saved with values {}", HostList.hosts);
-                }
-                if (HostList.save(selected, SELECTEDHOSTSFILENAME)) {
-                    LOGGER.error("The selection is saved with values {}", selected);
-                } else {
-                    LOGGER.error("The selection file could not be saved with values {}", selected);
+                    LOGGER.error("The model could not be saved with values {}", theModel);
                 }
             } else {
                 error("Please select one or more hosts.");
             }
         }
     };
-    
-    /**
-     * Add a form with a button with onSubmit implementation to remove selected
-     * hosts.
-     */
-    Form<?> form2 = new Form<>("removeForm");
+
     Button button1 = new Button("removeButton") {
         @Override
         public void onSubmit() {
-            if (selected != null) {
-                HostList.hosts.removeAll(selected);
-                LOGGER.info("These hosts are removed {}", selected);
-            } else {
-                error("Please select one or more hosts.");
-            }
+            LOGGER.info("The URL's are removed.");
+            LOGGER.info("The model is changed to {}", theModel);
         }
     };
-    
+
     /**
-     * Add a form where we can enter a new host URL if needed.
+     * Add a text field where we can enter a new host URL if needed.
      */
     final TextField<String> url = new TextField<>("new-host", Model.of(""));
     Form<?> form3 = new Form<Void>("addForm") {
         @Override
         protected void onSubmit() {
             final String urlValue = url.getModelObject();
-            if (urlValue != null) {
-                HostList.hosts.add(new Host(Integer.toString(HostList.hosts.size()), urlValue));
-            }
-            LOGGER.info("The hosts file has now the values {}", HostList.hosts);
+            Collection<Host> hosts = theModel.getObject();
+            hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
+            LOGGER.info("The URL {} is added", urlValue);
+            LOGGER.info("The model is changed to {}", theModel);
         }
     };
-    
+
     /**
-     * Add a form with a buttons to start and stop the service.
+     * A button to start the service.
      */
-    Form<?> form4 = new Form<>("startStopForm");
     Button button2 = new Button("startButton") {
         @Override
         public void onSubmit() {
@@ -143,10 +131,26 @@ public class HomePage extends BasePage {
         }
     };
 
-    public HomePage() {
-        // Load the saved host table.
-        loadHosts();
+    /**
+     * A button to stop the service temporarily.
+     */
+    Button button3 = new Button("stopButton") {
+        @Override
+        public void onSubmit() {
+            if (WicketApplication.controller != null
+                    && WicketApplication.controller.isBusyCheckingConnections()) {
+                WicketApplication.controller.stopTemporarily();
+                LOGGER.info("The service is stopped temporarely.");
+            } else {
+                LOGGER.info("Can not stop, the controller is not running.");
+            }
+        }
+    };
 
+    public HomePage() {
+        // Load the saved host table or initiate with default values.
+        theModel = loadModel(MODELFILENAME);
+        
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
@@ -155,15 +159,14 @@ public class HomePage extends BasePage {
         add(new FeedbackPanel("feedback"));
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
-
-        final Palette<Host> palette1 = new Palette<>("palette1",
+           
+        palette1 = new Palette<>("palette1",
                 new ListModel<>(selected),
-                new CollectionModel<>(HostList.hosts),
+                theModel,
                 renderer, 10, true, false);
         form1.add(palette1);
 
-        add(form2);
-        form2.add(button1);
+        form1.add(button1);
 
         url.setRequired(false);
         url.add(new MyUrlValidator());
@@ -171,22 +174,8 @@ public class HomePage extends BasePage {
         add(form3);
         form3.add(url);
 
-        Button button3 = new Button("stopButton") {
-            @Override
-            public void onSubmit() {
-                if (WicketApplication.controller != null
-                        && WicketApplication.controller.isBusyCheckingConnections()) {
-                    WicketApplication.controller.stopTemporarily();
-                    LOGGER.info("The service is stopped temporarely.");
-                } else {
-                    LOGGER.info("Can not stop, the controller is not running.");
-                }
-            }
-        };
-
-        add(form4);
-        form4.add(button2);
-        form4.add(button3);
+        form1.add(button2);
+        form1.add(button3);
 
         //get the list of items to display from provider (database, etc)
         //in the form of a LoadableDetachableModel
@@ -216,29 +205,6 @@ public class HomePage extends BasePage {
         listContainer.add(listView);
         // finally add the container to the page
         add(listContainer);
-    }
-
-    /**
-     * Load the saved host tables if available.
-     */
-    private void loadHosts() {
-        try {
-            if (HostList.readHosts(HOSTSFILENAME)) {
-                LOGGER.info("The hosts file is read with values {}", HostList.hosts);
-            } else {
-                LOGGER.error("The hosts file {} could not be read, instead these {} default values were set.", HOSTSFILENAME, HostList.hosts);
-            }
-        } catch (ClassNotFoundException ex) {
-            LOGGER.error("The hosts file {} could not be read or initiated. The exception is {}", HOSTSFILENAME, ex);
-        }
-
-        // Load the saved selected items.
-        try {
-            selected = HostList.readSelected(SELECTEDHOSTSFILENAME);
-            LOGGER.info("The selection file is read with values {}", selected);
-        } catch (IOException | ClassNotFoundException ex) {
-            LOGGER.error("The selection file {} could not be read. The exception is {}", selected, ex);
-        }
     }
 
     private List getData() {

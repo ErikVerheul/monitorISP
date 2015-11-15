@@ -21,19 +21,19 @@
                     <span wicket:id="palette1"></span>
 
                 </p>
-                <label>When done, always confirm before you continue </label>
-                <input type="submit" value="Ready" />
+
+                <label>(optional) Remove the selected hosts from the table </label>
+                <input wicket:id="removeButton" type="submit" value="Remove" />
                 <br /> 
+                <label>Start the service </label>
+                <input wicket:id="startButton" type="submit" value="Start" />
+                <label>Stop the service </label>
+                <input wicket:id="stopButton" type="submit" value="Stop" />
 
             </form>           
             <div wicket:id="feedback">[Feedback Panel]</div>
-            
-            <form wicket:id="removeForm">
-                <p>
-                    <label>(optional) Remove the selected hosts from the table </label>
-                    <input wicket:id="removeButton" type="submit" value="Remove" />
-                </p>
-            </form>            
+
+
 
             <form wicket:id="addForm">
                 <p>
@@ -45,14 +45,7 @@
                 </p>
             </form>
 
-            <form wicket:id="startStopForm">
-                <p>
-                    <label>Start the service </label>
-                    <input wicket:id="startButton" type="submit" value="Start" />
-                    <label>Stop the service </label>
-                    <input wicket:id="stopButton" type="submit" value="Stop" />
-                </p>
-            </form>
+            
 
             <table wicket:id="theContainer">
                 <tr><th>index</th><th>name</th><th>value</th></tr>

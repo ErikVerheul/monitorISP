@@ -38,17 +38,17 @@ public class TestHomePage {
         formTester.submit();
     }
     
-    @Test
-    public void removeHost() {
-        //start and render the test page
-        tester.startPage(HomePage.class);
-        //assert rendered page class
-        tester.assertRenderedPage(HomePage.class);
-        //create a new form tester without filling its form components with a blank string
-        FormTester formTester = tester.newFormTester("removeForm", false);
-        //submit form using inner component 'button' as alternate button
-        formTester.submit("removeButton");
-    }
+//    @Test
+//    public void removeHost() {
+//        //start and render the test page
+//        tester.startPage(HomePage.class);
+//        //assert rendered page class
+//        tester.assertRenderedPage(HomePage.class);
+//        //create a new form tester without filling its form components with a blank string
+//        FormTester formTester = tester.newFormTester("removeForm", false);
+//        //submit form using inner component 'button' as alternate button
+//        formTester.submit("removeButton");
+//    }
     
     @Test
     public void addHost() {
@@ -62,27 +62,27 @@ public class TestHomePage {
         formTester.submit("new-host");
     }
 
-    @Test
-    public void submitStart() {
-        //start and render the test page
-        tester.startPage(HomePage.class);
-        //assert rendered page class
-        tester.assertRenderedPage(HomePage.class);
-        //create a new form tester without filling its form components with a blank string
-        FormTester formTester = tester.newFormTester("startStopForm", false);
-        //submit form using inner component 'button' as alternate button
-        formTester.submit("startButton");
-    }
-    
-    @Test
-    public void submitStop() {
-        //start and render the test page
-        tester.startPage(HomePage.class);
-        //assert rendered page class
-        tester.assertRenderedPage(HomePage.class);
-        //create a new form tester without filling its form components with a blank string
-        FormTester formTester = tester.newFormTester("startStopForm", false);
-        //submit form using inner component 'button' as alternate button
-        formTester.submit("stopButton");
-    }
+//    @Test
+//    public void submitStart() {
+//        //start and render the test page
+//        tester.startPage(HomePage.class);
+//        //assert rendered page class
+//        tester.assertRenderedPage(HomePage.class);
+//        //create a new form tester without filling its form components with a blank string
+//        FormTester formTester = tester.newFormTester("startStopForm", false);
+//        //submit form using inner component 'button' as alternate button
+//        formTester.submit("startButton");
+//    }
+//    
+//    @Test
+//    public void submitStop() {
+//        //start and render the test page
+//        tester.startPage(HomePage.class);
+//        //assert rendered page class
+//        tester.assertRenderedPage(HomePage.class);
+//        //create a new form tester without filling its form components with a blank string
+//        FormTester formTester = tester.newFormTester("startStopForm", false);
+//        //submit form using inner component 'button' as alternate button
+//        formTester.submit("stopButton");
+//    }
 }
