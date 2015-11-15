@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadModel;
+import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadSelected;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -58,21 +59,25 @@ public class HomePage extends BasePage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private List<Host> selected = new ArrayList<>();
-    final Palette<Host> palette1;
     private CollectionModel<Host> theModel;
-
+    final Palette<Host> palette1;
+    
     /**
-     * Add a form with a palette with Save button to select hosts to use for the
-     * service or (optional) to be removed from the host list.
+     * Add a form which saves all changes to disk after any button is clicked.
      */
     Form<?> form1 = new Form<Void>("paletteForm") {
         @Override
         protected void onSubmit() {
             if (!selected.isEmpty()) {
-                if (PersistModel.saveModel(theModel, MODELFILENAME)) {
-                    LOGGER.info("The model is saved with values {}", theModel);
+                if (PersistModel.saveChoices(theModel, CHOICESFILENAME)) {
+                    LOGGER.info("The choise list is saved with values {}", theModel);
                 } else {
-                    LOGGER.error("The model could not be saved with values {}", theModel);
+                    LOGGER.error("The choise list could not be saved with values {}", theModel);
+                }
+                if (PersistModel.saveSelected(selected, SELECTIONFILENAME)) {
+                    LOGGER.info("The selected items are saved with values {}", selected);
+                } else {
+                    LOGGER.error("The selected items could not be saved with values {}", selected);
                 }
             } else {
                 error("Please select one or more hosts.");
@@ -80,25 +85,15 @@ public class HomePage extends BasePage {
         }
     };
 
+    /**
+     * A button to remove selected url's from the list.
+     */
     Button button1 = new Button("removeButton") {
         @Override
         public void onSubmit() {
-            LOGGER.info("The URL's are removed.");
-            LOGGER.info("The model is changed to {}", theModel);
-        }
-    };
-
-    /**
-     * Add a text field where we can enter a new host URL if needed.
-     */
-    final TextField<String> url = new TextField<>("new-host", Model.of(""));
-    Form<?> form3 = new Form<Void>("addForm") {
-        @Override
-        protected void onSubmit() {
-            final String urlValue = url.getModelObject();
             Collection<Host> hosts = theModel.getObject();
-            hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
-            LOGGER.info("The URL {} is added", urlValue);
+            LOGGER.info("These URL's will be removed {}", selected);
+            hosts.removeAll(selected);
             LOGGER.info("The model is changed to {}", theModel);
         }
     };
@@ -113,17 +108,18 @@ public class HomePage extends BasePage {
             for (Host h : selected) {
                 selectedHostsURLs.add(h.getName());
             }
-            if (!selectedHostsURLs.isEmpty()) {
+
+            if (!selected.isEmpty()) {
                 if (WicketApplication.controller.isRunning()) {
                     if (!WicketApplication.controller.isBusyCheckingConnections()) {
                         WicketApplication.controller.restart(selectedHostsURLs);
-                        LOGGER.info("The service is restarted for checking connections with hosts {}", selectedHostsURLs);
+                        LOGGER.info("The service is restarted for checking connections with hosts {}", selected);
                     } else {
-                        LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", selectedHostsURLs);
+                        LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", selected);
                     }
                 } else {
                     WicketApplication.controller.doInBackground(selectedHostsURLs);
-                    LOGGER.info("The service is started for checking connections with hosts {}", selectedHostsURLs);
+                    LOGGER.info("The service is started for checking connections with hosts {}", selected);
                 }
             } else {
                 LOGGER.warn("The service CANNOT be started with no hosts defined to check the connection.");
@@ -147,10 +143,26 @@ public class HomePage extends BasePage {
         }
     };
 
+    /**
+     * A text field where we can enter a new host URL if needed.
+     */
+    final TextField<String> url = new TextField<>("new-host", Model.of(""));
+    Form<?> form2 = new Form<Void>("addForm") {
+        @Override
+        protected void onSubmit() {
+            final String urlValue = url.getModelObject();
+            Collection<Host> hosts = theModel.getObject();
+            hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
+            LOGGER.info("The URL {} is added", urlValue);
+            LOGGER.info("The model is changed to {}", theModel);
+        }
+    };
+
     public HomePage() {
         // Load the saved host table or initiate with default values.
-        theModel = loadModel(MODELFILENAME);
-        
+        theModel = loadModel(CHOICESFILENAME);
+        selected = loadSelected(SELECTIONFILENAME);
+
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
@@ -159,7 +171,7 @@ public class HomePage extends BasePage {
         add(new FeedbackPanel("feedback"));
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
-           
+
         palette1 = new Palette<>("palette1",
                 new ListModel<>(selected),
                 theModel,
@@ -171,8 +183,8 @@ public class HomePage extends BasePage {
         url.setRequired(false);
         url.add(new MyUrlValidator());
 
-        add(form3);
-        form3.add(url);
+        add(form2);
+        form2.add(url);
 
         form1.add(button2);
         form1.add(button3);

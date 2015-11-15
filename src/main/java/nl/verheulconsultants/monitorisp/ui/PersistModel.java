@@ -38,20 +38,39 @@ class PersistModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(PersistModel.class);
 
     /**
-     * Saves the model in a file.
+     * Saves the choices model in a file.
      * 
-     * @param model
+     * @param model of type CollectionModel
      * @param fileName
      * @return true if successful
      */
-    static boolean saveModel(CollectionModel model, String fileName) {
+    static boolean saveChoices(CollectionModel model, String fileName) {
         ObjectOutputStream oos;
         try (FileOutputStream fout = new FileOutputStream(fileName)) {
             oos = new ObjectOutputStream(fout);
             oos.writeObject(model);
             return true;
         } catch (IOException ex) {
-            LOGGER.error(fileName + " can not be saved. The exception is {}", ex);
+            LOGGER.error("The choise list can not be saved in file {}. The exception is {}", fileName, ex);
+            return false;
+        }
+    }
+    
+    /**
+     * Save the selected items
+     * 
+     * @param model of type List
+     * @param fileName
+     * @return  true is successful.
+     */
+    static boolean saveSelected(List model, String fileName) {
+        ObjectOutputStream oos;
+        try (FileOutputStream fout = new FileOutputStream(fileName)) {
+            oos = new ObjectOutputStream(fout);
+            oos.writeObject(model);
+            return true;
+        } catch (IOException ex) {
+            LOGGER.error("The selected items can not be saved in file {}. The exception is {}", fileName, ex);
             return false;
         }
     }
@@ -74,6 +93,26 @@ class PersistModel {
         } catch (ClassNotFoundException ex2) {
             LOGGER.error("Unexpected internal error {}, default model loaded.", ex2);
             return init();
+        }
+    }
+    
+    /**
+     * Loads the selected items.
+     * 
+     * @param fileName
+     * @return the selected items or an empty list when not found or on error.
+     */
+    static List loadSelected(String fileName) {
+        List model;
+        try (FileInputStream fin = new FileInputStream(fileName)) {
+            ObjectInputStream ois = new ObjectInputStream(fin);
+            model = (List) ois.readObject();
+            return model;
+        } catch (IOException ex) {
+            return new ArrayList();
+        } catch (ClassNotFoundException ex2) {
+            LOGGER.error("Unexpected internal error {}, default model loaded.", ex2);
+            return new ArrayList();
         }
     }
     

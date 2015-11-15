@@ -43,7 +43,7 @@ public class HostListTest {
 //
 //        List<Host> hosts = new ArrayList();
 //        hosts.add(new Host(Integer.toString(1), "uva.nl"));
-//        String fileName = HOSTSFILENAME;
+//        String fileName = CHOICESFILENAME;
 //        boolean expResult = true;
 //        boolean result = PersistModel.save(hosts, fileName);
 //        assertEquals(expResult, result);
@@ -58,7 +58,7 @@ public class HostListTest {
 //    public void testReadHosts() throws Exception {
 //        System.out.println("readHosts");
 //
-//        String fileName = HOSTSFILENAME;
+//        String fileName = CHOICESFILENAME;
 //        boolean expResult = true;
 //        boolean result = PersistModel.readHosts(fileName);
 //        assertEquals(expResult, result);
@@ -72,7 +72,7 @@ public class HostListTest {
 //    public void testReadSelected() throws Exception {
 //        System.out.println("readSelected");
 //
-//        String fileName = SELECTEDHOSTSFILENAME;
+//        String fileName = SELECTIONFILENAME;
 //        List result = PersistModel.readSelected(fileName);
 //        assertFalse(result.isEmpty());
 //    }
