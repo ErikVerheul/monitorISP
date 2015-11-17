@@ -36,6 +36,7 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
+import org.apache.wicket.extensions.markup.html.form.palette.theme.DefaultTheme;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -176,6 +177,10 @@ public class HomePage extends BasePage {
                 new ListModel<>(selected),
                 theModel,
                 renderer, 10, true, false);
+        // version 7.x.x
+        palette1.add(new DefaultTheme()); 
+        
+        
         form1.add(palette1);
 
         form1.add(button1);

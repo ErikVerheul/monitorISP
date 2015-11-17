@@ -36,6 +36,13 @@ import org.slf4j.LoggerFactory;
 
 class PersistModel {   
     private static final Logger LOGGER = LoggerFactory.getLogger(PersistModel.class);
+    
+    /**
+     * Class should not be instantiated.
+     */
+    private PersistModel() {
+        
+    }
 
     /**
      * Saves the choices model in a file.

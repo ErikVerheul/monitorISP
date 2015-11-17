@@ -42,7 +42,7 @@ public class WicketApplication extends WebApplication {
 
     /**
      * Set the home page. Additionally JavaScriptResourceReference is overridden
-     * to show how an adapted java script can be used. For now, no changes to
+     * to show how an adapted css can be used. For now, no changes to
      * the Wicket 6.20 version are made.
      *
      * @return HomePage
@@ -52,8 +52,8 @@ public class WicketApplication extends WebApplication {
     public Class<? extends WebPage> getHomePage() {
         return HomePage.class;
     }
-    private static final JavaScriptResourceReference JAVASCRIPT = new JavaScriptResourceReference(
-            Palette.class, "palette.js");
+    private static final JavaScriptResourceReference CSS = new JavaScriptResourceReference(
+            Palette.class, "palette.css");
 
     /**
      * @see org.apache.wicket.Application#init()
@@ -62,7 +62,7 @@ public class WicketApplication extends WebApplication {
     public void init() {
         super.init();
 
-        addResourceReplacement(JAVASCRIPT,
+        addResourceReplacement(CSS,
                 new PackageResourceReference(getClass(), "palette-no-sorting.js"));
     }
 }
