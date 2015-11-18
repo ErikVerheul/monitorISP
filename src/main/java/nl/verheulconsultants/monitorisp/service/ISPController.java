@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ISPController extends Thread {
-    private static final long startOfService = System.currentTimeMillis();
+    private static final long STARTOFSERVICE = System.currentTimeMillis();
     private static long lastContactWithAnyHost = System.currentTimeMillis();
     private static long lastFail = 0L;
     protected static long successfulChecks = 0L;
@@ -244,7 +244,7 @@ public class ISPController extends Thread {
 
         StatusListItem x0 = new StatusListItem();
         x0.name = "startOfService";
-        x0.value = new Date(startOfService).toString();
+        x0.value = new Date(STARTOFSERVICE).toString();
         x0.index = 1;
         ret.add(x0);
 

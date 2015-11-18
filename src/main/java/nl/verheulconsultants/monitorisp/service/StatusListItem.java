@@ -29,8 +29,20 @@ package nl.verheulconsultants.monitorisp.service;
  */
 public class StatusListItem {
 
-    public String name;
-    public String value;
-    public int index;
+    String name;
+    String value;
+    int index;
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getValue() {
+        return value;
+    }
+    
+    public int getIndex() {
+        return index;
+    }
 
 }
