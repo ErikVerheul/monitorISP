@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ISPController extends Thread {
+
     private static final long STARTOFSERVICE = System.currentTimeMillis();
     private static long lastContactWithAnyHost = System.currentTimeMillis();
     private static long lastFail = 0L;
@@ -24,12 +25,15 @@ public class ISPController extends Thread {
     private static long totalISPunavailability = 0L;
     private static boolean canReachISP = true;
     private static boolean busyCheckingConnections = false;
-    private static List outages;
+    private static final List<OutageListItem> outages = new ArrayList<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
     private List<String> selectedHostsURLs = new ArrayList<>();
+    private int outageIndex = 0;
+    private long outageStart = 0L;
+    private long outageEnd;
 
     /**
      * The service has started and is running.
@@ -82,8 +86,7 @@ public class ISPController extends Thread {
         LOGGER.info("The controller has started.");
 
         /**
-         * Outer loop is always loping unless exit = true. When loping started =
-         * true
+         * Outer loop is always loping unless exit = true. When loping started = true
          */
         do {
             if (!selectedHostsURLs.isEmpty()) {
@@ -94,31 +97,30 @@ public class ISPController extends Thread {
                 break;
             }
             // wait for instructions to restart or to exit completely
-            waitMilis(1000);
+            sleepMilis(1000);
         } while (!exit);
 
         running = false;
     }
 
     /**
-     * Inner loop checking if connections to the hosts are possible When loping
-     * busyCheckingConnections = true Registers the periods when no connections
-     * could be made.
+     * Inner loop checking if connections to the hosts are possible When loping busyCheckingConnections = true Registers the periods when no connections could
+     * be made.
      */
     void innerLoop() {
         long loopStart;
         long loopEnd;
+
         while (!exit && !stop) {
-            long outageStart = 0L;
-            long outageEnd = 0L;
             busyCheckingConnections = true;
             loopStart = System.currentTimeMillis();
             if (checkISP(selectedHostsURLs)) {
                 canReachISP = true;
                 lastContactWithAnyHost = System.currentTimeMillis();
-                if (outageStart > 0) {
+                if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
-                    outages.add(new Outage(outageStart, outageEnd));
+                    outages.add(new OutageListItem(outageIndex, millisToTime(outageStart), millisToTime(outageEnd)));
+                    outageIndex++;
                     outageStart = 0L;
                 }
             } else {
@@ -131,7 +133,7 @@ public class ISPController extends Thread {
                 lastFail = System.currentTimeMillis();
             }
             // wait 5 seconds to check the ISP connection again
-            waitMilis(5000);
+            sleepMilis(5000);
             loopEnd = System.currentTimeMillis();
             if (!canReachISP) {
                 totalISPunavailability = totalISPunavailability + loopEnd - loopStart;
@@ -153,8 +155,7 @@ public class ISPController extends Thread {
     /**
      * Try to connect to any host in the list
      *
-     * @return true if a host can be contacted and false if not one host from
-     * the list can be reached.
+     * @return true if a host can be contacted and false if not one host from the list can be reached.
      */
     boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
@@ -168,7 +169,7 @@ public class ISPController extends Thread {
             } else {
                 failedChecks++;
                 // wait 1 second before contacting the next host in the list
-                waitMilis(1000);
+                sleepMilis(1000);
             }
         }
         return hostFound;
@@ -222,12 +223,11 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Put this thread to sleep for ms miliseconds. Slice the sleep to exit fast
-     * in case of a stop or exit.
+     * Put this thread to sleep for ms miliseconds. Slice the sleep to exit fast in case of a stop or exit.
      *
      * @param ms the sleep time
      */
-    void waitMilis(long ms) {
+    void sleepMilis(long ms) {
         int sliceNr = 100;
         long slice = ms / sliceNr;
         for (int i = 0; i < sliceNr && !exit && !stop; i++) {
@@ -238,7 +238,7 @@ public class ISPController extends Thread {
             }
         }
     }
-    
+
     public List getStatusData() {
         List ret = new ArrayList();
 
@@ -300,7 +300,11 @@ public class ISPController extends Thread {
 
         return ret;
     }
-    
+
+    public List getOutageData() {
+        return outages;
+    }
+
     private String millisToTime(long millis) {
         long second = 0;
         long minute = 0;
@@ -312,5 +316,5 @@ public class ISPController extends Thread {
         }
         return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
     }
-    
+
 }

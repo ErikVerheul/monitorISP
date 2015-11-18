@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadModel;
 import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadSelected;
@@ -63,7 +64,7 @@ public class HomePage extends BasePage {
     private List<Host> selected = new ArrayList<>();
     private CollectionModel<Host> palletteModel;
     final Palette<Host> palette;
-    
+
     /**
      * Add a form which saves all changes to disk after any button is clicked.
      */
@@ -175,10 +176,10 @@ public class HomePage extends BasePage {
                 new ListModel<>(selected),
                 palletteModel,
                 renderer, 10, true, false);
-        
+
         // version 7.x.x
-        palette.add(new DefaultTheme()); 
-        
+        palette.add(new DefaultTheme());
+
         add(form1);
         form1.add(palette);
         form1.add(removeButton);
@@ -190,7 +191,7 @@ public class HomePage extends BasePage {
 
         add(form2);
         form2.add(newUrl);
-       
+
         //get the list of items to display from provider (database, etc)
         //in the form of a LoadableDetachableModel
         IModel listStatusViewModel = new LoadableDetachableModel() {
@@ -203,10 +204,10 @@ public class HomePage extends BasePage {
         ListView statusListView = new ListView("statusListView", listStatusViewModel) {
             @Override
             protected void populateItem(final ListItem item) {
-                StatusListItem mli = (StatusListItem) item.getModelObject();
-                item.add(new Label("Name", mli.getName()));
-                item.add(new Label("Value", mli.getValue()));
-                item.add(new Label("Index", mli.getIndex()));
+                StatusListItem sli = (StatusListItem) item.getModelObject();
+                item.add(new Label("Name", sli.getName()));
+                item.add(new Label("Value", sli.getValue()));
+                item.add(new Label("Index", sli.getIndex()));
             }
         };
 
@@ -219,6 +220,35 @@ public class HomePage extends BasePage {
         statusListContainer.add(statusListView);
         // finally add the container to the page
         add(statusListContainer);
+
+        //get the list of items to display from provider (database, etc)
+        //in the form of a LoadableDetachableModel
+        IModel listOutageViewModel = new LoadableDetachableModel() {
+            @Override
+            protected Object load() {
+                return controller.getOutageData();
+            }
+        };
+
+        ListView outageListView = new ListView("outageListView", listOutageViewModel) {
+            @Override
+            protected void populateItem(final ListItem item) {
+                OutageListItem olu = (OutageListItem) item.getModelObject();
+                item.add(new Label("Index", olu.getIndex()));
+                item.add(new Label("Start", olu.getStart()));
+                item.add(new Label("End", olu.getEnd()));
+            }
+        };
+
+        //encapsulate the ListView in a WebMarkupContainer in order for it to update
+        WebMarkupContainer outageListContainer = new WebMarkupContainer("outageContainer");
+        //generate a markup-id so the contents can be updated through an AJAX call
+        outageListContainer.setOutputMarkupId(true);
+        outageListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
+        // add the list view to the container
+        outageListContainer.add(outageListView);
+        // finally add the container to the page
+        add(outageListContainer);
     }
 
     private String getLogFileName() {

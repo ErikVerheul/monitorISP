@@ -23,21 +23,27 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-public class Outage {
+public class OutageListItem {
 
-    long start;
-    long end;
+    int index;
+    String start;
+    String end;
 
-    Outage(long start, long end) {
+    OutageListItem(int index, String start, String end) {
+        this.index = index;
         this.start = start;
         this.end = end;
     }
 
-    long getStart() {
+    public String getStart() {
         return start;
     }
-    
-    long getEnd() {
+
+    public String getEnd() {
         return end;
+    }
+
+    public int getIndex() {
+        return index;
     }
 }
