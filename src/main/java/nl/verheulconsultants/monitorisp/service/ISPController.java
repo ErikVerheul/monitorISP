@@ -9,12 +9,22 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ISPController extends Thread {
-
+    private static final long startOfService = System.currentTimeMillis();
+    private static long lastContactWithAnyHost = System.currentTimeMillis();
+    private static long lastFail = 0L;
+    protected static long successfulChecks = 0L;
+    protected static long failedChecks = 0L;
+    private static long numberOfInterruptions = 0L;
+    private static long totalISPunavailability = 0L;
+    private static boolean canReachISP = true;
+    private static boolean busyCheckingConnections = false;
+    private static List outages;
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
@@ -36,7 +46,7 @@ public class ISPController extends Thread {
      * @return true if running.
      */
     public boolean isBusyCheckingConnections() {
-        return Status.busyCheckingConnections;
+        return busyCheckingConnections;
     }
 
     /**
@@ -101,38 +111,38 @@ public class ISPController extends Thread {
         while (!exit && !stop) {
             long outageStart = 0L;
             long outageEnd = 0L;
-            Status.busyCheckingConnections = true;
+            busyCheckingConnections = true;
             loopStart = System.currentTimeMillis();
             if (checkISP(selectedHostsURLs)) {
-                Status.canReachISP = true;
-                Status.lastContactWithAnyHost = System.currentTimeMillis();
+                canReachISP = true;
+                lastContactWithAnyHost = System.currentTimeMillis();
                 if (outageStart > 0) {
-                    outageEnd = Status.lastContactWithAnyHost;
-                    Status.outages.add(new Outage(outageStart, outageEnd));
+                    outageEnd = lastContactWithAnyHost;
+                    outages.add(new Outage(outageStart, outageEnd));
                     outageStart = 0L;
                 }
             } else {
-                if (Status.canReachISP) {
-                    Status.numberOfInterruptions++;
+                if (canReachISP) {
+                    numberOfInterruptions++;
                     outageStart = System.currentTimeMillis();
                 }
-                Status.canReachISP = false;
+                canReachISP = false;
                 LOGGER.warn("The ISP cannot be reached.");
-                Status.lastFail = System.currentTimeMillis();
+                lastFail = System.currentTimeMillis();
             }
             // wait 5 seconds to check the ISP connection again
             waitMilis(5000);
             loopEnd = System.currentTimeMillis();
-            if (!Status.canReachISP) {
-                Status.totalISPunavailability = Status.totalISPunavailability + loopEnd - loopStart;
+            if (!canReachISP) {
+                totalISPunavailability = totalISPunavailability + loopEnd - loopStart;
             }
         }
-        if (Status.busyCheckingConnections) {
+        if (busyCheckingConnections) {
             LOGGER.info("The controller has stopped.\n");
             LOGGER.info("{} Connection checks are executed, {} were successful.",
-                    Status.successfulChecks + Status.failedChecks, Status.successfulChecks);
+                    successfulChecks + failedChecks, successfulChecks);
         }
-        Status.busyCheckingConnections = false;
+        busyCheckingConnections = false;
     }
 
     public void doInBackground(List<String> hosts) {
@@ -152,11 +162,11 @@ public class ISPController extends Thread {
             // test a TCP connection on port 80 with the destination host and a time-out of 2000 ms.
             if (testConnection(host, 80, 2000)) {
                 hostFound = true;
-                Status.successfulChecks++;
+                successfulChecks++;
                 // when successfull there is no need to try the other selectedHostsURLs
                 break;
             } else {
-                Status.failedChecks++;
+                failedChecks++;
                 // wait 1 second before contacting the next host in the list
                 waitMilis(1000);
             }
@@ -227,6 +237,80 @@ public class ISPController extends Thread {
                 LOGGER.info("A thread sleep was interrupted because of {}", ex);
             }
         }
+    }
+    
+    public List getStatusData() {
+        List ret = new ArrayList();
+
+        StatusListItem x0 = new StatusListItem();
+        x0.name = "startOfService";
+        x0.value = new Date(startOfService).toString();
+        x0.index = 1;
+        ret.add(x0);
+
+        StatusListItem x1 = new StatusListItem();
+        x1.name = "lastContactWithAnyHost";
+        x1.value = new Date(lastContactWithAnyHost).toString();
+        x1.index = 2;
+        ret.add(x1);
+
+        StatusListItem x2 = new StatusListItem();
+        x2.name = "lastFail";
+        if (lastFail > 0) {
+            x2.value = new Date(lastFail).toString();
+        } else {
+            x2.value = "No failure yet";
+        }
+        x2.index = 3;
+        ret.add(x2);
+
+        StatusListItem x3 = new StatusListItem();
+        x3.name = "numberOfInterruptions";
+        x3.value = Long.toString(numberOfInterruptions);
+        x3.index = 4;
+        ret.add(x3);
+
+        StatusListItem x4 = new StatusListItem();
+        x4.name = "failedChecks";
+        x4.value = Long.toString(failedChecks);
+        x4.index = 5;
+        ret.add(x4);
+
+        StatusListItem x5 = new StatusListItem();
+        x5.name = "successfulChecks";
+        x5.value = Long.toString(successfulChecks);
+        x5.index = 6;
+        ret.add(x5);
+
+        StatusListItem x6 = new StatusListItem();
+        x6.name = "totalISPunavailability";
+        x6.value = millisToTime(totalISPunavailability);
+        x6.index = 7;
+        ret.add(x6);
+
+        StatusListItem x7 = new StatusListItem();
+        x7.name = "INTERNET UP?";
+        if (busyCheckingConnections) {
+            x7.value = Boolean.toString(canReachISP);
+        } else {
+            x7.value = "UNKNOWN, conroller is not running";
+        }
+        x7.index = 8;
+        ret.add(x7);
+
+        return ret;
+    }
+    
+    private String millisToTime(long millis) {
+        long second = 0;
+        long minute = 0;
+        long hour = 0;
+        if (millis > 0) {
+            second = (millis / 1000) % 60;
+            minute = (millis / (1000 * 60)) % 60;
+            hour = (millis / (1000 * 60 * 60)) % 24;
+        }
+        return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
     }
     
 }

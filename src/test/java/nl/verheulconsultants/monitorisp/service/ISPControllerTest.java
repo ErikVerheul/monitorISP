@@ -139,7 +139,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         waitMilis(7000);
-        assertTrue(Status.successfulChecks > 0);
+        assertTrue(instance.successfulChecks > 0);
     }
     
     /**
@@ -154,7 +154,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         waitMilis(7000);
-        assertTrue(Status.failedChecks > 0);
+        assertTrue(instance.failedChecks > 0);
     }
 
     /**

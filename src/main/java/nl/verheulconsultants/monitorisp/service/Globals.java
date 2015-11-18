@@ -23,24 +23,13 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-import java.util.List;
-
-public class Status {
+public class Globals {
     
-    private Status() {
+    private Globals() {
         
     }
     public static final String APPHOMEDIR = "C:\\MonitorISP\\";
     public static final String CHOICESFILENAME = APPHOMEDIR + "MonitorISPchoices";
     public static final String SELECTIONFILENAME = APPHOMEDIR + "MonitorISPselected";
-    public static long startOfService = System.currentTimeMillis();
-    public static long lastContactWithAnyHost = System.currentTimeMillis();
-    public static long lastFail = 0L;
-    public static long successfulChecks = 0L;
-    public static long failedChecks = 0L;
-    public static long numberOfInterruptions = 0L;
-    public static long totalISPunavailability = 0L;
-    public static boolean canReachISP = true;
-    public static boolean busyCheckingConnections = false;
-    public static List outages;
+    
 }

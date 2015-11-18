@@ -14,12 +14,10 @@
             <h1 wicket:id="message2">This gets replaced</h1>
 
             <form wicket:id="paletteForm">
-
                 <label>Select the URL's to test against </label> 
                 <br /> 
 
                 <div wicket:id="palette1"></div>
-
 
                 <label>(optional) Remove the selected hosts from the table </label>
                 <input wicket:id="removeButton" type="submit" value="Remove" />
@@ -28,27 +26,20 @@
                 <input wicket:id="startButton" type="submit" value="Start" />
                 <label>Stop the service </label>
                 <input wicket:id="stopButton" type="submit" value="Stop" />
-
             </form>           
             <div wicket:id="feedback">[Feedback Panel]</div>
-
-
 
             <form wicket:id="addForm">
                 <p>
                     <label>(optional) Add a host URL to the table </label> 
                     <br /> 
-
                     <input type="text" wicket:id="new-host" size="30"/>
-
                 </p>
             </form>
 
-
-
-            <table wicket:id="theContainer">
+            <table wicket:id="statusContainer">
                 <tr><th>index</th><th>name</th><th>value</th></tr>
-                <tr wicket:id="listView">
+                <tr wicket:id="statusListView">
                     <td><span wicket:id="Index">index</span></td>
                     <td><span wicket:id="Name">name</span></td>
                     <td><span wicket:id="Value">date</span></td>

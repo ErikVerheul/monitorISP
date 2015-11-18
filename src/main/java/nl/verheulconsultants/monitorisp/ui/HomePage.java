@@ -23,14 +23,15 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
-import static nl.verheulconsultants.monitorisp.service.Status.*;
+import static nl.verheulconsultants.monitorisp.service.Globals.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadModel;
 import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadSelected;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -60,8 +61,8 @@ public class HomePage extends BasePage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private List<Host> selected = new ArrayList<>();
-    private CollectionModel<Host> theModel;
-    final Palette<Host> palette1;
+    private CollectionModel<Host> palletteModel;
+    final Palette<Host> palette;
     
     /**
      * Add a form which saves all changes to disk after any button is clicked.
@@ -70,10 +71,10 @@ public class HomePage extends BasePage {
         @Override
         protected void onSubmit() {
             if (!selected.isEmpty()) {
-                if (PersistModel.saveChoices(theModel, CHOICESFILENAME)) {
-                    LOGGER.info("The choise list is saved with values {}", theModel);
+                if (PersistModel.saveChoices(palletteModel, CHOICESFILENAME)) {
+                    LOGGER.info("The choise list is saved with values {}", palletteModel);
                 } else {
-                    LOGGER.error("The choise list could not be saved with values {}", theModel);
+                    LOGGER.error("The choise list could not be saved with values {}", palletteModel);
                 }
                 if (PersistModel.saveSelected(selected, SELECTIONFILENAME)) {
                     LOGGER.info("The selected items are saved with values {}", selected);
@@ -87,22 +88,22 @@ public class HomePage extends BasePage {
     };
 
     /**
-     * A button to remove selected url's from the list.
+     * A button to remove selected newUrl's from the list.
      */
-    Button button1 = new Button("removeButton") {
+    Button removeButton = new Button("removeButton") {
         @Override
         public void onSubmit() {
-            Collection<Host> hosts = theModel.getObject();
+            Collection<Host> hosts = palletteModel.getObject();
             LOGGER.info("These URL's will be removed {}", selected);
             hosts.removeAll(selected);
-            LOGGER.info("The model is changed to {}", theModel);
+            LOGGER.info("The model is changed to {}", palletteModel);
         }
     };
 
     /**
      * A button to start the service.
      */
-    Button button2 = new Button("startButton") {
+    Button startButton = new Button("startButton") {
         @Override
         public void onSubmit() {
             List selectedHostsURLs = new <String>ArrayList();
@@ -131,7 +132,7 @@ public class HomePage extends BasePage {
     /**
      * A button to stop the service temporarily.
      */
-    Button button3 = new Button("stopButton") {
+    Button stopButton = new Button("stopButton") {
         @Override
         public void onSubmit() {
             if (WicketApplication.controller != null
@@ -147,66 +148,62 @@ public class HomePage extends BasePage {
     /**
      * A text field where we can enter a new host URL if needed.
      */
-    final TextField<String> url = new TextField<>("new-host", Model.of(""));
+    final TextField<String> newUrl = new TextField<>("new-host", Model.of(""));
     Form<?> form2 = new Form<Void>("addForm") {
         @Override
         protected void onSubmit() {
-            final String urlValue = url.getModelObject();
-            Collection<Host> hosts = theModel.getObject();
+            final String urlValue = newUrl.getModelObject();
+            Collection<Host> hosts = palletteModel.getObject();
             hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
             LOGGER.info("The URL {} is added", urlValue);
-            LOGGER.info("The model is changed to {}", theModel);
+            LOGGER.info("The model is changed to {}", palletteModel);
         }
     };
 
     public HomePage() {
         // Load the saved host table or initiate with default values.
-        theModel = loadModel(CHOICESFILENAME);
+        palletteModel = loadModel(CHOICESFILENAME);
         selected = loadSelected(SELECTIONFILENAME);
 
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
-
-        add(form1);
         add(new FeedbackPanel("feedback"));
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
-
-        palette1 = new Palette<>("palette1",
+        palette = new Palette<>("palette1",
                 new ListModel<>(selected),
-                theModel,
+                palletteModel,
                 renderer, 10, true, false);
+        
         // version 7.x.x
-        palette1.add(new DefaultTheme()); 
+        palette.add(new DefaultTheme()); 
         
-        
-        form1.add(palette1);
+        add(form1);
+        form1.add(palette);
+        form1.add(removeButton);
+        form1.add(startButton);
+        form1.add(stopButton);
 
-        form1.add(button1);
-
-        url.setRequired(false);
-        url.add(new MyUrlValidator());
+        newUrl.setRequired(false);
+        newUrl.add(new MyUrlValidator());
 
         add(form2);
-        form2.add(url);
-
-        form1.add(button2);
-        form1.add(button3);
-
+        form2.add(newUrl);
+       
         //get the list of items to display from provider (database, etc)
         //in the form of a LoadableDetachableModel
-        IModel listViewModel = new LoadableDetachableModel() {
+        IModel listStatusViewModel = new LoadableDetachableModel() {
             @Override
             protected Object load() {
-                return getData();
+                return controller.getStatusData();
             }
         };
 
-        ListView listView = new ListView("listView", listViewModel) {
+        ListView statusListView = new ListView("statusListView", listStatusViewModel) {
             @Override
             protected void populateItem(final ListItem item) {
-                MyListItem mli = (MyListItem) item.getModelObject();
+                StatusListItem mli = (StatusListItem) item.getModelObject();
                 item.add(new Label("Name", mli.name));
                 item.add(new Label("Value", mli.value));
                 item.add(new Label("Index", mli.index));
@@ -214,96 +211,14 @@ public class HomePage extends BasePage {
         };
 
         //encapsulate the ListView in a WebMarkupContainer in order for it to update
-        WebMarkupContainer listContainer = new WebMarkupContainer("theContainer");
+        WebMarkupContainer statusListContainer = new WebMarkupContainer("statusContainer");
         //generate a markup-id so the contents can be updated through an AJAX call
-        listContainer.setOutputMarkupId(true);
-        listContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
+        statusListContainer.setOutputMarkupId(true);
+        statusListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
         // add the list view to the container
-        listContainer.add(listView);
+        statusListContainer.add(statusListView);
         // finally add the container to the page
-        add(listContainer);
-    }
-
-    private List getData() {
-        List ret = new ArrayList();
-
-        MyListItem x0 = new MyListItem();
-        x0.name = "startOfService";
-        x0.value = new Date(startOfService).toString();
-        x0.index = 1;
-        ret.add(x0);
-
-        MyListItem x1 = new MyListItem();
-        x1.name = "lastContactWithAnyHost";
-        x1.value = new Date(lastContactWithAnyHost).toString();
-        x1.index = 2;
-        ret.add(x1);
-
-        MyListItem x2 = new MyListItem();
-        x2.name = "lastFail";
-        if (lastFail > 0) {
-            x2.value = new Date(lastFail).toString();
-        } else {
-            x2.value = "No failure yet";
-        }
-        x2.index = 3;
-        ret.add(x2);
-
-        MyListItem x3 = new MyListItem();
-        x3.name = "numberOfInterruptions";
-        x3.value = Long.toString(numberOfInterruptions);
-        x3.index = 4;
-        ret.add(x3);
-
-        MyListItem x4 = new MyListItem();
-        x4.name = "failedChecks";
-        x4.value = Long.toString(failedChecks);
-        x4.index = 5;
-        ret.add(x4);
-
-        MyListItem x5 = new MyListItem();
-        x5.name = "successfulChecks";
-        x5.value = Long.toString(successfulChecks);
-        x5.index = 6;
-        ret.add(x5);
-
-        MyListItem x6 = new MyListItem();
-        x6.name = "totalISPunavailability";
-        x6.value = millisToTime(totalISPunavailability);
-        x6.index = 7;
-        ret.add(x6);
-
-        MyListItem x7 = new MyListItem();
-        x7.name = "INTERNET UP?";
-        if (busyCheckingConnections) {
-            x7.value = Boolean.toString(canReachISP);
-        } else {
-            x7.value = "UNKNOWN, conroller is not running";
-        }
-        x7.index = 8;
-        ret.add(x7);
-
-        return ret;
-    }
-
-    // a very simple model object just to have something concrete for an example
-    private class MyListItem {
-
-        String name;
-        String value;
-        int index;
-    }
-
-    String millisToTime(long millis) {
-        long second = 0;
-        long minute = 0;
-        long hour = 0;
-        if (millis > 0) {
-            second = (millis / 1000) % 60;
-            minute = (millis / (1000 * 60)) % 60;
-            hour = (millis / (1000 * 60 * 60)) % 24;
-        }
-        return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
+        add(statusListContainer);
     }
 
     private String getLogFileName() {

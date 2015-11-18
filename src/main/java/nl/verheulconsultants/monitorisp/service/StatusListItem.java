@@ -21,22 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package nl.verheulconsultants.monitorisp.ui;
+package nl.verheulconsultants.monitorisp.service;
 
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.panel.Panel;
+/**
+ * A simple class to record the status of the monitor.
+ * @author erik
+ */
+public class StatusListItem {
 
-public class HeaderPanel extends Panel {
-
-    /**
-     * Construct.
-     *
-     * @param componentName name of the component
-     * @param title title of the application
-     */
-    public HeaderPanel(String componentName, String title) {
-        super(componentName);
-        add(new Label("title", title));
-    }
+    public String name;
+    public String value;
+    public int index;
 
 }
