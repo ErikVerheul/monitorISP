@@ -25,7 +25,7 @@ public class ISPController extends Thread {
     private static long totalISPunavailability = 0L;
     private static boolean canReachISP = true;
     private static boolean busyCheckingConnections = false;
-    private static final List<OutageListItem> outages = new ArrayList<>();
+    private static final List<OutageListItem> OUTAGES = new ArrayList<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
@@ -119,7 +119,7 @@ public class ISPController extends Thread {
                 lastContactWithAnyHost = System.currentTimeMillis();
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
-                    outages.add(new OutageListItem(outageIndex, millisToTime(outageStart), millisToTime(outageEnd)));
+                    OUTAGES.add(new OutageListItem(outageIndex, millisToTime(outageStart), millisToTime(outageEnd)));
                     outageIndex++;
                     outageStart = 0L;
                 }
@@ -302,7 +302,7 @@ public class ISPController extends Thread {
     }
 
     public List getOutageData() {
-        return outages;
+        return OUTAGES;
     }
 
     private String millisToTime(long millis) {
