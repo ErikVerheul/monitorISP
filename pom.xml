@@ -30,7 +30,7 @@
     <groupId>nl.verheulconsultants.monitorisp</groupId>
     <artifactId>monitorisp</artifactId>
     <packaging>war</packaging>
-    <version>0.2</version>
+    <version>0.3</version>
     <name>MonitorISP</name>
     <description></description>
 
@@ -94,10 +94,12 @@
             <version>${jetty.version}</version>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- Use this for url validity checking -->
         <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-            <version>3.1</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.2.5</version>
             <type>jar</type>
         </dependency>
     </dependencies>

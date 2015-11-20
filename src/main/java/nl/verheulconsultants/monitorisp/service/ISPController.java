@@ -3,24 +3,26 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
+import static nl.verheulconsultants.monitorisp.service.Utilities.isValid;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ISPController extends Thread {
-
+    
     private static final long STARTOFSERVICE = System.currentTimeMillis();
     private static long lastContactWithAnyHost = System.currentTimeMillis();
     private static long lastFail = 0L;
-    protected static long successfulChecks = 0L;
-    protected static long failedChecks = 0L;
+    static long successfulChecks = 0L;
+    static long failedChecks = 0L;
     private static long numberOfInterruptions = 0L;
     private static long totalISPunavailability = 0L;
     private static boolean canReachISP = true;
@@ -34,6 +36,9 @@ public class ISPController extends Thread {
     private int outageIndex = 0;
     private long outageStart = 0L;
     private long outageEnd;
+    static String routerIP = "unknown";
+    static boolean outageTypeIsp = false;
+    
 
     /**
      * The service has started and is running.
@@ -127,6 +132,7 @@ public class ISPController extends Thread {
                 if (canReachISP) {
                     numberOfInterruptions++;
                     outageStart = System.currentTimeMillis();
+                    outageTypeIsp = canConnectRouter(routerIP);
                 }
                 canReachISP = false;
                 LOGGER.warn("The ISP cannot be reached.");
@@ -146,10 +152,26 @@ public class ISPController extends Thread {
         }
         busyCheckingConnections = false;
     }
-
+    
+    /**
+     * Perform the connection checks in a separate thread.
+     * 
+     * @param hosts to check
+     */
     public void doInBackground(List<String> hosts) {
         this.selectedHostsURLs = hosts;
         start();
+    }
+    
+    private boolean canConnectRouter(String routerIP) {
+        // if the router address is not set we can not exclude internal network failure
+        if (routerIP.equalsIgnoreCase("unknown")) return true;
+        // if the router address is not avalid address we can not exclude internal network failure
+        if (!isValid(routerIP)) {
+            LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerIP);
+            return true;
+        }      
+        return checkISP(new ArrayList<>(Arrays.asList(routerIP)));  
     }
 
     /**

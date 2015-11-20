@@ -23,13 +23,39 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-public class Globals {
+import org.apache.http.conn.util.InetAddressUtils;
+
+public class Utilities {
     
-    private Globals() {
+    //Prevent this utility class to be instantiated.
+    private Utilities() {
         
     }
+    
     public static final String APPHOMEDIR = "C:\\MonitorISP\\";
     public static final String CHOICESFILENAME = APPHOMEDIR + "MonitorISPchoices";
     public static final String SELECTIONFILENAME = APPHOMEDIR + "MonitorISPselected";
+    
+    /**
+     * Check for a valid url (but omit checking the protocol header) or Ip4 or Ip6 address.
+     *
+     * @param urlString
+     * @return
+     */
+    public static boolean isValid(String urlString) {
+        //Assigning the url format regular expression
+        String urlPattern = "^[a-zA-Z0-9_/\\-\\.]+\\.([A-Za-z/]{2,5})[a-zA-Z0-9_/\\&\\?\\=\\-\\.\\~\\%]*";
+        return urlString.matches(urlPattern) || isValidIp(urlString);
+    }
+    
+    /**
+     * Use the org.apache.httpcomponents class library to validate Ip4 and Ip6 addresses.
+     * 
+     * @param ip the ip
+     * @return check if the ip is valid ipv4 or ipv6
+     */
+    private static boolean isValidIp(final String ip) {
+        return InetAddressUtils.isIPv4Address(ip) || InetAddressUtils.isIPv6Address(ip);
+    }
     
 }

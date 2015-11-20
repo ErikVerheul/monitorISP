@@ -24,7 +24,7 @@
 package nl.verheulconsultants.monitorisp.ui;
 
 import java.util.ArrayList;
-import static nl.verheulconsultants.monitorisp.service.Globals.*;
+import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;

@@ -23,7 +23,7 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
-import static nl.verheulconsultants.monitorisp.service.Globals.*;
+import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -113,15 +113,15 @@ public class HomePage extends BasePage {
             }
 
             if (!selected.isEmpty()) {
-                if (WicketApplication.controller.isRunning()) {
-                    if (!WicketApplication.controller.isBusyCheckingConnections()) {
-                        WicketApplication.controller.restart(selectedHostsURLs);
+                if (controller.isRunning()) {
+                    if (!controller.isBusyCheckingConnections()) {
+                        controller.restart(selectedHostsURLs);
                         LOGGER.info("The service is restarted for checking connections with hosts {}", selected);
                     } else {
                         LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", selected);
                     }
                 } else {
-                    WicketApplication.controller.doInBackground(selectedHostsURLs);
+                    controller.doInBackground(selectedHostsURLs);
                     LOGGER.info("The service is started for checking connections with hosts {}", selected);
                 }
             } else {
@@ -136,9 +136,9 @@ public class HomePage extends BasePage {
     Button stopButton = new Button("stopButton") {
         @Override
         public void onSubmit() {
-            if (WicketApplication.controller != null
-                    && WicketApplication.controller.isBusyCheckingConnections()) {
-                WicketApplication.controller.stopTemporarily();
+            if (controller != null
+                    && controller.isBusyCheckingConnections()) {
+                controller.stopTemporarily();
                 LOGGER.info("The service is stopped temporarely.");
             } else {
                 LOGGER.info("Can not stop, the controller is not running.");

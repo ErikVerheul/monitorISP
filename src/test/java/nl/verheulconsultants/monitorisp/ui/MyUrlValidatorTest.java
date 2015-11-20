@@ -24,6 +24,7 @@
 package nl.verheulconsultants.monitorisp.ui;
 
 import org.junit.Test;
+import static nl.verheulconsultants.monitorisp.service.Utilities.isValid;
 import static org.junit.Assert.*;
 
 public class MyUrlValidatorTest {
@@ -45,27 +46,48 @@ public class MyUrlValidatorTest {
         
         urlString = "a.b.c.com";
         expResult = true;
-        result = instance.isValid(urlString);
+        result = isValid(urlString);
+        assertEquals(expResult, result);
+        
+        urlString = "192.168.1.1";
+        expResult = true;
+        result = isValid(urlString);
+        assertEquals(expResult, result);
+        
+        urlString = "192.168.1.500";
+        assertFalse(isValid(urlString));
+        
+        urlString = "192.168.1";
+        assertFalse(isValid(urlString));
+        
+        urlString = "FE80:0000:0000:0000:0202:B3FF:FE1E:8329";
+        expResult = true;
+        result = isValid(urlString);
+        assertEquals(expResult, result);
+        
+        urlString = "FE80::0202:B3FF:FE1E:8329";
+        expResult = true;
+        result = isValid(urlString);
         assertEquals(expResult, result);
         
         urlString = "a1-2.b.c.com";
         expResult = true;
-        result = instance.isValid(urlString);
+        result = isValid(urlString);
         assertEquals(expResult, result);
         
         urlString = "a1-2.b.c@com";
         expResult = false;
-        result = instance.isValid(urlString);
+        result = isValid(urlString);
         assertEquals(expResult, result);
         
         urlString = "abc";
         expResult = false;
-        result = instance.isValid(urlString);
+        result = isValid(urlString);
         assertEquals(expResult, result);
         
         urlString = "a%b.nl";
         expResult = false;
-        result = instance.isValid(urlString);
+        result = isValid(urlString);
         assertEquals(expResult, result);
         
         /**
@@ -74,7 +96,7 @@ public class MyUrlValidatorTest {
          */
         urlString = "http://b.c.com";
         expResult = false;
-        result = instance.isValid(urlString);
+        result = isValid(urlString);
         assertEquals(expResult, result);
         
     }

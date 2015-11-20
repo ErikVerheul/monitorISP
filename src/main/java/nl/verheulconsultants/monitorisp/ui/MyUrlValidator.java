@@ -23,35 +23,23 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
+import nl.verheulconsultants.monitorisp.service.Utilities;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidationError;
 import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.ValidationError;
 
 /**
- *
- * @author erik
+ * Helper class to check if a string is a valid domain name, Ip4 or Ip6 address.
  */
 class MyUrlValidator implements IValidator<String> {
 
     @Override
     public void validate(IValidatable<String> validatable) {
         String url = validatable.getValue();
-        if (!isValid(url)) {
+        if (!Utilities.isValid(url)) {
             validatable.error(decorate(new ValidationError(this), validatable));
         }
-    }
-
-    /**
-     * Check for a valid url but omit checking the protocol header.
-     *
-     * @param urlString
-     * @return
-     */
-    boolean isValid(String urlString) {
-        //Assigning the url format regular expression
-        String urlPattern = "^[a-zA-Z0-9_/\\-\\.]+\\.([A-Za-z/]{2,5})[a-zA-Z0-9_/\\&\\?\\=\\-\\.\\~\\%]*";
-        return urlString.matches(urlPattern);
     }
 
     /**
