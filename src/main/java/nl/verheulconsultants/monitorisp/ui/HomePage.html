@@ -29,11 +29,19 @@
             </form>           
             <div wicket:id="feedback">[Feedback Panel]</div>
 
-            <form wicket:id="addForm">
+            <form wicket:id="addHostForm">
                 <p>
                     <label>(optional) Add a host URL to the table </label> 
                     <br /> 
-                    <input type="text" wicket:id="new-host" size="30"/>
+                    <input type="text" wicket:id="newHost" size="30"/>
+                </p>
+            </form>
+            
+            <form wicket:id="routerForm">
+                <p>
+                    <label>(optional) Enter your router address </label> 
+                    <br /> 
+                    <input type="text" wicket:id="routerAddress" size="30"/>
                 </p>
             </form>
 

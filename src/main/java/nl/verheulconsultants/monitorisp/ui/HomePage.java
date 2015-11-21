@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import nl.verheulconsultants.monitorisp.service.ISPController;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadModel;
@@ -52,14 +53,17 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.util.io.IClusterable;
 import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HomePage extends BasePage {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private List<Host> selected = new ArrayList<>();
     private CollectionModel<Host> palletteModel;
@@ -68,7 +72,7 @@ public class HomePage extends BasePage {
     /**
      * Add a form which saves all changes to disk after any button is clicked.
      */
-    Form<?> form1 = new Form<Void>("paletteForm") {
+    Form<?> formSelectHosts = new Form<Void>("paletteForm") {
         @Override
         protected void onSubmit() {
             if (!selected.isEmpty()) {
@@ -147,17 +151,40 @@ public class HomePage extends BasePage {
     };
 
     /**
-     * A text field where we can enter a new host URL if needed.
+     * An optional text field where we can enter a new host URL.
      */
-    final TextField<String> newUrl = new TextField<>("new-host", Model.of(""));
-    Form<?> form2 = new Form<Void>("addForm") {
+    final TextField<String> newUrl = new TextField<>("newHost", Model.of(""));
+    Form<?> formNewHost = new Form<Void>("addHostForm") {
         @Override
         protected void onSubmit() {
             final String urlValue = newUrl.getModelObject();
-            Collection<Host> hosts = palletteModel.getObject();
-            hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
-            LOGGER.info("The URL {} is added", urlValue);
-            LOGGER.info("The model is changed to {}", palletteModel);
+            if (isValidHostAddress(urlValue)) {
+                ISPController.setRouterAddress(urlValue);
+                Collection<Host> hosts = palletteModel.getObject();
+                hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
+                LOGGER.info("The URL {} is added", urlValue);
+                LOGGER.info("The host list is changed to {}", palletteModel);
+            } else {
+                error("Wrong host address. Please try again.");
+            }
+        }
+    };
+
+    /**
+     * An optional text field where we can enter a router address.
+     */
+    final InputRouterAddress address = new InputRouterAddress(ISPController.getRouterAddress());
+    final TextField<String> routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
+    Form<?> formRouter = new Form<Void>("routerForm") {
+        @Override
+        protected void onSubmit() {
+            final String addressValue = routerAddress.getModelObject();
+            if (isValidHostAddress(addressValue)) {
+                ISPController.setRouterAddress(addressValue);
+                LOGGER.info("The router address is set to {}", addressValue);
+            } else {
+                error("Wrong router address. Please try again.");
+            }
         }
     };
 
@@ -180,17 +207,21 @@ public class HomePage extends BasePage {
         // version 7.x.x
         palette.add(new DefaultTheme());
 
-        add(form1);
-        form1.add(palette);
-        form1.add(removeButton);
-        form1.add(startButton);
-        form1.add(stopButton);
+        add(formSelectHosts);
+        formSelectHosts.add(palette);
+        formSelectHosts.add(removeButton);
+        formSelectHosts.add(startButton);
+        formSelectHosts.add(stopButton);
 
         newUrl.setRequired(false);
-        newUrl.add(new MyUrlValidator());
 
-        add(form2);
-        form2.add(newUrl);
+        add(formNewHost);
+        formNewHost.add(newUrl);
+
+        add(formRouter);
+
+        routerAddress.setRequired(false);
+        formRouter.add(routerAddress);
 
         //get the list of items to display from provider (database, etc)
         //in the form of a LoadableDetachableModel
@@ -267,6 +298,34 @@ public class HomePage extends BasePage {
             return fileAppender.getFile();
         } else {
             return "Log file location not found.";
+        }
+    }
+
+    /**
+     * Simple data class that acts as a holder for the data for the router address field.
+     */
+    private static class InputRouterAddress implements IClusterable {
+
+        String address;
+
+        InputRouterAddress(String address) {
+            this.address = address;
+        }
+
+        void setAddress(String address) {
+            this.address = address;
+        }
+
+        String getAddress() {
+            return address;
+        }
+
+        /**
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "Router address = '" + address + "'";
         }
     }
 }

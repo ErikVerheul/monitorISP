@@ -42,7 +42,7 @@ public class Utilities {
      * @param urlString
      * @return
      */
-    public static boolean isValid(String urlString) {
+    public static boolean isValidHostAddress(String urlString) {
         //Assigning the url format regular expression
         String urlPattern = "^[a-zA-Z0-9_/\\-\\.]+\\.([A-Za-z/]{2,5})[a-zA-Z0-9_/\\&\\?\\=\\-\\.\\~\\%]*";
         return urlString.matches(urlPattern) || isValidIp(urlString);

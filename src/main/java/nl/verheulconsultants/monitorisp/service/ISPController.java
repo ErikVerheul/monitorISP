@@ -3,7 +3,7 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-import static nl.verheulconsultants.monitorisp.service.Utilities.isValid;
+import static nl.verheulconsultants.monitorisp.service.Utilities.isValidHostAddress;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -36,7 +36,7 @@ public class ISPController extends Thread {
     private int outageIndex = 0;
     private long outageStart = 0L;
     private long outageEnd;
-    static String routerIP = "unknown";
+    static String routerAddress = "unknown";
     static boolean outageTypeIsp = false;
     
 
@@ -107,6 +107,14 @@ public class ISPController extends Thread {
 
         running = false;
     }
+    
+    public static String getRouterAddress() {
+        return routerAddress;
+    }
+    
+    public static void setRouterAddress (String address) {
+        routerAddress = address;
+    }
 
     /**
      * Inner loop checking if connections to the hosts are possible When loping busyCheckingConnections = true Registers the periods when no connections could
@@ -132,7 +140,7 @@ public class ISPController extends Thread {
                 if (canReachISP) {
                     numberOfInterruptions++;
                     outageStart = System.currentTimeMillis();
-                    outageTypeIsp = canConnectRouter(routerIP);
+                    outageTypeIsp = canConnectRouter(routerAddress);
                 }
                 canReachISP = false;
                 LOGGER.warn("The ISP cannot be reached.");
@@ -167,7 +175,7 @@ public class ISPController extends Thread {
         // if the router address is not set we can not exclude internal network failure
         if (routerIP.equalsIgnoreCase("unknown")) return true;
         // if the router address is not avalid address we can not exclude internal network failure
-        if (!isValid(routerIP)) {
+        if (!isValidHostAddress(routerIP)) {
             LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerIP);
             return true;
         }      
