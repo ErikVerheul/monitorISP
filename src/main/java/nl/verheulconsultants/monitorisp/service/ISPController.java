@@ -18,7 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ISPController extends Thread {
-    
+
+    private static final String NOROUTERADDRESS = "unknown";
     private static final long STARTOFSERVICE = System.currentTimeMillis();
     private static long lastContactWithAnyHost = System.currentTimeMillis();
     private static long lastFail = 0L;
@@ -37,10 +38,9 @@ public class ISPController extends Thread {
     private int outageIndex = 0;
     private long outageStart = 0L;
     private long outageEnd;
-    static String routerAddress = "unknown";
-    static boolean outageTypeIsp = false;
+    static String routerAddress = NOROUTERADDRESS;
+    static boolean outageCausedInternal = false;
     private static boolean simulateFailure = false;
-    
 
     /**
      * The service has started and is running.
@@ -109,12 +109,12 @@ public class ISPController extends Thread {
 
         running = false;
     }
-    
+
     public static String getRouterAddress() {
         return routerAddress;
     }
-    
-    public static void setRouterAddress (String address) {
+
+    public static void setRouterAddress(String address) {
         routerAddress = address;
     }
 
@@ -133,8 +133,8 @@ public class ISPController extends Thread {
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
-                    OUTAGES.add(new OutageListItem(outageIndex, new Date(outageStart).toString(), 
-                            new Date(outageEnd).toString(), outageEnd - outageStart));
+                    OUTAGES.add(new OutageListItem(outageIndex, new Date(outageStart).toString(),
+                            new Date(outageEnd).toString(), outageEnd - outageStart, outageCausedInternal));
                     outageIndex++;
                     outageStart = 0L;
                 }
@@ -143,14 +143,14 @@ public class ISPController extends Thread {
                 if (canReachISP) {
                     numberOfInterruptions++;
                     outageStart = loopStart;
-                    outageTypeIsp = canConnectRouter(routerAddress);
+                    outageCausedInternal = !canConnectRouter(routerAddress);
                 }
                 canReachISP = false;
                 LOGGER.warn("The ISP cannot be reached.");
                 lastFail = System.currentTimeMillis();
                 // update the current unavailability
                 currentISPunavailability = lastFail - outageStart;
-            }          
+            }
             // wait 5 seconds to check the ISP connection again
             sleepMilis(5000);
         }
@@ -161,33 +161,33 @@ public class ISPController extends Thread {
         }
         busyCheckingConnections = false;
     }
-    
+
     /**
      * Perform the connection checks in a separate thread.
-     * 
+     *
      * @param hosts to check
      */
     public void doInBackground(List<String> hosts) {
         this.selectedHostsURLs = hosts;
         start();
     }
-    
+
     private boolean canConnectRouter(String routerIP) {
         // if the router address is not set we can not exclude internal network failure
-        if ("unknown".equalsIgnoreCase(routerIP)) {
+        if (NOROUTERADDRESS.equalsIgnoreCase(routerIP)) {
             return true;
         }
         // if the router address is not avalid address we can not exclude internal network failure
         if (!isValidHostAddress(routerIP)) {
             LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerIP);
             return true;
-        }      
-        return checkISP(new ArrayList<>(Arrays.asList(routerIP)));  
+        }
+        return checkISP(new ArrayList<>(Arrays.asList(routerIP)));
     }
-    
+
     /**
      * A method for test purposes only.
-     * 
+     *
      * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
      */
     public void simulateFailure(boolean yesNo) {
@@ -329,7 +329,7 @@ public class ISPController extends Thread {
         x6.value = millisToTime(currentISPunavailability);
         x6.index = 7;
         ret.add(x6);
-        
+
         StatusListItem x7 = new StatusListItem();
         x7.name = "totalISPunavailability";
         x7.value = millisToTime(getTotalUnavailability());
@@ -337,27 +337,41 @@ public class ISPController extends Thread {
         ret.add(x7);
 
         StatusListItem x8 = new StatusListItem();
-        x8.name = "INTERNET UP?";
-        if (busyCheckingConnections) {
-            x8.value = Boolean.toString(canReachISP);
+        x8.name = "outageCausedInternal";
+        if (NOROUTERADDRESS.equals(routerAddress)) {
+            x8.value = "Cannot say, router address unknown";
         } else {
-            x8.value = "UNKNOWN, conroller is not running";
+            if (busyCheckingConnections) {
+                x8.value = Boolean.toString(outageCausedInternal);
+            } else {
+                x8.value = "Cannot say, conroller is not running";
+            }
         }
         x8.index = 9;
         ret.add(x8);
+
+        StatusListItem x9 = new StatusListItem();
+        x9.name = "INTERNET UP?";
+        if (busyCheckingConnections) {
+            x9.value = Boolean.toString(canReachISP);
+        } else {
+            x9.value = "UNKNOWN, conroller is not running";
+        }
+        x9.index = 10;
+        ret.add(x9);
 
         return ret;
     }
 
     /**
      * Get all outage data.
-     * 
+     *
      * @return the full list
      */
     public List getOutageData() {
         return OUTAGES;
     }
-    
+
     private long getTotalUnavailability() {
         long sumOutages = 0L;
         for (OutageListItem item : OUTAGES) {

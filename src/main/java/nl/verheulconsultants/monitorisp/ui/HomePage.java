@@ -269,6 +269,7 @@ public class HomePage extends BasePage {
                 item.add(new Label("Start", olu.getStart()));
                 item.add(new Label("End", olu.getEnd()));
                 item.add(new Label("Duration", millisToTime(olu.getDuration())));
+                item.add(new Label("OutageCausedInternal", olu.getOutageCausedInternal()));
             }
         };
 

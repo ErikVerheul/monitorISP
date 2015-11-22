@@ -29,12 +29,14 @@ public class OutageListItem {
     String start;
     String end;
     long duration;
+    boolean outageCausedInternal;
 
-    OutageListItem(int index, String start, String end, long duration) {
+    OutageListItem(int index, String start, String end, long duration, boolean outageCauseInternal) {
         this.index = index;
         this.start = start;
         this.end = end;
         this.duration = duration;
+        this.outageCausedInternal = outageCauseInternal;
     }
     
     /**
@@ -71,5 +73,15 @@ public class OutageListItem {
      */
     public long getDuration() {
         return duration;
+    }
+    
+    /**
+     * Check if the outage is caused by a network problem up to the router address.
+     * Can be a internal cabling or switch problem of the router it self.
+     * 
+     * @return true if the problem is internal
+     */
+    public String getOutageCausedInternal() {
+        return Boolean.toString(outageCausedInternal);
     }
 }
