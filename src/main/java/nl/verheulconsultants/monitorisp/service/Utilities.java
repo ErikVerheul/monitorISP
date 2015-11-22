@@ -58,4 +58,22 @@ public class Utilities {
         return InetAddressUtils.isIPv4Address(ip) || InetAddressUtils.isIPv6Address(ip);
     }
     
+    /**
+     * Convert a duration in miliseconds to string.
+     * 
+     * @param millis
+     * @return a string with format hh:mm:ss
+     */
+    public static String millisToTime(long millis) {
+        long second = 0;
+        long minute = 0;
+        long hour = 0;
+        if (millis > 0) {
+            second = (millis / 1000) % 60;
+            minute = (millis / (1000 * 60)) % 60;
+            hour = (millis / (1000 * 60 * 60)) % 24;
+        }
+        return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
+    }
+
 }

@@ -28,22 +28,48 @@ public class OutageListItem {
     int index;
     String start;
     String end;
+    long duration;
 
-    OutageListItem(int index, String start, String end) {
+    OutageListItem(int index, String start, String end, long duration) {
         this.index = index;
         this.start = start;
         this.end = end;
+        this.duration = duration;
     }
-
+    
+    /**
+     * Returns the index starting with 1 for the first outage.
+     * 
+     * @return index + 1
+     */
+     public int getIndex() {
+        return index + 1;
+    }
+    
+     /**
+     * Returns the outage start date and time.
+     *
+     * @return start date
+     */
     public String getStart() {
         return start;
     }
 
+    /**
+     * Returns the outage end date and time.
+     *
+     * @return end date
+     */
     public String getEnd() {
         return end;
     }
-
-    public int getIndex() {
-        return index;
+    
+    /**
+     * Returns the outage duration in hh:mm:ss.
+     *
+     * @return duration
+     */
+    public long getDuration() {
+        return duration;
     }
 }

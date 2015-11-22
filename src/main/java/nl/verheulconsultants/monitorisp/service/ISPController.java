@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class ISPController extends Thread {
     static long successfulChecks = 0L;
     static long failedChecks = 0L;
     private static long numberOfInterruptions = 0L;
-    private static long totalISPunavailability = 0L;
+    private static long currentISPunavailability = 0L;
     private static boolean canReachISP = true;
     private static boolean busyCheckingConnections = false;
     private static final List<OutageListItem> OUTAGES = new ArrayList<>();
@@ -38,6 +39,7 @@ public class ISPController extends Thread {
     private long outageEnd;
     static String routerAddress = "unknown";
     static boolean outageTypeIsp = false;
+    private static boolean simulateFailure = false;
     
 
     /**
@@ -122,36 +124,35 @@ public class ISPController extends Thread {
      */
     void innerLoop() {
         long loopStart;
-        long loopEnd;
-
         while (!exit && !stop) {
             busyCheckingConnections = true;
             loopStart = System.currentTimeMillis();
             if (checkISP(selectedHostsURLs)) {
                 canReachISP = true;
                 lastContactWithAnyHost = System.currentTimeMillis();
+                currentISPunavailability = 0L;
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
-                    OUTAGES.add(new OutageListItem(outageIndex, millisToTime(outageStart), millisToTime(outageEnd)));
+                    OUTAGES.add(new OutageListItem(outageIndex, new Date(outageStart).toString(), 
+                            new Date(outageEnd).toString(), outageEnd - outageStart));
                     outageIndex++;
                     outageStart = 0L;
                 }
             } else {
+                // connection failed first time after successful connections
                 if (canReachISP) {
                     numberOfInterruptions++;
-                    outageStart = System.currentTimeMillis();
+                    outageStart = loopStart;
                     outageTypeIsp = canConnectRouter(routerAddress);
                 }
                 canReachISP = false;
                 LOGGER.warn("The ISP cannot be reached.");
                 lastFail = System.currentTimeMillis();
-            }
+                // update the current unavailability
+                currentISPunavailability = lastFail - outageStart;
+            }          
             // wait 5 seconds to check the ISP connection again
             sleepMilis(5000);
-            loopEnd = System.currentTimeMillis();
-            if (!canReachISP) {
-                totalISPunavailability = totalISPunavailability + loopEnd - loopStart;
-            }
         }
         if (busyCheckingConnections) {
             LOGGER.info("The controller has stopped.\n");
@@ -173,13 +174,24 @@ public class ISPController extends Thread {
     
     private boolean canConnectRouter(String routerIP) {
         // if the router address is not set we can not exclude internal network failure
-        if (routerIP.equalsIgnoreCase("unknown")) return true;
+        if ("unknown".equalsIgnoreCase(routerIP)) {
+            return true;
+        }
         // if the router address is not avalid address we can not exclude internal network failure
         if (!isValidHostAddress(routerIP)) {
             LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerIP);
             return true;
         }      
         return checkISP(new ArrayList<>(Arrays.asList(routerIP)));  
+    }
+    
+    /**
+     * A method for test purposes only.
+     * 
+     * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
+     */
+    public void simulateFailure(boolean yesNo) {
+        simulateFailure = yesNo;
     }
 
     /**
@@ -191,7 +203,7 @@ public class ISPController extends Thread {
         boolean hostFound = false;
         for (String host : hURLs) {
             // test a TCP connection on port 80 with the destination host and a time-out of 2000 ms.
-            if (testConnection(host, 80, 2000)) {
+            if (!simulateFailure && testConnection(host, 80, 2000)) {
                 hostFound = true;
                 successfulChecks++;
                 // when successfull there is no need to try the other selectedHostsURLs
@@ -313,38 +325,45 @@ public class ISPController extends Thread {
         ret.add(x5);
 
         StatusListItem x6 = new StatusListItem();
-        x6.name = "totalISPunavailability";
-        x6.value = millisToTime(totalISPunavailability);
+        x6.name = "currentISPunavailability";
+        x6.value = millisToTime(currentISPunavailability);
         x6.index = 7;
         ret.add(x6);
-
+        
         StatusListItem x7 = new StatusListItem();
-        x7.name = "INTERNET UP?";
-        if (busyCheckingConnections) {
-            x7.value = Boolean.toString(canReachISP);
-        } else {
-            x7.value = "UNKNOWN, conroller is not running";
-        }
+        x7.name = "totalISPunavailability";
+        x7.value = millisToTime(getTotalUnavailability());
         x7.index = 8;
         ret.add(x7);
+
+        StatusListItem x8 = new StatusListItem();
+        x8.name = "INTERNET UP?";
+        if (busyCheckingConnections) {
+            x8.value = Boolean.toString(canReachISP);
+        } else {
+            x8.value = "UNKNOWN, conroller is not running";
+        }
+        x8.index = 9;
+        ret.add(x8);
 
         return ret;
     }
 
+    /**
+     * Get all outage data.
+     * 
+     * @return the full list
+     */
     public List getOutageData() {
         return OUTAGES;
     }
-
-    private String millisToTime(long millis) {
-        long second = 0;
-        long minute = 0;
-        long hour = 0;
-        if (millis > 0) {
-            second = (millis / 1000) % 60;
-            minute = (millis / (1000 * 60)) % 60;
-            hour = (millis / (1000 * 60 * 60)) % 24;
+    
+    private long getTotalUnavailability() {
+        long sumOutages = 0L;
+        for (OutageListItem item : OUTAGES) {
+            sumOutages = sumOutages + item.getDuration();
         }
-        return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
+        return sumOutages + currentISPunavailability;
     }
 
 }

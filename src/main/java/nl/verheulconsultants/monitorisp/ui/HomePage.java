@@ -179,11 +179,11 @@ public class HomePage extends BasePage {
         @Override
         protected void onSubmit() {
             final String addressValue = routerAddress.getModelObject();
-            if (isValidHostAddress(addressValue)) {
+            if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
                 ISPController.setRouterAddress(addressValue);
                 LOGGER.info("The router address is set to {}", addressValue);
             } else {
-                error("Wrong router address. Please try again.");
+                error("Wrong router address. Please try again or type unknown");
             }
         }
     };
@@ -268,6 +268,7 @@ public class HomePage extends BasePage {
                 item.add(new Label("Index", olu.getIndex()));
                 item.add(new Label("Start", olu.getStart()));
                 item.add(new Label("End", olu.getEnd()));
+                item.add(new Label("Duration", millisToTime(olu.getDuration())));
             }
         };
 
