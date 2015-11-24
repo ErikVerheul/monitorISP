@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.Utilities.FILENAME;
 import nl.verheulconsultants.monitorisp.ui.Host;
@@ -150,7 +151,7 @@ public class MonitorISPData implements Serializable {
             return dataRead.selected;
         } else {
             LOGGER.error(CANNOTGET);
-            return null;
+            return new ArrayList<>();
         }
     }
     
@@ -168,7 +169,7 @@ public class MonitorISPData implements Serializable {
             return dataRead.outages;
         } else {
             LOGGER.error(CANNOTGET);
-            return null;
+            return new ArrayList<>();
         }
     }
     

@@ -80,8 +80,19 @@ public class WicketApplication extends WebApplication {
             LOGGER.info("Previous session data are loaded successfully.");
         } else {
             // Initiate with default values.
-            init();
+            paletteModel = initWithDefaults();
+            LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
         }
-
     }
+
+    private static CollectionModel initWithDefaults() {
+        List<Host> hosts = new ArrayList<>();
+        hosts.add(new Host("0", "willfailconnection.com"));
+        hosts.add(new Host("1", "uva.nl"));
+        hosts.add(new Host("2", "xs4all.nl"));
+        hosts.add(new Host("3", "vu.nl"));
+        CollectionModel model = new CollectionModel<>(hosts);
+        return model;
+    }
+
 }
