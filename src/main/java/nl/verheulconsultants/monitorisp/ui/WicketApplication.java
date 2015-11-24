@@ -23,27 +23,30 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
-import org.apache.wicket.extensions.markup.html.form.palette.Palette;
+import nl.verheulconsultants.monitorisp.service.MonitorISPData;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.request.resource.JavaScriptResourceReference;
-import org.apache.wicket.request.resource.PackageResourceReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Application object for your web application. If you want to run this
- * application without deploying, run the Start class.
+ * Application object for your web application. If you want to run this application without deploying, run the Start class.
  *
  * @see nl.verheulconsultants.monitorisp.Start#main(String[])
  */
 public class WicketApplication extends WebApplication {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebApplication.class);
     static ISPController controller = new ISPController();
+    static List<Host> selected = new ArrayList<>();
+    static CollectionModel<Host> paletteModel;
 
     /**
-     * Set the home page. Additionally JavaScriptResourceReference is overridden
-     * to show how an adapted css can be used. For now, no changes to
-     * the Wicket 6.20 version are made.
+     * Set the home page.
      *
      * @return HomePage
      * @see org.apache.wicket.Application#getHomePage()
@@ -52,17 +55,33 @@ public class WicketApplication extends WebApplication {
     public Class<? extends WebPage> getHomePage() {
         return HomePage.class;
     }
-    private static final JavaScriptResourceReference CSS = new JavaScriptResourceReference(
-            Palette.class, "palette.css");
 
     /**
+     * Read the data of the previous session.
+     *
      * @see org.apache.wicket.Application#init()
      */
     @Override
     public void init() {
         super.init();
 
-        addResourceReplacement(CSS,
-                new PackageResourceReference(getClass(), "palette-no-sorting.js"));
+        MonitorISPData sessionData = new MonitorISPData();
+        if (sessionData.readData()) {
+            paletteModel = sessionData.getPaletteModel();
+            selected = sessionData.getSelected();
+            ISPController.setRouterAddress(sessionData.getRouterAddress());
+            ISPController.setOutageData(sessionData.getOutages());
+            ISPController.setStartOfService(sessionData.getStartOfService());
+            ISPController.setLastContactWithAnyHost(sessionData.getLastContactWithAnyHost());
+            ISPController.setLastFail(sessionData.getLastFail());
+            ISPController.setnumberOfInterruptions(sessionData.getNumberOfInterruptions());
+            ISPController.setFailedChecks(sessionData.getFailedChecks());
+            ISPController.setSuccessfulChecks(sessionData.getSuccessfulChecks());
+            LOGGER.info("Previous session data are loaded successfully.");
+        } else {
+            // Initiate with default values.
+            init();
+        }
+
     }
 }

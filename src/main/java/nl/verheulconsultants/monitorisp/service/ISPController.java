@@ -13,14 +13,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
 import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The thread that checks if a given list of hosts on the Internet can be reached.
+ * 
+ * If successful with one host it sleeps for 5 seconds to try again.
+ * If it cannot connect to any host in the list a disconnection is registered.
+ * If in this case it cannot connect to the router either the disconnection is registered as a local network failure.
+ */
 public class ISPController extends Thread {
 
+    private static long startOfService = System.currentTimeMillis();
     private static final String NOROUTERADDRESS = "unknown";
-    private static final long STARTOFSERVICE = System.currentTimeMillis();
     private static long lastContactWithAnyHost = System.currentTimeMillis();
     private static long lastFail = 0L;
     static long successfulChecks = 0L;
@@ -29,7 +37,7 @@ public class ISPController extends Thread {
     private static long currentISPunavailability = 0L;
     private static boolean canReachISP = true;
     private static boolean busyCheckingConnections = false;
-    private static final List<OutageListItem> OUTAGES = new ArrayList<>();
+    private static List<OutageListItem> outages = new ArrayList<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
@@ -38,8 +46,8 @@ public class ISPController extends Thread {
     private int outageIndex = 0;
     private long outageStart = 0L;
     private long outageEnd;
-    static String routerAddress = NOROUTERADDRESS;
-    static boolean outageCausedInternal = false;
+    private static String routerAddress = NOROUTERADDRESS;
+    private static boolean outageCausedInternal = false;
     private static boolean simulateFailure = false;
 
     /**
@@ -110,12 +118,127 @@ public class ISPController extends Thread {
         running = false;
     }
 
+    /**
+     * Get the router address.
+     *
+     * @return
+     */
     public static String getRouterAddress() {
         return routerAddress;
     }
 
+    /**
+     * Set the router address.
+     *
+     * @param address
+     */
     public static void setRouterAddress(String address) {
         routerAddress = address;
+    }
+
+    /**
+     * Set the outages history.
+     *
+     * @param outagesData
+     */
+    public static void setOutageData(List<OutageListItem> outagesData) {
+        outages = outagesData;
+    }
+
+    /**
+     * The startOfService is the date the service was started the first time. Save this value for the next start of the service.
+     *
+     * @return
+     */
+    public static long getStartOfService() {
+        return startOfService;
+    }
+
+    /**
+     * The startOfService is the date the service was started the first time. When restarted the history including this field is read from disk.
+     *
+     * @param startDate
+     */
+    public static void setStartOfService(long startDate) {
+        startOfService = startDate;
+    }
+    
+    /**
+     * The lastContactWithAnyHost is the date the service had a successful contact with any of the selected hosts.
+     *
+     * @return
+     */
+    public static long getLastContactWithAnyHost() {
+        return lastContactWithAnyHost;
+    }
+
+    /**
+     * The lastContactWithAnyHost is the date the service had a successful contact with any of the selected hosts.
+     *
+     * @param lastDate
+     */
+    public static void setLastContactWithAnyHost(long lastDate) {
+        lastContactWithAnyHost = lastDate;
+    }
+    
+    /**
+     * The lastFail is the date the service had a the last unsuccessful contact with all selected hosts.
+     *
+     * @return
+     */
+    public static long getLastFail() {
+        return lastFail;
+    }
+
+    /**
+     * The lastFail is the date the service had a the last unsuccessful contact with all selected hosts.
+     *
+     * @param lastDate
+     */
+    public static void setLastFail(long lastDate) {
+        lastFail = lastDate;
+    }
+    
+    /**
+     * @return the number of interruptions to date.
+     */
+    public static long getNumberOfInterruptions() {
+        return numberOfInterruptions;
+    }
+
+    /**
+     * @param number set the number of interruptions to date.
+     */
+    public static void setnumberOfInterruptions(long number) {
+        numberOfInterruptions = number;
+    }
+    
+    /**
+     * @return the failed checks to date.
+     */
+    public static long getFailedChecks() {
+        return failedChecks;
+    }
+
+    /**
+     * @param number set the failed checks to date.
+     */
+    public static void setFailedChecks(long number) {
+        failedChecks = number;
+    }
+    
+    /**
+     * @return the successful checks to date.
+     */
+    public static long getSuccessfulChecks() {
+        return successfulChecks;
+    }
+
+    /**
+     * @param number set the successful checks to date.
+     */
+    public static void setSuccessfulChecks(long number) {
+        successfulChecks = number;
     }
 
     /**
@@ -133,7 +256,7 @@ public class ISPController extends Thread {
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
-                    OUTAGES.add(new OutageListItem(outageIndex, new Date(outageStart).toString(),
+                    outages.add(new OutageListItem(outageIndex, new Date(outageStart).toString(),
                             new Date(outageEnd).toString(), outageEnd - outageStart, outageCausedInternal));
                     outageIndex++;
                     outageStart = 0L;
@@ -153,6 +276,7 @@ public class ISPController extends Thread {
             }
             // wait 5 seconds to check the ISP connection again
             sleepMilis(5000);
+            saveSession();
         }
         if (busyCheckingConnections) {
             LOGGER.info("The controller has stopped.\n");
@@ -286,7 +410,7 @@ public class ISPController extends Thread {
 
         StatusListItem x0 = new StatusListItem();
         x0.name = "startOfService";
-        x0.value = new Date(STARTOFSERVICE).toString();
+        x0.value = new Date(startOfService).toString();
         x0.index = 1;
         ret.add(x0);
 
@@ -368,13 +492,13 @@ public class ISPController extends Thread {
      *
      * @return the full list
      */
-    public List getOutageData() {
-        return OUTAGES;
+    public static List getOutageData() {
+        return outages;
     }
 
     private long getTotalUnavailability() {
         long sumOutages = 0L;
-        for (OutageListItem item : OUTAGES) {
+        for (OutageListItem item : outages) {
             sumOutages = sumOutages + item.getDuration();
         }
         return sumOutages + currentISPunavailability;

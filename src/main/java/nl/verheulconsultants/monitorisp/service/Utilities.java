@@ -23,19 +23,23 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
+import nl.verheulconsultants.monitorisp.ui.HomePage;
 import org.apache.http.conn.util.InetAddressUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Utilities {
-    
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utilities.class);
+
     //Prevent this utility class to be instantiated.
     private Utilities() {
-        
+
     }
-    
+
     public static final String APPHOMEDIR = "C:\\MonitorISP\\";
-    public static final String CHOICESFILENAME = APPHOMEDIR + "MonitorISPchoices";
-    public static final String SELECTIONFILENAME = APPHOMEDIR + "MonitorISPselected";
-    
+    public static final String FILENAME = APPHOMEDIR + "MonitorISPData.bin";
+
     /**
      * Check for a valid url (but omit checking the protocol header) or Ip4 or Ip6 address.
      *
@@ -47,20 +51,20 @@ public class Utilities {
         String urlPattern = "^[a-zA-Z0-9_/\\-\\.]+\\.([A-Za-z/]{2,5})[a-zA-Z0-9_/\\&\\?\\=\\-\\.\\~\\%]*";
         return urlString.matches(urlPattern) || isValidIp(urlString);
     }
-    
+
     /**
      * Use the org.apache.httpcomponents class library to validate Ip4 and Ip6 addresses.
-     * 
+     *
      * @param ip the ip
      * @return check if the ip is valid ipv4 or ipv6
      */
     private static boolean isValidIp(final String ip) {
         return InetAddressUtils.isIPv4Address(ip) || InetAddressUtils.isIPv6Address(ip);
     }
-    
+
     /**
      * Convert a duration in miliseconds to string.
-     * 
+     *
      * @param millis
      * @return a string with format hh:mm:ss
      */
@@ -74,6 +78,31 @@ public class Utilities {
             hour = (millis / (1000 * 60 * 60)) % 24;
         }
         return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
+    }
+
+    /**
+     * Saves all data of the current session.
+     *
+     * @return true if successful.
+     */
+    public static boolean saveSession() {
+        MonitorISPData allData = new MonitorISPData();
+        allData.setPaletteModel(HomePage.getPaletteModel());
+        allData.setSelected(HomePage.getSelected());
+        allData.setRouterAddress(ISPController.getRouterAddress());
+        allData.setOutages(ISPController.getOutageData());
+        allData.setStartOfService(ISPController.getStartOfService());
+        allData.setLastContactWithAnyHost(ISPController.getLastContactWithAnyHost());
+        allData.setLastFail(ISPController.getLastFail());
+        allData.setNumberOfInterruptions(ISPController.getNumberOfInterruptions());
+        allData.setFailedChecks(ISPController.getFailedChecks());
+        allData.setSuccessfulChecks(ISPController.getSuccessfulChecks());
+        if (allData.saveData()) {
+            return true;
+        } else {
+            LOGGER.error("Failure saving data.");
+            return false;
+        }
     }
 
 }

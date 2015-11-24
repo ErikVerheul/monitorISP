@@ -23,8 +23,11 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-public class OutageListItem {
+import java.io.Serializable;
 
+public class OutageListItem implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     int index;
     String start;
     String end;
@@ -38,17 +41,17 @@ public class OutageListItem {
         this.duration = duration;
         this.outageCausedInternal = outageCauseInternal;
     }
-    
+
     /**
      * Returns the index starting with 1 for the first outage.
-     * 
+     *
      * @return index + 1
      */
-     public int getIndex() {
+    public int getIndex() {
         return index + 1;
     }
-    
-     /**
+
+    /**
      * Returns the outage start date and time.
      *
      * @return start date
@@ -65,7 +68,7 @@ public class OutageListItem {
     public String getEnd() {
         return end;
     }
-    
+
     /**
      * Returns the outage duration in hh:mm:ss.
      *
@@ -74,11 +77,10 @@ public class OutageListItem {
     public long getDuration() {
         return duration;
     }
-    
+
     /**
-     * Check if the outage is caused by a network problem up to the router address.
-     * Can be a internal cabling or switch problem of the router it self.
-     * 
+     * Check if the outage is caused by a network problem up to the router address. Can be a internal cabling or switch problem of the router it self.
+     *
      * @return true if the problem is internal
      */
     public String getOutageCausedInternal() {

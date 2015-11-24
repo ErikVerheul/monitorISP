@@ -31,9 +31,9 @@ import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
-import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadModel;
-import static nl.verheulconsultants.monitorisp.ui.PersistModel.loadSelected;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.paletteModel;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.selected;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -65,9 +65,7 @@ public class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
-    private List<Host> selected = new ArrayList<>();
-    private CollectionModel<Host> palletteModel;
-    final Palette<Host> palette;
+    private static Palette<Host> palette;
 
     /**
      * Add a form which saves all changes to disk after any button is clicked.
@@ -75,19 +73,8 @@ public class HomePage extends BasePage {
     Form<?> formSelectHosts = new Form<Void>("paletteForm") {
         @Override
         protected void onSubmit() {
-            if (!selected.isEmpty()) {
-                if (PersistModel.saveChoices(palletteModel, CHOICESFILENAME)) {
-                    LOGGER.info("The choise list is saved with values {}", palletteModel);
-                } else {
-                    LOGGER.error("The choise list could not be saved with values {}", palletteModel);
-                }
-                if (PersistModel.saveSelected(selected, SELECTIONFILENAME)) {
-                    LOGGER.info("The selected items are saved with values {}", selected);
-                } else {
-                    LOGGER.error("The selected items could not be saved with values {}", selected);
-                }
-            } else {
-                error("Please select one or more hosts.");
+            if (saveSession()) {
+                LOGGER.info("All data are saved.");
             }
         }
     };
@@ -98,10 +85,10 @@ public class HomePage extends BasePage {
     Button removeButton = new Button("removeButton") {
         @Override
         public void onSubmit() {
-            Collection<Host> hosts = palletteModel.getObject();
+            Collection<Host> hosts = paletteModel.getObject();
             LOGGER.info("These URL's will be removed {}", selected);
             hosts.removeAll(selected);
-            LOGGER.info("The model is changed to {}", palletteModel);
+            LOGGER.info("The model is changed to {}", paletteModel);
         }
     };
 
@@ -160,10 +147,13 @@ public class HomePage extends BasePage {
             final String urlValue = newUrl.getModelObject();
             if (isValidHostAddress(urlValue)) {
                 ISPController.setRouterAddress(urlValue);
-                Collection<Host> hosts = palletteModel.getObject();
+                Collection<Host> hosts = paletteModel.getObject();
                 hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
                 LOGGER.info("The URL {} is added", urlValue);
-                LOGGER.info("The host list is changed to {}", palletteModel);
+                LOGGER.info("The host list is changed to {}", paletteModel);
+                if (saveSession()) {
+                    LOGGER.info("All data are saved.");
+                }
             } else {
                 error("Wrong host address. Please try again.");
             }
@@ -182,17 +172,14 @@ public class HomePage extends BasePage {
             if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
                 ISPController.setRouterAddress(addressValue);
                 LOGGER.info("The router address is set to {}", addressValue);
+                saveSession();
             } else {
                 error("Wrong router address. Please try again or type unknown");
             }
         }
     };
 
-    public HomePage() {
-        // Load the saved host table or initiate with default values.
-        palletteModel = loadModel(CHOICESFILENAME);
-        selected = loadSelected(SELECTIONFILENAME);
-
+    public HomePage() {       
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
@@ -201,7 +188,7 @@ public class HomePage extends BasePage {
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
         palette = new Palette<>("palette1",
                 new ListModel<>(selected),
-                palletteModel,
+                paletteModel,
                 renderer, 10, true, false);
 
         // version 7.x.x
@@ -257,7 +244,7 @@ public class HomePage extends BasePage {
         IModel listOutageViewModel = new LoadableDetachableModel() {
             @Override
             protected Object load() {
-                return controller.getOutageData();
+                return ISPController.getOutageData();
             }
         };
 
@@ -282,6 +269,30 @@ public class HomePage extends BasePage {
         outageListContainer.add(outageListView);
         // finally add the container to the page
         add(outageListContainer);
+    }
+
+    private static CollectionModel init() {
+        List<Host> hosts = new ArrayList<>();
+        hosts.add(new Host("0", "willfailconnection.com"));
+        hosts.add(new Host("1", "uva.nl"));
+        hosts.add(new Host("2", "xs4all.nl"));
+        hosts.add(new Host("3", "vu.nl"));
+        CollectionModel model = new CollectionModel<>(hosts);
+        return model;
+    }
+    
+    /**
+     * @return the palette model with all choices.
+     */
+    public static CollectionModel<Host> getPaletteModel() {
+        return paletteModel;
+    }
+    
+    /**
+     * @return the selected hosts.
+     */
+    public static List<Host> getSelected() {
+        return selected;
     }
 
     private String getLogFileName() {

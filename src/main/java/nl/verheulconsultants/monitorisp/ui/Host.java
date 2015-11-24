@@ -27,28 +27,36 @@ import java.io.Serializable;
 
 public class Host implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     String id;
     String name;
 
-    Host(String id, String name) {
+    /**
+     * Palette needs an object with an id and a name.
+     * Here the name is the domain address of the host.
+     * 
+     * @param id
+     * @param name 
+     */
+    public Host(String id, String name) {
         super();
         this.id = id;
         this.name = name;
     }
 
-    String getId() {
+    public String getId() {
         return id;
     }
 
-    void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
     
