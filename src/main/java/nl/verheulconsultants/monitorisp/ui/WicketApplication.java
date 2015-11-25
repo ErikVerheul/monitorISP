@@ -30,8 +30,6 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Application object for your web application. If you want to run this application without deploying, run the Start class.
@@ -40,13 +38,12 @@ import org.slf4j.LoggerFactory;
  */
 public class WicketApplication extends WebApplication {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebApplication.class);
     static ISPController controller = new ISPController();
-    
+
     static List<Host> selected = new ArrayList<>();
-    static ListModel<Host> selectedModel = new ListModel<>(selected);
-    
-    private static final List<Host> hosts = new ArrayList<>();   
+    static ListModel<Host> selectedModel;
+
+    private static final List<Host> hosts = new ArrayList<>();
     static CollectionModel<Host> choicesModel = new CollectionModel<>(hosts);
 
     /**
@@ -69,19 +66,18 @@ public class WicketApplication extends WebApplication {
     public void init() {
         super.init();
     }
-    
+
     /**
      * @return the palette model with all choices.
      */
     public static CollectionModel<Host> getPaletteModel() {
         return choicesModel;
     }
-    
+
     /**
      * @return the selected hosts.
      */
     public static List<Host> getSelected() {
-        LOGGER.info("The selection contains now {} hosts: {}", selected.size(), selected);
         return selected;
     }
 

@@ -56,6 +56,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.util.io.IClusterable;
 import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
@@ -77,6 +78,7 @@ public class HomePage extends BasePage {
     private final Form<?> formRouter;
 
     public HomePage() {
+        selectedModel = new ListModel<>(selected);
         initWithPreviousSessionData();
         address = new InputRouterAddress(ISPController.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
@@ -163,10 +165,10 @@ public class HomePage extends BasePage {
             }
         };
 
-        ConstructorContinued();
+        constructorContinued();
     }
 
-    private void ConstructorContinued() {
+    private void constructorContinued() {
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
