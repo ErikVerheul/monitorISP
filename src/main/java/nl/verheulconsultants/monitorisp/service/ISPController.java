@@ -111,7 +111,7 @@ public class ISPController extends Thread {
                 break;
             }
             // wait for instructions to restart or to exit completely
-            sleepMilis(1000);
+            sleepMillis(1000);
         } while (!exit);
 
         running = false;
@@ -244,7 +244,7 @@ public class ISPController extends Thread {
      * Inner loop checking if connections to the hosts are possible When loping busyCheckingConnections = true Registers the periods when no connections could
      * be made.
      */
-    void innerLoop(List<String> selectedURLs) {
+    private void innerLoop(List<String> selectedURLs) {
         long loopStart;
         while (!exit && !stop) {
             busyCheckingConnections = true;
@@ -274,7 +274,7 @@ public class ISPController extends Thread {
                 currentISPunavailability = lastFail - outageStart;
             }
             // wait 5 seconds to check the ISP connection again
-            sleepMilis(5000);
+            sleepMillis(5000);
             saveSession();
         }
         if (busyCheckingConnections) {
@@ -325,8 +325,8 @@ public class ISPController extends Thread {
     boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
         for (String host : hURLs) {
-            // test a TCP connection on port 80 with the destination host and a time-out of 2000 ms.
-            if (!simulateFailure && testConnection(host, 80, 2000)) {
+            // test a TCP connection on port 80 with the destination host and a time-out of 1000 ms.
+            if (!simulateFailure && testConnection(host, 80, 1000)) {
                 hostFound = true;
                 successfulChecks++;
                 // when successfull there is no need to try the other selectedHostsURLs
@@ -334,7 +334,7 @@ public class ISPController extends Thread {
             } else {
                 failedChecks++;
                 // wait 1 second before contacting the next host in the list
-                sleepMilis(1000);
+                sleepMillis(1000);
             }
         }
         return hostFound;
@@ -392,7 +392,7 @@ public class ISPController extends Thread {
      *
      * @param ms the sleep time
      */
-    void sleepMilis(long ms) {
+    void sleepMillis(long ms) {
         int sliceNr = 100;
         long slice = ms / sliceNr;
         for (int i = 0; i < sliceNr && !exit && !stop; i++) {

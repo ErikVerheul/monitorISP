@@ -92,10 +92,10 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        waitMilis(20);
+        waitMilis(120);
         assertTrue(instance.isBusyCheckingConnections());
         instance.stopTemporarily();
-        waitMilis(100);
+        waitMilis(1400);
         assertFalse(instance.isBusyCheckingConnections());   
     }
 
@@ -110,12 +110,12 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         
         instance.doInBackground(hosts);
-        waitMilis(20);
+        waitMilis(120);
         instance.stopTemporarily();
-        waitMilis(70);
+        waitMilis(1400);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        waitMilis(2000);
+        waitMilis(1400);
         assertTrue(instance.isBusyCheckingConnections());                 
     }
 
@@ -143,7 +143,7 @@ public class ISPControllerTest {
         instance.start();
         assert(instance.isAlive());
         instance.exit();
-        waitMilis(70);
+        waitMilis(120);
         assert(!instance.isAlive());
     }
 
@@ -158,7 +158,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        waitMilis(7000);
+        waitMilis(1400);
         assertTrue(ISPController.successfulChecks > 0);
     }
     
@@ -173,7 +173,7 @@ public class ISPControllerTest {
         hosts.add("willnotconnect.com");
 
         instance.doInBackground(hosts);
-        waitMilis(7000);
+        waitMilis(1400);
         assertTrue(ISPController.failedChecks > 0);
     }
 
