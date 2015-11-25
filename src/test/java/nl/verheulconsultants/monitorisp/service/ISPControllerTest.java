@@ -67,7 +67,7 @@ public class ISPControllerTest {
     @After
     public void tearDown() {
          instance.exit();
-         waitMilis(200);
+         sleepMilis(200);
     }
 
     /**
@@ -92,10 +92,10 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        waitMilis(120);
+        sleepMilis(120);
         assertTrue(instance.isBusyCheckingConnections());
         instance.stopTemporarily();
-        waitMilis(1400);
+        sleepMilis(1400);
         assertFalse(instance.isBusyCheckingConnections());   
     }
 
@@ -110,12 +110,12 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         
         instance.doInBackground(hosts);
-        waitMilis(120);
+        sleepMilis(120);
         instance.stopTemporarily();
-        waitMilis(1400);
+        sleepMilis(1400);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        waitMilis(1400);
+        sleepMilis(1400);
         assertTrue(instance.isBusyCheckingConnections());                 
     }
 
@@ -130,7 +130,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         instance.doInBackground(hosts);
         instance.exit();
-        waitMilis(2000);
+        sleepMilis(2000);
         assertFalse(instance.isRunning());
     }
 
@@ -143,7 +143,7 @@ public class ISPControllerTest {
         instance.start();
         assert(instance.isAlive());
         instance.exit();
-        waitMilis(120);
+        sleepMilis(120);
         assert(!instance.isAlive());
     }
 
@@ -158,7 +158,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        waitMilis(1400);
+        sleepMilis(1400);
         assertTrue(ISPController.successfulChecks > 0);
     }
     
@@ -173,7 +173,7 @@ public class ISPControllerTest {
         hosts.add("willnotconnect.com");
 
         instance.doInBackground(hosts);
-        waitMilis(1400);
+        sleepMilis(1400);
         assertTrue(ISPController.failedChecks > 0);
     }
 
@@ -208,7 +208,7 @@ public class ISPControllerTest {
      *
      * @param ms the sleep time
      */
-    void waitMilis(long ms) {
+    void sleepMilis(long ms) {
         try {
             Thread.sleep(ms);
         } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {

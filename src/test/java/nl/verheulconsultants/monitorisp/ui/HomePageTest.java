@@ -221,9 +221,23 @@ public class HomePageTest {
     public void testAddingToSelectionAndSaveSession() {
         System.out.println("testAddingToSelectionAndSaveSession");
         HomePage.initWithDefaults();
-        selected.add(new Host("4", "google.com"));
+        List<Host> selHosts = selectedModel.getObject();
+        selHosts.add(new Host("4", "google.com"));
         saveSession();
         assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 1);
-        assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 3);
+        assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 4);
+    }
+    
+    /**
+     * Put this thread to sleep for ms milliseconds.
+     *
+     * @param ms the sleep time
+     */
+    private void sleepMilis(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
+            LOGGER.info("A thread sleep was interrupted because of {}", ex);
+        }
     }
 }
