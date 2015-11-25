@@ -31,7 +31,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import static nl.verheulconsultants.monitorisp.service.Utilities.sessionDataFileName;
+import static nl.verheulconsultants.monitorisp.service.Utilities.getSessionDataFileName;
 import nl.verheulconsultants.monitorisp.ui.Host;
 import org.apache.wicket.model.util.CollectionModel;
 import org.slf4j.Logger;
@@ -110,12 +110,12 @@ public class MonitorISPData implements Serializable {
     public boolean saveData(MonitorISPData allData) {
         if (allSet()) {
             ObjectOutputStream oos;
-            try (FileOutputStream fout = new FileOutputStream(sessionDataFileName)) {
+            try (FileOutputStream fout = new FileOutputStream(getSessionDataFileName())) {
                 oos = new ObjectOutputStream(fout);
                 oos.writeObject(allData);
                 return true;
             } catch (IOException ex) {
-                LOGGER.error("The application data can not be saved in file {}. The exception is {}", sessionDataFileName, ex);
+                LOGGER.error("The application data can not be saved in file {}. The exception is {}", getSessionDataFileName(), ex);
                 return false;
             }
         } else {
@@ -125,7 +125,7 @@ public class MonitorISPData implements Serializable {
     }
     
     public boolean readData() {
-        try (FileInputStream fin = new FileInputStream(sessionDataFileName)) {
+        try (FileInputStream fin = new FileInputStream(getSessionDataFileName())) {
             ObjectInputStream ois = new ObjectInputStream(fin);
             dataRead = (MonitorISPData) ois.readObject();
             if (allRead()) {
@@ -135,7 +135,7 @@ public class MonitorISPData implements Serializable {
                 return false;
             }
         } catch (IOException ex) {
-            LOGGER.error("An IO error occurred reading file {}. The exception is {}", sessionDataFileName, ex);
+            LOGGER.error("An IO error occurred reading file {}. The exception is {}", getSessionDataFileName(), ex);
             return false;
         } catch (ClassNotFoundException ex2) {
             LOGGER.error("Unexpected internal error with exception {}", ex2);

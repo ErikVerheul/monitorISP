@@ -66,25 +66,23 @@ public class HomePage extends BasePage {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private static Palette<Host> palette;
-    private Form<?> formSelectHosts;
-    private Button removeButton;
-    private Button startButton;
-    private Button stopButton;
+    private final Form<?> formSelectHosts;
+    private final Button removeButton;
+    private final Button startButton;
+    private final Button stopButton;
     private final TextField<String> newUrl;
-    private Form<?> formNewHost;
-    private InputRouterAddress address;
+    private final Form<?> formNewHost;
+    private final InputRouterAddress address;
     private TextField<String> routerAddress;
-    private Form<?> formRouter;
+    private final Form<?> formRouter;
 
     public HomePage() {
-
         initWithPreviousSessionData();
         address = new InputRouterAddress(ISPController.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
-
         newUrl = new TextField<>("newHost", Model.of(""));
+
         formSelectHosts = new Form<Void>("paletteForm") {
-            
             @Override
             protected void onSubmit() {
                 if (saveSession()) {
@@ -165,6 +163,10 @@ public class HomePage extends BasePage {
             }
         };
 
+        ConstructorContinued();
+    }
+
+    private void ConstructorContinued() {
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
@@ -178,8 +180,7 @@ public class HomePage extends BasePage {
 
         // version 7.x.x
         palette.add(new DefaultTheme());
-        
-        
+
         /**
          * Add the hosts to the palette selection
          * @TODO: would expect to have used palette.getModelCollection()
@@ -203,7 +204,7 @@ public class HomePage extends BasePage {
         formNewHost.add(newUrl);
 
         add(formRouter);
-        
+
         routerAddress.setRequired(false);
         formRouter.add(routerAddress);
 
@@ -269,9 +270,7 @@ public class HomePage extends BasePage {
     }
 
     public static void initWithPreviousSessionData() {
-
         initWithDefaults();
-
         MonitorISPData sessionData = new MonitorISPData();
         if (sessionData.readData()) {
             choicesModel = sessionData.getPaletteModel();
@@ -300,7 +299,7 @@ public class HomePage extends BasePage {
         Collection<Host> hosts = choicesModel.getObject();
         hosts.clear();
         hosts.add(new Host("0", "willfailconnection.com"));
-        
+
         List<Host> selHosts = selectedModel.getObject();
         selHosts.clear();
         selHosts.add(new Host("1", "uva.nl"));

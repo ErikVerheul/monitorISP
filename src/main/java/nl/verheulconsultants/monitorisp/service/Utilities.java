@@ -35,11 +35,15 @@ public class Utilities {
     private static final Logger LOGGER = LoggerFactory.getLogger(Utilities.class);
     public static final String APPHOMEDIR = "C:\\MonitorISP\\";
     private static final String TESTHOMEDIR = "C:\\MonitorISP\\test\\";
-    public static String sessionDataFileName = APPHOMEDIR + "MonitorISPData.bin";
+    private static String sessionDataFileName = APPHOMEDIR + "MonitorISPData.bin";
 
     //Prevent this utility class to be instantiated.
     private Utilities() {
 
+    }
+    
+    public static String getSessionDataFileName() {
+        return sessionDataFileName;
     }
    
     /**
