@@ -23,17 +23,19 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
-import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.ArrayList;
+import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
+import nl.verheulconsultants.monitorisp.service.MonitorISPData;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.paletteModel;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.choicesModel;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.selected;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.selectedModel;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -54,8 +56,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
-import org.apache.wicket.model.util.CollectionModel;
-import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.util.io.IClusterable;
 import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
@@ -66,120 +66,105 @@ public class HomePage extends BasePage {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private static Palette<Host> palette;
+    private Form<?> formSelectHosts;
+    private Button removeButton;
+    private Button startButton;
+    private Button stopButton;
+    private final TextField<String> newUrl;
+    private Form<?> formNewHost;
+    private InputRouterAddress address;
+    private TextField<String> routerAddress;
+    private Form<?> formRouter;
 
-    /**
-     * Add a form which saves all changes to disk after any button is clicked.
-     */
-    Form<?> formSelectHosts = new Form<Void>("paletteForm") {
-        @Override
-        protected void onSubmit() {
-            if (saveSession()) {
-                LOGGER.info("All data are saved.");
+    public HomePage() {
+
+        initWithPreviousSessionData();
+        address = new InputRouterAddress(ISPController.getRouterAddress());
+        routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
+
+        newUrl = new TextField<>("newHost", Model.of(""));
+        formSelectHosts = new Form<Void>("paletteForm") {
+            
+            @Override
+            protected void onSubmit() {
+                if (saveSession()) {
+                    LOGGER.info("All data are saved.");
+                }
             }
-        }
-    };
+        };
 
-    /**
-     * A button to remove selected newUrl's from the list.
-     */
-    Button removeButton = new Button("removeButton") {
-        @Override
-        public void onSubmit() {
-            Collection<Host> hosts = paletteModel.getObject();
-            LOGGER.info("These URL's will be removed {}", selected);
-            hosts.removeAll(selected);
-            LOGGER.info("The model is changed to {}", paletteModel);
-        }
-    };
-
-    /**
-     * A button to start the service.
-     */
-    Button startButton = new Button("startButton") {
-        @Override
-        public void onSubmit() {
-            List selectedHostsURLs = new <String>ArrayList();
-            for (Host h : selected) {
-                selectedHostsURLs.add(h.getName());
+        formRouter = new Form<Void>("routerForm") {
+            @Override
+            protected void onSubmit() {
+                final String addressValue = routerAddress.getModelObject();
+                if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
+                    ISPController.setRouterAddress(addressValue);
+                    LOGGER.info("The router address is set to {}", addressValue);
+                    saveSession();
+                } else {
+                    error("Wrong router address. Please try again or type unknown");
+                }
             }
+        };
 
-            if (!selected.isEmpty()) {
+        stopButton = new Button("stopButton") {
+            @Override
+            public void onSubmit() {
+                if (controller != null
+                        && controller.isBusyCheckingConnections()) {
+                    controller.stopTemporarily();
+                    LOGGER.info("The service is stopped temporarely.");
+                } else {
+                    LOGGER.info("Can not stop, the controller is not running.");
+                }
+            }
+        };
+
+        formNewHost = new Form<Void>("addHostForm") {
+            @Override
+            protected void onSubmit() {
+                final String urlValue = newUrl.getModelObject();
+                if (isValidHostAddress(urlValue)) {
+                    Collection<Host> hosts = choicesModel.getObject();
+                    hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
+                    LOGGER.info("The URL {} is added", urlValue);
+                    LOGGER.info("The host list is changed to {}", choicesModel);
+                    if (saveSession()) {
+                        LOGGER.info("All data are saved.");
+                    }
+                } else {
+                    error("Wrong host address. Please try again.");
+                }
+            }
+        };
+
+        startButton = new Button("startButton") {
+            @Override
+            public void onSubmit() {
                 if (controller.isRunning()) {
                     if (!controller.isBusyCheckingConnections()) {
-                        controller.restart(selectedHostsURLs);
+                        controller.restart(getNames(selected));
                         LOGGER.info("The service is restarted for checking connections with hosts {}", selected);
                     } else {
                         LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", selected);
                     }
                 } else {
-                    controller.doInBackground(selectedHostsURLs);
+                    controller.doInBackground(getNames(selected));
                     LOGGER.info("The service is started for checking connections with hosts {}", selected);
                 }
-            } else {
-                LOGGER.warn("The service CANNOT be started with no hosts defined to check the connection.");
             }
-        }
-    };
+        };
 
-    /**
-     * A button to stop the service temporarily.
-     */
-    Button stopButton = new Button("stopButton") {
-        @Override
-        public void onSubmit() {
-            if (controller != null
-                    && controller.isBusyCheckingConnections()) {
-                controller.stopTemporarily();
-                LOGGER.info("The service is stopped temporarely.");
-            } else {
-                LOGGER.info("Can not stop, the controller is not running.");
+        removeButton = new Button("removeButton") {
+            @Override
+            public void onSubmit() {
+                Collection<Host> hosts = choicesModel.getObject();
+                LOGGER.info("These URL's will be removed {}", selected);
+                hosts.removeAll(selected);
+                LOGGER.info("The model is changed to {}", choicesModel);
             }
-        }
-    };
+        };
 
-    /**
-     * An optional text field where we can enter a new host URL.
-     */
-    final TextField<String> newUrl = new TextField<>("newHost", Model.of(""));
-    Form<?> formNewHost = new Form<Void>("addHostForm") {
-        @Override
-        protected void onSubmit() {
-            final String urlValue = newUrl.getModelObject();
-            if (isValidHostAddress(urlValue)) {
-                ISPController.setRouterAddress(urlValue);
-                Collection<Host> hosts = paletteModel.getObject();
-                hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
-                LOGGER.info("The URL {} is added", urlValue);
-                LOGGER.info("The host list is changed to {}", paletteModel);
-                if (saveSession()) {
-                    LOGGER.info("All data are saved.");
-                }
-            } else {
-                error("Wrong host address. Please try again.");
-            }
-        }
-    };
-
-    /**
-     * An optional text field where we can enter a router address.
-     */
-    final InputRouterAddress address = new InputRouterAddress(ISPController.getRouterAddress());
-    final TextField<String> routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
-    Form<?> formRouter = new Form<Void>("routerForm") {
-        @Override
-        protected void onSubmit() {
-            final String addressValue = routerAddress.getModelObject();
-            if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
-                ISPController.setRouterAddress(addressValue);
-                LOGGER.info("The router address is set to {}", addressValue);
-                saveSession();
-            } else {
-                error("Wrong router address. Please try again or type unknown");
-            }
-        }
-    };
-
-    public HomePage() {       
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
@@ -187,12 +172,24 @@ public class HomePage extends BasePage {
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
         palette = new Palette<>("palette1",
-                new ListModel<>(selected),
-                paletteModel,
+                selectedModel,
+                choicesModel,
                 renderer, 10, true, false);
 
         // version 7.x.x
         palette.add(new DefaultTheme());
+        
+        
+        /**
+         * Add the hosts to the palette selection
+         * @TODO: would expect to have used palette.getModelCollection()
+         * 
+         * @see https://ci.apache.org/projects/wicket/apidocs/7.x/
+         */
+        Collection choices = palette.getChoices();
+        for (Host h : selected) {
+            choices.add(h);
+        }
 
         add(formSelectHosts);
         formSelectHosts.add(palette);
@@ -206,7 +203,7 @@ public class HomePage extends BasePage {
         formNewHost.add(newUrl);
 
         add(formRouter);
-
+        
         routerAddress.setRequired(false);
         formRouter.add(routerAddress);
 
@@ -271,18 +268,52 @@ public class HomePage extends BasePage {
         add(outageListContainer);
     }
 
-    /**
-     * @return the palette model with all choices.
-     */
-    public static CollectionModel<Host> getPaletteModel() {
-        return paletteModel;
+    public static void initWithPreviousSessionData() {
+
+        initWithDefaults();
+
+        MonitorISPData sessionData = new MonitorISPData();
+        if (sessionData.readData()) {
+            choicesModel = sessionData.getPaletteModel();
+            selected = sessionData.getSelected();
+            ISPController.setRouterAddress(sessionData.getRouterAddress());
+            ISPController.setOutageData(sessionData.getOutages());
+            ISPController.setStartOfService(sessionData.getStartOfService());
+            ISPController.setLastContactWithAnyHost(sessionData.getLastContactWithAnyHost());
+            ISPController.setLastFail(sessionData.getLastFail());
+            ISPController.setnumberOfInterruptions(sessionData.getNumberOfInterruptions());
+            ISPController.setFailedChecks(sessionData.getFailedChecks());
+            ISPController.setSuccessfulChecks(sessionData.getSuccessfulChecks());
+            LOGGER.info("Previous session data are loaded successfully.");
+            LOGGER.info("The selection contains now {} hosts: {}", selected.size(), selected);
+        } else {
+            // Initiate with default values.          
+            LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
+            initWithDefaults();
+        }
     }
-    
+
     /**
-     * @return the selected hosts.
+     * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
      */
-    public static List<Host> getSelected() {
-        return selected;
+    public static void initWithDefaults() {
+        Collection<Host> hosts = choicesModel.getObject();
+        hosts.clear();
+        hosts.add(new Host("0", "willfailconnection.com"));
+        
+        List<Host> selHosts = selectedModel.getObject();
+        selHosts.clear();
+        selHosts.add(new Host("1", "uva.nl"));
+        selHosts.add(new Host("2", "xs4all.nl"));
+        selHosts.add(new Host("3", "vu.nl"));
+    }
+
+    private List<String> getNames(List<Host> hosts) {
+        List<String> names = new ArrayList<>();
+        for (Host h : hosts) {
+            names.add(h.getName());
+        }
+        return names;
     }
 
     private String getLogFileName() {
@@ -309,6 +340,7 @@ public class HomePage extends BasePage {
      */
     private static class InputRouterAddress implements IClusterable {
 
+        private static final long serialVersionUID = 1L;
         String address;
 
         InputRouterAddress(String address) {

@@ -23,8 +23,15 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.ArrayList;
 import java.util.List;
+import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
+import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +50,18 @@ public class ISPControllerTest {
     @Before
     public void setUp() {
         instance = new ISPController();
+        
+        setSessionsDataFileNameForTest();
+        // copy a test file to the test directory (will be overwritten)
+        File resourcesDirectory = new File("src/test/resources");
+        File source = new File(resourcesDirectory, "MonitorISPData.bin");
+        Path sourcePath = source.toPath();
+        //copy the test file to the test directory with the same name as the source
+        try {
+            Files.copy(sourcePath, getTestHomeDir().resolve(source.getName()), REPLACE_EXISTING);
+        } catch (IOException ex) {
+            LOGGER.error("File copy failed with exception {}", ex);
+        }     
     }
 
     @After
@@ -111,6 +130,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         instance.doInBackground(hosts);
         instance.exit();
+        waitMilis(2000);
         assertFalse(instance.isRunning());
     }
 
@@ -139,7 +159,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         waitMilis(7000);
-        assertTrue(instance.successfulChecks > 0);
+        assertTrue(ISPController.successfulChecks > 0);
     }
     
     /**
@@ -154,7 +174,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         waitMilis(7000);
-        assertTrue(instance.failedChecks > 0);
+        assertTrue(ISPController.failedChecks > 0);
     }
 
     /**
@@ -184,7 +204,7 @@ public class ISPControllerTest {
     }
 
     /**
-     * Put this thread to sleep for ms miliseconds.
+     * Put this thread to sleep for ms milliseconds.
      *
      * @param ms the sleep time
      */

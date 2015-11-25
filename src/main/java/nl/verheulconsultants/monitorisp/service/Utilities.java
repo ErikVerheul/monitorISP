@@ -23,7 +23,9 @@
  */
 package nl.verheulconsultants.monitorisp.service;
 
-import nl.verheulconsultants.monitorisp.ui.HomePage;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import nl.verheulconsultants.monitorisp.ui.WicketApplication;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +33,30 @@ import org.slf4j.LoggerFactory;
 public class Utilities {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Utilities.class);
+    public static final String APPHOMEDIR = "C:\\MonitorISP\\";
+    private static final String TESTHOMEDIR = "C:\\MonitorISP\\test\\";
+    public static String sessionDataFileName = APPHOMEDIR + "MonitorISPData.bin";
 
     //Prevent this utility class to be instantiated.
     private Utilities() {
 
     }
-
-    public static final String APPHOMEDIR = "C:\\MonitorISP\\";
-    public static final String FILENAME = APPHOMEDIR + "MonitorISPData.bin";
+   
+    /**
+     * Set a test directory for storing the session data.
+     */
+    public static void setSessionsDataFileNameForTest() {
+        sessionDataFileName = TESTHOMEDIR + "MonitorISPData.bin";
+    }
+    
+    /**
+     * Get the test directory for storing the session data.
+     * 
+     * @return the path
+     */
+    public static Path getTestHomeDir() {
+        return FileSystems.getDefault().getPath(TESTHOMEDIR);
+    }
 
     /**
      * Check for a valid url (but omit checking the protocol header) or Ip4 or Ip6 address.
@@ -63,7 +81,7 @@ public class Utilities {
     }
 
     /**
-     * Convert a duration in miliseconds to string.
+     * Convert a duration in milliseconds to string.
      *
      * @param millis
      * @return a string with format hh:mm:ss
@@ -87,8 +105,8 @@ public class Utilities {
      */
     public static boolean saveSession() {
         MonitorISPData allData = new MonitorISPData();
-        allData.setPaletteModel(HomePage.getPaletteModel());
-        allData.setSelected(HomePage.getSelected());
+        allData.setPaletteModel(WicketApplication.getPaletteModel());
+        allData.setSelected(WicketApplication.getSelected());
         allData.setRouterAddress(ISPController.getRouterAddress());
         allData.setOutages(ISPController.getOutageData());
         allData.setStartOfService(ISPController.getStartOfService());
@@ -97,7 +115,7 @@ public class Utilities {
         allData.setNumberOfInterruptions(ISPController.getNumberOfInterruptions());
         allData.setFailedChecks(ISPController.getFailedChecks());
         allData.setSuccessfulChecks(ISPController.getSuccessfulChecks());
-        if (allData.saveData()) {
+        if (allData.saveData(allData)) {
             return true;
         } else {
             LOGGER.error("Failure saving data.");

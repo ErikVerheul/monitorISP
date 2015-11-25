@@ -26,9 +26,9 @@ package nl.verheulconsultants.monitorisp.ui;
 import java.util.ArrayList;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
-import nl.verheulconsultants.monitorisp.service.MonitorISPData;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.model.util.CollectionModel;
+import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +42,12 @@ public class WicketApplication extends WebApplication {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebApplication.class);
     static ISPController controller = new ISPController();
+    
     static List<Host> selected = new ArrayList<>();
-    static CollectionModel<Host> paletteModel;
+    static ListModel<Host> selectedModel = new ListModel<>(selected);
+    
+    private static final List<Host> hosts = new ArrayList<>();   
+    static CollectionModel<Host> choicesModel = new CollectionModel<>(hosts);
 
     /**
      * Set the home page.
@@ -64,35 +68,21 @@ public class WicketApplication extends WebApplication {
     @Override
     public void init() {
         super.init();
-
-        MonitorISPData sessionData = new MonitorISPData();
-        if (sessionData.readData()) {
-            paletteModel = sessionData.getPaletteModel();
-            selected = sessionData.getSelected();
-            ISPController.setRouterAddress(sessionData.getRouterAddress());
-            ISPController.setOutageData(sessionData.getOutages());
-            ISPController.setStartOfService(sessionData.getStartOfService());
-            ISPController.setLastContactWithAnyHost(sessionData.getLastContactWithAnyHost());
-            ISPController.setLastFail(sessionData.getLastFail());
-            ISPController.setnumberOfInterruptions(sessionData.getNumberOfInterruptions());
-            ISPController.setFailedChecks(sessionData.getFailedChecks());
-            ISPController.setSuccessfulChecks(sessionData.getSuccessfulChecks());
-            LOGGER.info("Previous session data are loaded successfully.");
-        } else {
-            // Initiate with default values.
-            paletteModel = initWithDefaults();
-            LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
-        }
     }
-
-    private static CollectionModel initWithDefaults() {
-        List<Host> hosts = new ArrayList<>();
-        hosts.add(new Host("0", "willfailconnection.com"));
-        hosts.add(new Host("1", "uva.nl"));
-        hosts.add(new Host("2", "xs4all.nl"));
-        hosts.add(new Host("3", "vu.nl"));
-        CollectionModel model = new CollectionModel<>(hosts);
-        return model;
+    
+    /**
+     * @return the palette model with all choices.
+     */
+    public static CollectionModel<Host> getPaletteModel() {
+        return choicesModel;
+    }
+    
+    /**
+     * @return the selected hosts.
+     */
+    public static List<Host> getSelected() {
+        LOGGER.info("The selection contains now {} hosts: {}", selected.size(), selected);
+        return selected;
     }
 
 }

@@ -20,10 +20,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The thread that checks if a given list of hosts on the Internet can be reached.
- * 
- * If successful with one host it sleeps for 5 seconds to try again.
- * If it cannot connect to any host in the list a disconnection is registered.
- * If in this case it cannot connect to the router either the disconnection is registered as a local network failure.
+ *
+ * If successful with one host it sleeps for 5 seconds to try again. If it cannot connect to any host in the list a disconnection is registered. If in this case
+ * it cannot connect to the router either the disconnection is registered as a local network failure.
  */
 public class ISPController extends Thread {
 
@@ -76,7 +75,7 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Restart after temporarily stop.
+     * Restart after temporarily stop. Selected hosts may have changed.
      *
      * @param hosts
      */
@@ -105,9 +104,9 @@ public class ISPController extends Thread {
          */
         do {
             if (!selectedHostsURLs.isEmpty()) {
-                innerLoop();
+                innerLoop(selectedHostsURLs);
             } else {
-                LOGGER.warn("Cannot run the service with an empty host list");
+                LOGGER.warn("Cannot run the service with an empty selection list");
                 exit = true;
                 break;
             }
@@ -162,7 +161,7 @@ public class ISPController extends Thread {
     public static void setStartOfService(long startDate) {
         startOfService = startDate;
     }
-    
+
     /**
      * The lastContactWithAnyHost is the date the service had a successful contact with any of the selected hosts.
      *
@@ -180,7 +179,7 @@ public class ISPController extends Thread {
     public static void setLastContactWithAnyHost(long lastDate) {
         lastContactWithAnyHost = lastDate;
     }
-    
+
     /**
      * The lastFail is the date the service had a the last unsuccessful contact with all selected hosts.
      *
@@ -198,7 +197,7 @@ public class ISPController extends Thread {
     public static void setLastFail(long lastDate) {
         lastFail = lastDate;
     }
-    
+
     /**
      * @return the number of interruptions to date.
      */
@@ -212,7 +211,7 @@ public class ISPController extends Thread {
     public static void setnumberOfInterruptions(long number) {
         numberOfInterruptions = number;
     }
-    
+
     /**
      * @return the failed checks to date.
      */
@@ -226,7 +225,7 @@ public class ISPController extends Thread {
     public static void setFailedChecks(long number) {
         failedChecks = number;
     }
-    
+
     /**
      * @return the successful checks to date.
      */
@@ -245,12 +244,12 @@ public class ISPController extends Thread {
      * Inner loop checking if connections to the hosts are possible When loping busyCheckingConnections = true Registers the periods when no connections could
      * be made.
      */
-    void innerLoop() {
+    void innerLoop(List<String> selectedURLs) {
         long loopStart;
         while (!exit && !stop) {
             busyCheckingConnections = true;
             loopStart = System.currentTimeMillis();
-            if (checkISP(selectedHostsURLs)) {
+            if (checkISP(selectedURLs)) {
                 canReachISP = true;
                 lastContactWithAnyHost = System.currentTimeMillis();
                 currentISPunavailability = 0L;
@@ -289,7 +288,7 @@ public class ISPController extends Thread {
     /**
      * Perform the connection checks in a separate thread.
      *
-     * @param hosts to check
+     * @param hosts
      */
     public void doInBackground(List<String> hosts) {
         this.selectedHostsURLs = hosts;

@@ -25,11 +25,18 @@ package nl.verheulconsultants.monitorisp.ui;
 
 import org.junit.Test;
 import static nl.verheulconsultants.monitorisp.service.Utilities.isValidHostAddress;
+import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 public class MyUrlValidatorTest {
     
     public MyUrlValidatorTest() {
+    }
+    
+    @Before
+    public void setUp() {
+        setSessionsDataFileNameForTest();
     }
 
     /**

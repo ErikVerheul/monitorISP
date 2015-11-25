@@ -31,7 +31,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import static nl.verheulconsultants.monitorisp.service.Utilities.FILENAME;
+import static nl.verheulconsultants.monitorisp.service.Utilities.sessionDataFileName;
 import nl.verheulconsultants.monitorisp.ui.Host;
 import org.apache.wicket.model.util.CollectionModel;
 import org.slf4j.Logger;
@@ -95,21 +95,27 @@ public class MonitorISPData implements Serializable {
     }
     
     
-    // Some values are not checked as they can be zero.
+    // Check if all fields are set for writing. Some values are not checked as they can be zero.
     private boolean allSet() {
         return paletteModel != null && selected != null && routerAddress != null && outages != null 
                 && startOfService > 0 && lastContactWithAnyHost > 0;
     }
+    
+    // Check if all fields are read. Some values are not checked as they can be zero.
+    private boolean allRead() {
+        return dataRead.paletteModel != null && dataRead.selected != null && dataRead.routerAddress != null && dataRead.outages != null 
+                && dataRead.startOfService > 0 && dataRead.lastContactWithAnyHost > 0;
+    }
 
-    public boolean saveData() {
+    public boolean saveData(MonitorISPData allData) {
         if (allSet()) {
             ObjectOutputStream oos;
-            try (FileOutputStream fout = new FileOutputStream(FILENAME)) {
+            try (FileOutputStream fout = new FileOutputStream(sessionDataFileName)) {
                 oos = new ObjectOutputStream(fout);
-                oos.writeObject(this);
+                oos.writeObject(allData);
                 return true;
             } catch (IOException ex) {
-                LOGGER.error("The application data can not be saved in file {}. The exception is {}", FILENAME, ex);
+                LOGGER.error("The application data can not be saved in file {}. The exception is {}", sessionDataFileName, ex);
                 return false;
             }
         } else {
@@ -119,12 +125,17 @@ public class MonitorISPData implements Serializable {
     }
     
     public boolean readData() {
-        try (FileInputStream fin = new FileInputStream(FILENAME)) {
+        try (FileInputStream fin = new FileInputStream(sessionDataFileName)) {
             ObjectInputStream ois = new ObjectInputStream(fin);
             dataRead = (MonitorISPData) ois.readObject();
-            return true;
+            if (allRead()) {
+                return true;
+            } else {
+                LOGGER.error("Not all expected data was read.");
+                return false;
+            }
         } catch (IOException ex) {
-            LOGGER.error("An IO error occurred reading file {}. The exception is {}", FILENAME, ex);
+            LOGGER.error("An IO error occurred reading file {}. The exception is {}", sessionDataFileName, ex);
             return false;
         } catch (ClassNotFoundException ex2) {
             LOGGER.error("Unexpected internal error with exception {}", ex2);
