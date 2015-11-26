@@ -15,9 +15,6 @@ import java.util.Date;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
 import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
-import nl.verheulconsultants.monitorisp.ui.Host;
-import nl.verheulconsultants.monitorisp.ui.WicketApplication;
-import org.apache.wicket.model.util.CollectionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

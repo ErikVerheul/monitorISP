@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getSessionDataFileName;
 import nl.verheulconsultants.monitorisp.ui.Host;
@@ -52,7 +51,7 @@ public class MonitorISPData implements Serializable {
     private long numberOfInterruptions;
     private long failedChecks;
     private long successfulChecks;
-    private static final String CANNOTGET = "Cannot get. The data is not read yet";
+    private long timeStamp;
 
     public void setPaletteModel(CollectionModel<Host> paletteModel) {
         this.paletteModel = paletteModel;
@@ -98,17 +97,18 @@ public class MonitorISPData implements Serializable {
     // Check if all fields are set for writing. Some values are not checked as they can be zero.
     private boolean allSet() {
         return paletteModel != null && selected != null && routerAddress != null && outages != null 
-                && startOfService > 0 && lastContactWithAnyHost > 0;
+                && startOfService > 0L && lastContactWithAnyHost > 0L;
     }
     
     // Check if all fields are read. Some values are not checked as they can be zero.
     private boolean allRead() {
         return dataRead.paletteModel != null && dataRead.selected != null && dataRead.routerAddress != null && dataRead.outages != null 
-                && dataRead.startOfService > 0 && dataRead.lastContactWithAnyHost > 0;
+                && dataRead.startOfService > 0L && dataRead.lastContactWithAnyHost > 0L && dataRead.timeStamp > 0L;
     }
 
     public boolean saveData(MonitorISPData allData) {
         if (allSet()) {
+            timeStamp = System.currentTimeMillis();
             ObjectOutputStream oos;
             try (FileOutputStream fout = new FileOutputStream(getSessionDataFileName())) {
                 oos = new ObjectOutputStream(fout);
@@ -143,99 +143,48 @@ public class MonitorISPData implements Serializable {
         }
     }
     
-    private boolean isDataRead() {
-        return dataRead != null;
-    }
-    
-    
     public CollectionModel<Host> getPaletteModel() {
-        if (isDataRead()) {
-            return dataRead.paletteModel;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return null;
-        }
+        return dataRead.paletteModel;
     }
     
     public List<Host> getSelected() {
-        if (isDataRead()) {
-            return dataRead.selected;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return new ArrayList<>();
-        }
+        return dataRead.selected;
     }
     
     public String getRouterAddress() {
-        if (isDataRead()) {
-            return dataRead.routerAddress;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return null;
-        }
+        return dataRead.routerAddress;
     }
     
     public List<OutageListItem> getOutages() {
-        if (isDataRead()) {
-            return dataRead.outages;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return new ArrayList<>();
-        }
+        return dataRead.outages;
     }
     
     public long getStartOfService() {
-        if (isDataRead()) {
-            return dataRead.startOfService;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return 0L;
-        } 
+        return dataRead.startOfService;
     }
     
     public long getLastContactWithAnyHost() {
-        if (isDataRead()) {
-            return dataRead.lastContactWithAnyHost;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return 0L;
-        } 
+        return dataRead.lastContactWithAnyHost;
     }
     
     public long getLastFail() {
-        if (isDataRead()) {
-            return dataRead.lastFail;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return 0L;
-        } 
+        return dataRead.lastFail;
     }
     
     public long getNumberOfInterruptions() {
-        if (isDataRead()) {
-            return dataRead.numberOfInterruptions;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return 0L;
-        } 
+        return dataRead.numberOfInterruptions;
     }
     
     public long getFailedChecks() {
-        if (isDataRead()) {
-            return dataRead.failedChecks;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return 0L;
-        } 
+        return dataRead.failedChecks;
     }
     
     public long getSuccessfulChecks() {
-        if (isDataRead()) {
-            return dataRead.successfulChecks;
-        } else {
-            LOGGER.error(CANNOTGET);
-            return 0L;
-        } 
+        return dataRead.successfulChecks;
+    }
+    
+    public long getTimeStamp() {
+        return dataRead.timeStamp;
     }
     
 

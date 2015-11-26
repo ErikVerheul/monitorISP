@@ -183,17 +183,6 @@ public class HomePage extends BasePage {
         // version 7.x.x
         palette.add(new DefaultTheme());
 
-        /**
-         * Add the hosts to the palette selection
-         * @TODO: would expect to have used palette.getModelCollection()
-         * 
-         * @see https://ci.apache.org/projects/wicket/apidocs/7.x/
-         */
-        Collection choices = palette.getChoices();
-        for (Host h : selected) {
-            choices.add(h);
-        }
-
         add(formSelectHosts);
         formSelectHosts.add(palette);
         formSelectHosts.add(removeButton);
@@ -286,6 +275,7 @@ public class HomePage extends BasePage {
             ISPController.setFailedChecks(sessionData.getFailedChecks());
             ISPController.setSuccessfulChecks(sessionData.getSuccessfulChecks());
             LOGGER.info("Previous session data are loaded successfully.");
+            LOGGER.info("The choices contain now {} hosts: {}", choicesModel.getObject().size(), choicesModel.getObject());
             LOGGER.info("The selection contains now {} hosts: {}", selected.size(), selected);
         } else {
             // Initiate with default values.          
@@ -301,12 +291,18 @@ public class HomePage extends BasePage {
         Collection<Host> hosts = choicesModel.getObject();
         hosts.clear();
         hosts.add(new Host("0", "willfailconnection.com"));
+        Host uva = new Host("1", "uva.nl");
+        hosts.add(uva);
+        Host xs4all = new Host("2", "xs4all.nl");
+        hosts.add(xs4all);
+        Host vu = new Host("3", "vu.nl");
+        hosts.add(vu);
 
         List<Host> selHosts = selectedModel.getObject();
         selHosts.clear();
-        selHosts.add(new Host("1", "uva.nl"));
-        selHosts.add(new Host("2", "xs4all.nl"));
-        selHosts.add(new Host("3", "vu.nl"));
+        selHosts.add(uva);
+        selHosts.add(xs4all);
+        selHosts.add(vu);
     }
 
     private List<String> getNames(List<Host> hosts) {

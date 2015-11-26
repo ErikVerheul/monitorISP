@@ -109,7 +109,7 @@ public class HomePageTest {
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string
         FormTester formTester = tester.newFormTester("paletteForm", false);
-        //ada a host to the choices
+        //add a host to the choices
         Collection<Host> hosts = choicesModel.getObject();
         hosts.add(new Host("4", "google.com"));
         //submit form using inner component 'button' as alternate button
@@ -186,7 +186,7 @@ public class HomePageTest {
     public void testInitWithPreviousSessionData() {
         System.out.println("initWithPreviousSessionData");
         HomePage.initWithPreviousSessionData();
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 1);
+        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 4);
         assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 3);
     }
 
@@ -197,7 +197,7 @@ public class HomePageTest {
     public void testInitWithDefaults() {
         System.out.println("initWithDefaults");
         HomePage.initWithDefaults();
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 1);
+        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 4);
         assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 3);
     }
 
@@ -208,9 +208,12 @@ public class HomePageTest {
     public void testAddingToSelection() {
         System.out.println("testAddingToSelection");
         HomePage.initWithDefaults();
+        Host newHost = new Host("4", "google.com");
+        Collection<Host> hosts = choicesModel.getObject();
+        hosts.add(newHost);
         List<Host> selHosts = selectedModel.getObject();
-        selHosts.add(new Host("4", "google.com"));
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 1);
+        selHosts.add(newHost);
+        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 5);
         assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 4);
     }
 
@@ -221,23 +224,14 @@ public class HomePageTest {
     public void testAddingToSelectionAndSaveSession() {
         System.out.println("testAddingToSelectionAndSaveSession");
         HomePage.initWithDefaults();
+        Host newHost = new Host("4", "google.com");
+        Collection<Host> hosts = choicesModel.getObject();
+        hosts.add(newHost);
         List<Host> selHosts = selectedModel.getObject();
-        selHosts.add(new Host("4", "google.com"));
+        selHosts.add(newHost);
         saveSession();
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 1);
+        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 5);
         assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 4);
     }
-    
-    /**
-     * Put this thread to sleep for ms milliseconds.
-     *
-     * @param ms the sleep time
-     */
-    private void sleepMilis(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
-            LOGGER.info("A thread sleep was interrupted because of {}", ex);
-        }
-    }
+
 }
