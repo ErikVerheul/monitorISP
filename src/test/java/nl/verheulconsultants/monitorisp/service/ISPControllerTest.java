@@ -30,6 +30,10 @@ import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.ArrayList;
 import java.util.List;
+import static nl.verheulconsultants.monitorisp.service.ISPController.getLastOutage;
+import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
+import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
+import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
 import org.junit.After;
@@ -41,7 +45,7 @@ import org.slf4j.LoggerFactory;
 
 public class ISPControllerTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
     ISPController instance;
 
     public ISPControllerTest() {
@@ -49,6 +53,7 @@ public class ISPControllerTest {
 
     @Before
     public void setUp() {
+        System.out.println("setUp");
         instance = new ISPController();
         
         setSessionsDataFileNameForTest();
@@ -61,13 +66,16 @@ public class ISPControllerTest {
             Files.copy(sourcePath, getTestHomeDir().resolve(source.getName()), REPLACE_EXISTING);
         } catch (IOException ex) {
             LOGGER.error("File copy failed with exception {}", ex);
-        }     
+        }
+        
+        initWithPreviousSessionData();
     }
 
     @After
     public void tearDown() {
+        System.out.println("tearDown");
          instance.exit();
-         sleepMilis(200);
+         sleepMilis(140);
     }
 
     /**
@@ -75,7 +83,7 @@ public class ISPControllerTest {
      */
     @Test
     public void testIsRunning() {
-        System.out.println("isRunning");
+        System.out.println("testIsRunning");
         boolean expResult = false;
         boolean result = instance.isRunning();
         assertEquals(expResult, result);
@@ -86,7 +94,7 @@ public class ISPControllerTest {
      */
     @Test
     public void testStopTemporarily() {
-        System.out.println("stopTemporarily");
+        System.out.println("testStopTemporarily");
 
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
@@ -104,7 +112,7 @@ public class ISPControllerTest {
      */
     @Test
     public void testRestart() {
-        System.out.println("restart");
+        System.out.println("testRestart");
         
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
@@ -115,7 +123,7 @@ public class ISPControllerTest {
         sleepMilis(1400);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        sleepMilis(1400);
+        sleepMilis(2000);
         assertTrue(instance.isBusyCheckingConnections());                 
     }
 
@@ -124,13 +132,14 @@ public class ISPControllerTest {
      */
     @Test
     public void testExit() {
-        System.out.println("exit");
+        System.out.println("testExit");
 
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
         instance.doInBackground(hosts);
+        sleepMilis(120);
         instance.exit();
-        sleepMilis(2000);
+        sleepMilis(140);
         assertFalse(instance.isRunning());
     }
 
@@ -139,11 +148,11 @@ public class ISPControllerTest {
      */
     @Test
     public void testRun() {
-        System.out.println("run");
+        System.out.println("testRun");
         instance.start();
         assert(instance.isAlive());
         instance.exit();
-        sleepMilis(120);
+        sleepMilis(140);
         assert(!instance.isAlive());
     }
 
@@ -152,7 +161,7 @@ public class ISPControllerTest {
      */
     @Test
     public void testDoInBackground1() {
-        System.out.println("doInBackground");
+        System.out.println("testDoInBackground1");
 
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
@@ -167,7 +176,7 @@ public class ISPControllerTest {
      */
     @Test
     public void testDoInBackground2() {
-        System.out.println("doInBackground");
+        System.out.println("testDoInBackground2");
 
         List<String> hosts = new ArrayList();
         hosts.add("willnotconnect.com");
@@ -182,7 +191,7 @@ public class ISPControllerTest {
      */
     @Test
     public void testCheckISP1() {
-        System.out.println("checkISP");
+        System.out.println("testCheckISP1");
         List<String> hURLs = new ArrayList();
         hURLs.add("uva.nl");
         boolean expResult = true;
@@ -195,20 +204,60 @@ public class ISPControllerTest {
      */
     @Test
     public void testCheckISP2() {
-        System.out.println("checkISP");
+        System.out.println("testCheckISP2");
         List<String> hURLs = new ArrayList();
         hURLs.add("willnotconnect.com");
         boolean expResult = false;
         boolean result = instance.checkISP(hURLs);
         assertEquals(expResult, result);
     }
+    
+    /**
+     * Test if a record is registered when service is restarted.
+     */
+    @Test
+    public void testServiceInterruptedRegistration() {
+        System.out.println("testServiceInterruptedRegistration");
+        List<String> hosts = new ArrayList();
+        hosts.add("uva.nl");        
+        instance.doInBackground(hosts);
+        sleepMilis(120);
+        assertTrue(instance.isBusyCheckingConnections());
+        OutageListItem lastOutage = getLastOutage();
+        assertTrue("No outages were registered", null != lastOutage);
+        assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == SERVICEDOWN);
+    }
+
+    
+    /**
+     * Test if a record is registered when the controller is temporarily down.
+     */
+    @Test
+    public void testControllerDownRegistration() {
+        System.out.println("testControllerDownRegistration");
+        List<String> hosts = new ArrayList();
+        hosts.add("uva.nl");
+        
+        instance.doInBackground(hosts);
+        sleepMilis(120);
+        instance.stopTemporarily();
+        sleepMilis(1400);
+        assertFalse(instance.isBusyCheckingConnections());
+        instance.restart(hosts);
+        sleepMilis(2000);
+        assertTrue(instance.isBusyCheckingConnections());
+        OutageListItem lastOutage = getLastOutage();
+        assertTrue("No outages were registered", null != lastOutage);
+        assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == CONTROLLERDOWN);
+    }
+
 
     /**
      * Put this thread to sleep for ms milliseconds.
      *
      * @param ms the sleep time
      */
-    void sleepMilis(long ms) {
+    private void sleepMilis(long ms) {
         try {
             Thread.sleep(ms);
         } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {

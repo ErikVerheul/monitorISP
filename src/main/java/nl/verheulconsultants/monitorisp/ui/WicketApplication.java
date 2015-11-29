@@ -23,13 +23,12 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
-import java.util.ArrayList;
-import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
+import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.model.util.CollectionModel;
-import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Application object for your web application. If you want to run this application without deploying, run the Start class.
@@ -38,13 +37,8 @@ import org.apache.wicket.protocol.http.WebApplication;
  */
 public class WicketApplication extends WebApplication {
 
-    static ISPController controller = new ISPController();
-
-    static List<Host> selected = new ArrayList<>();
-    static ListModel<Host> selectedModel;
-
-    private static final List<Host> hosts = new ArrayList<>();
-    static CollectionModel<Host> choicesModel = new CollectionModel<>(hosts);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WicketApplication.class);
+    public static ISPController controller = new ISPController();
 
     /**
      * Set the home page.
@@ -68,17 +62,12 @@ public class WicketApplication extends WebApplication {
     }
 
     /**
-     * @return the palette model with all choices.
+     * Save current session data before service exit. Prevent saving the data if the service had not started.
      */
-    public static CollectionModel<Host> getPaletteModel() {
-        return choicesModel;
-    }
-
-    /**
-     * @return the selected hosts.
-     */
-    public static List<Host> getSelected() {
-        return selected;
+    @Override
+    public void onDestroy() {
+        saveSession();
+        LOGGER.info("Session data is saved.");
     }
 
 }

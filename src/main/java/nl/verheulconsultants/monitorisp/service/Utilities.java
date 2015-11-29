@@ -25,6 +25,8 @@ package nl.verheulconsultants.monitorisp.service;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.getPaletteModel;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.getSelected;
 import nl.verheulconsultants.monitorisp.ui.WicketApplication;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.slf4j.Logger;
@@ -36,26 +38,30 @@ public class Utilities {
     public static final String APPHOMEDIR = "C:\\MonitorISP\\";
     private static final String TESTHOMEDIR = "C:\\MonitorISP\\test\\";
     private static String sessionDataFileName = APPHOMEDIR + "MonitorISPData.bin";
+    public static final int ISP = 0;
+    public static final int INTERNAL = 1;
+    public static final int SERVICEDOWN = 2;
+    public static final int CONTROLLERDOWN = 3;
 
     //Prevent this utility class to be instantiated.
     private Utilities() {
 
     }
-    
+
     public static String getSessionDataFileName() {
         return sessionDataFileName;
     }
-   
+
     /**
      * Set a test directory for storing the session data.
      */
     public static void setSessionsDataFileNameForTest() {
         sessionDataFileName = TESTHOMEDIR + "MonitorISPData.bin";
     }
-    
+
     /**
      * Get the test directory for storing the session data.
-     * 
+     *
      * @return the path
      */
     public static Path getTestHomeDir() {
@@ -109,8 +115,8 @@ public class Utilities {
      */
     public static boolean saveSession() {
         MonitorISPData allData = new MonitorISPData();
-        allData.setPaletteModel(WicketApplication.getPaletteModel());
-        allData.setSelected(WicketApplication.getSelected());
+        allData.setPaletteModel(getPaletteModel());
+        allData.setSelected(getSelected());
         allData.setRouterAddress(ISPController.getRouterAddress());
         allData.setOutages(ISPController.getOutageData());
         allData.setStartOfService(ISPController.getStartOfService());
@@ -119,6 +125,7 @@ public class Utilities {
         allData.setNumberOfInterruptions(ISPController.getNumberOfInterruptions());
         allData.setFailedChecks(ISPController.getFailedChecks());
         allData.setSuccessfulChecks(ISPController.getSuccessfulChecks());
+        allData.setTimeStamp(System.currentTimeMillis());
         if (allData.saveData(allData)) {
             return true;
         } else {

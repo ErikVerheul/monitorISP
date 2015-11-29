@@ -24,22 +24,28 @@
 package nl.verheulconsultants.monitorisp.service;
 
 import java.io.Serializable;
+import java.util.Date;
+import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
+import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
+import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
+import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
+import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
 
 public class OutageListItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
     int index;
-    String start;
-    String end;
+    long start;
+    long end;
     long duration;
-    boolean outageCausedInternal;
+    int cause;
 
-    OutageListItem(int index, String start, String end, long duration, boolean outageCauseInternal) {
+    OutageListItem(int index, long start, long end, long duration, int cause) {
         this.index = index;
         this.start = start;
         this.end = end;
         this.duration = duration;
-        this.outageCausedInternal = outageCauseInternal;
+        this.cause = cause;
     }
 
     /**
@@ -57,7 +63,7 @@ public class OutageListItem implements Serializable {
      * @return start date
      */
     public String getStart() {
-        return start;
+        return new Date(start).toString();
     }
 
     /**
@@ -66,7 +72,7 @@ public class OutageListItem implements Serializable {
      * @return end date
      */
     public String getEnd() {
-        return end;
+        return new Date(end).toString();
     }
 
     /**
@@ -77,13 +83,40 @@ public class OutageListItem implements Serializable {
     public long getDuration() {
         return duration;
     }
+    
+    /**
+     * Return the cause type of an outage.
+     *
+     * @return the cause
+     */
+    public int getOutageCause() {
+        return cause;
+    }
 
     /**
-     * Check if the outage is caused by a network problem up to the router address. Can be a internal cabling or switch problem of the router it self.
+     * Return the cause type of an outage as string.
      *
-     * @return true if the problem is internal
+     * @return the cause as String
      */
-    public String getOutageCausedInternal() {
-        return Boolean.toString(outageCausedInternal);
+    public String getOutageCauseAsString() {
+        if (cause == ISP) {
+            return "ISP";
+        }
+        if (cause == INTERNAL) {
+            return "internal network problem";
+        }
+        if (cause == SERVICEDOWN) {
+            return "service was down";
+        }
+        if (cause == CONTROLLERDOWN) {
+            return "controller was down";
+        }
+        return "";
+    }
+    
+    @Override
+    public String toString() {
+        return "Outage [" + index + ", from:" + new Date(start).toString() + ", to:" + new Date(end).toString() + 
+                ", duration:" + millisToTime(duration) + ", cause = " + getOutageCauseAsString() + "]";
     }
 }

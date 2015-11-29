@@ -93,6 +93,10 @@ public class MonitorISPData implements Serializable {
         this.successfulChecks = successfulChecks;
     }
     
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+    
     
     // Check if all fields are set for writing. Some values are not checked as they can be zero.
     private boolean allSet() {
@@ -108,7 +112,6 @@ public class MonitorISPData implements Serializable {
 
     public boolean saveData(MonitorISPData allData) {
         if (allSet()) {
-            timeStamp = System.currentTimeMillis();
             ObjectOutputStream oos;
             try (FileOutputStream fout = new FileOutputStream(getSessionDataFileName())) {
                 oos = new ObjectOutputStream(fout);

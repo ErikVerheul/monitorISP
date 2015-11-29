@@ -29,13 +29,9 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
-import nl.verheulconsultants.monitorisp.service.MonitorISPData;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.choicesModel;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.selected;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.selectedModel;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -56,16 +52,23 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.util.io.IClusterable;
 import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomePage extends BasePage {
+public final class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
+    
+    static List<Host> selected = new ArrayList<>();
+    static ListModel<Host> selectedModel;
+    private static final List<Host> hosts = new ArrayList<>();
+    static CollectionModel<Host> choicesModel = new CollectionModel<>(hosts);
+    
     private static Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
@@ -76,10 +79,11 @@ public class HomePage extends BasePage {
     private final InputRouterAddress address;
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
+    private static long lastTimeDataSaved;
 
     public HomePage() {
-        selectedModel = new ListModel<>(selected);
-        initWithPreviousSessionData();
+//        selectedModel = new ListModel<>(selected);
+        controller.initWithPreviousSessionData();
         address = new InputRouterAddress(ISPController.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
         newUrl = new TextField<>("newHost", Model.of(""));
@@ -179,6 +183,8 @@ public class HomePage extends BasePage {
                 selectedModel,
                 choicesModel,
                 renderer, 10, true, false);
+        LOGGER.info("The palette is initiated with choices {}.", choicesModel);
+        LOGGER.info("The palette is initiated with selection {}.", selected);
 
         // version 7.x.x
         palette.add(new DefaultTheme());
@@ -245,7 +251,7 @@ public class HomePage extends BasePage {
                 item.add(new Label("Start", olu.getStart()));
                 item.add(new Label("End", olu.getEnd()));
                 item.add(new Label("Duration", millisToTime(olu.getDuration())));
-                item.add(new Label("OutageCausedInternal", olu.getOutageCausedInternal()));
+                item.add(new Label("OutageCausedInternal", olu.getOutageCauseAsString()));
             }
         };
 
@@ -259,50 +265,76 @@ public class HomePage extends BasePage {
         // finally add the container to the page
         add(outageListContainer);
     }
+    
+    /**
+     * @return the palette model with all choices.
+     */
+    public static CollectionModel<Host> getPaletteModel() {
+        return choicesModel;
+    }
+    
+    /**
+     * Set the palette choices
+     * @param choicesModel 
+     */
+    public static void setPaletteModel(CollectionModel<Host> choicesModel) {
+        HomePage.choicesModel = choicesModel;
+        LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
+    }
 
-    public static void initWithPreviousSessionData() {
-        initWithDefaults();
-        MonitorISPData sessionData = new MonitorISPData();
-        if (sessionData.readData()) {
-            choicesModel = sessionData.getPaletteModel();
-            selected = sessionData.getSelected();
-            ISPController.setRouterAddress(sessionData.getRouterAddress());
-            ISPController.setOutageData(sessionData.getOutages());
-            ISPController.setStartOfService(sessionData.getStartOfService());
-            ISPController.setLastContactWithAnyHost(sessionData.getLastContactWithAnyHost());
-            ISPController.setLastFail(sessionData.getLastFail());
-            ISPController.setnumberOfInterruptions(sessionData.getNumberOfInterruptions());
-            ISPController.setFailedChecks(sessionData.getFailedChecks());
-            ISPController.setSuccessfulChecks(sessionData.getSuccessfulChecks());
-            LOGGER.info("Previous session data are loaded successfully.");
-            LOGGER.info("The choices contain now {} hosts: {}", choicesModel.getObject().size(), choicesModel.getObject());
-            LOGGER.info("The selection contains now {} hosts: {}", selected.size(), selected);
-        } else {
-            // Initiate with default values.          
-            LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
-            initWithDefaults();
-        }
+    /**
+     * @return the selected hosts.
+     */
+    public static List<Host> getSelected() {
+        return selected;
+    }
+    
+    /**
+     * Set the palette selection
+     * @param selected 
+     */
+    public static void setSelected(List<Host> selected) {
+        HomePage.selected = selected;
+        selectedModel = new ListModel<>(selected);
+        LOGGER.info("setSelected set the selection to {}.", selected);
+    }
+    
+    
+    /**
+     * Return the date of the data save of the previous session.
+     * @return the date as long
+     */
+    public static long getLastTimeDataSaved() {
+        return lastTimeDataSaved;
+    }
+    
+    /**
+     * Set the date of the data save of the previous session.
+     * @param lastTimeDataSaved
+     */
+    public static void setLastTimeDataSaved(long lastTimeDataSaved) {
+        HomePage.lastTimeDataSaved = lastTimeDataSaved;
     }
 
     /**
      * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
      */
     public static void initWithDefaults() {
-        Collection<Host> hosts = choicesModel.getObject();
-        hosts.clear();
-        hosts.add(new Host("0", "willfailconnection.com"));
+        Collection<Host> hostsLocal = choicesModel.getObject();
+        hostsLocal.clear();
+        hostsLocal.add(new Host("0", "willfailconnection.com"));
         Host uva = new Host("1", "uva.nl");
-        hosts.add(uva);
+        hostsLocal.add(uva);
         Host xs4all = new Host("2", "xs4all.nl");
-        hosts.add(xs4all);
+        hostsLocal.add(xs4all);
         Host vu = new Host("3", "vu.nl");
-        hosts.add(vu);
+        hostsLocal.add(vu);
 
-        List<Host> selHosts = selectedModel.getObject();
-        selHosts.clear();
-        selHosts.add(uva);
-        selHosts.add(xs4all);
-        selHosts.add(vu);
+        selected.clear();
+        selected.add(uva);
+        selected.add(xs4all);
+        selected.add(vu);
+        selectedModel = new ListModel<>(selected);
     }
 
     private List<String> getNames(List<Host> hosts) {

@@ -13,8 +13,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
+import java.util.concurrent.CopyOnWriteArrayList;
+import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
+import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
+import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
+import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
 import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
+import nl.verheulconsultants.monitorisp.ui.HomePage;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.getLastTimeDataSaved;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.initWithDefaults;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.setLastTimeDataSaved;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,18 +44,47 @@ public class ISPController extends Thread {
     private static long currentISPunavailability = 0L;
     private static boolean canReachISP = true;
     private static boolean busyCheckingConnections = false;
-    private static List<OutageListItem> outages = new ArrayList<>();
+    private static List<OutageListItem> outages = new CopyOnWriteArrayList<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
     private List<String> selectedHostsURLs = new ArrayList<>();
-    private int outageIndex = 0;
     private long outageStart = 0L;
     private long outageEnd;
     private static String routerAddress = NOROUTERADDRESS;
     private static boolean outageCausedInternal = false;
+    private static boolean doRegisterServiceWasDown = true;
+    private static boolean doRegisterControllerWasDown = false;
     private static boolean simulateFailure = false;
+
+    public static void initWithPreviousSessionData() {
+        MonitorISPData sessionData = new MonitorISPData();
+        if (sessionData.readData()) {
+            HomePage.setPaletteModel(sessionData.getPaletteModel());
+            HomePage.setSelected(sessionData.getSelected());
+            setRouterAddress(sessionData.getRouterAddress());
+            setOutageData(sessionData.getOutages());
+            setStartOfService(sessionData.getStartOfService());
+            setLastContactWithAnyHost(sessionData.getLastContactWithAnyHost());
+            setLastFail(sessionData.getLastFail());
+            setnumberOfInterruptions(sessionData.getNumberOfInterruptions());
+            setFailedChecks(sessionData.getFailedChecks());
+            setSuccessfulChecks(sessionData.getSuccessfulChecks());
+            setLastTimeDataSaved(sessionData.getTimeStamp());
+
+            LOGGER.info("Previous session data are loaded successfully.");
+            LOGGER.info("The timestamp read is {}.", new Date(getLastTimeDataSaved()).toString());
+            LOGGER.info("The choices contain now {} hosts: {}", sessionData.getPaletteModel().getObject().size(), sessionData.getPaletteModel().getObject());
+            LOGGER.info("The selection contains now {} hosts: {}", sessionData.getSelected().size(), sessionData.getSelected());
+            LOGGER.info("The history contains now {} records", getOutagesSize());
+        } else {
+            // Initiate with default values.          
+            LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
+            setLastTimeDataSaved(0L);
+            initWithDefaults();
+        }
+    }
 
     /**
      * The service has started and is running.
@@ -81,6 +118,9 @@ public class ISPController extends Thread {
      */
     public void restart(List<String> hosts) {
         this.selectedHostsURLs = hosts;
+        if (!doRegisterServiceWasDown) {
+            doRegisterControllerWasDown = true;
+        }
         stop = false;
     }
 
@@ -88,6 +128,7 @@ public class ISPController extends Thread {
      * Stop the service thread completely.
      */
     public void exit() {
+        LOGGER.info("The controller thread exit was called.");
         stop = true;
         exit = true;
     }
@@ -98,12 +139,31 @@ public class ISPController extends Thread {
         running = true;
         stop = false;
         LOGGER.info("The controller has started.");
-
+        
+        if (doRegisterServiceWasDown) {
+            long start = getLastTimeDataSaved();
+            long now = System.currentTimeMillis();
+            // do not register if there was no previous session
+            if (start > 0L) {
+                outages.add(new OutageListItem(outages.size(), start, now, now - start, SERVICEDOWN));
+                LOGGER.info("Service was down is registered");
+            }
+            doRegisterServiceWasDown = false;
+        }
         /**
-         * Outer loop is always loping unless exit = true. When loping started = true
+         * Outer loop is always loping unless exit = true. Note that the event that the controller was not running is registered. There are two causes: 1. The
+         * controller was stopped in the UI and restarted. 2. The service was down and restarted.
          */
         do {
             if (!selectedHostsURLs.isEmpty()) {
+                if (doRegisterControllerWasDown) {
+                    long start = lastContactWithAnyHost;
+                    long now = System.currentTimeMillis();
+                    outages.add(new OutageListItem(outages.size(), start, now, now - start, CONTROLLERDOWN));
+                    doRegisterControllerWasDown = false;
+                    LOGGER.info("Controller was down is registered");
+                }
+                
                 innerLoop(selectedHostsURLs);
             } else {
                 LOGGER.warn("Cannot run the service with an empty selection list");
@@ -241,6 +301,24 @@ public class ISPController extends Thread {
     }
 
     /**
+     * @return the number of registered outages.
+     */
+    public static int getOutagesSize() {
+        return outages.size();
+    }
+
+    /**
+     * @return the last registered outage or null if none are available.
+     */
+    public static OutageListItem getLastOutage() {
+        if (null != outages && outages.size() > 0) {
+            return outages.get(outages.size() - 1);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Inner loop checking if connections to the hosts are possible When loping busyCheckingConnections = true Registers the periods when no connections could
      * be made.
      */
@@ -255,9 +333,8 @@ public class ISPController extends Thread {
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
-                    outages.add(new OutageListItem(outageIndex, new Date(outageStart).toString(),
-                            new Date(outageEnd).toString(), outageEnd - outageStart, outageCausedInternal));
-                    outageIndex++;
+                    outages.add(new OutageListItem(outages.size(), outageStart,
+                            outageEnd, outageEnd - outageStart, INTERNAL));
                     outageStart = 0L;
                 }
             } else {
@@ -275,7 +352,6 @@ public class ISPController extends Thread {
             }
             // wait 5 seconds to check the ISP connection again
             sleepMillis(5000);
-            saveSession();
         }
         if (busyCheckingConnections) {
             LOGGER.info("The controller has stopped.\n");
@@ -455,7 +531,7 @@ public class ISPController extends Thread {
 
         StatusListItem x7 = new StatusListItem();
         x7.name = "totalISPunavailability";
-        x7.value = millisToTime(getTotalUnavailability());
+        x7.value = millisToTime(getTotalISPUnavailability());
         x7.index = 8;
         ret.add(x7);
 
@@ -495,10 +571,12 @@ public class ISPController extends Thread {
         return outages;
     }
 
-    private long getTotalUnavailability() {
+    private long getTotalISPUnavailability() {
         long sumOutages = 0L;
         for (OutageListItem item : outages) {
-            sumOutages = sumOutages + item.getDuration();
+            if (item.cause == ISP) {
+                sumOutages = sumOutages + item.getDuration();
+            }
         }
         return sumOutages + currentISPunavailability;
     }

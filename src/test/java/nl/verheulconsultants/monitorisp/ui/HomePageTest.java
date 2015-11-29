@@ -8,12 +8,13 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Collection;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
+import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.choicesModel;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.selected;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.selectedModel;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.choicesModel;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.selected;
+import static nl.verheulconsultants.monitorisp.ui.HomePage.selectedModel;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import static org.junit.Assert.assertEquals;
@@ -185,7 +186,7 @@ public class HomePageTest {
     @Test
     public void testInitWithPreviousSessionData() {
         System.out.println("initWithPreviousSessionData");
-        HomePage.initWithPreviousSessionData();
+        initWithPreviousSessionData();
         assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 4);
         assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 3);
     }
