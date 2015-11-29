@@ -311,10 +311,10 @@ public class ISPController extends Thread {
      * @return the last registered outage or null if none are available.
      */
     public static OutageListItem getLastOutage() {
-        if (null != outages && outages.size() > 0) {
-            return outages.get(outages.size() - 1);
-        } else {
+        if (null == outages || outages.isEmpty()) {
             return null;
+        } else {
+            return outages.get(outages.size() - 1);
         }
     }
 

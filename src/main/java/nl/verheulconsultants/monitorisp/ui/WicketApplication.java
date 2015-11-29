@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class WicketApplication extends WebApplication {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WicketApplication.class);
-    public static ISPController controller = new ISPController();
+    public static final ISPController controller = new ISPController();
 
     /**
      * Set the home page.

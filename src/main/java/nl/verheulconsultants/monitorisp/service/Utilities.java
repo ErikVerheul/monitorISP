@@ -27,7 +27,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import static nl.verheulconsultants.monitorisp.ui.HomePage.getPaletteModel;
 import static nl.verheulconsultants.monitorisp.ui.HomePage.getSelected;
-import nl.verheulconsultants.monitorisp.ui.WicketApplication;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

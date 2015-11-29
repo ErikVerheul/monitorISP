@@ -82,8 +82,7 @@ public final class HomePage extends BasePage {
     private static long lastTimeDataSaved;
 
     public HomePage() {
-//        selectedModel = new ListModel<>(selected);
-        controller.initWithPreviousSessionData();
+        ISPController.initWithPreviousSessionData();
         address = new InputRouterAddress(ISPController.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
         newUrl = new TextField<>("newHost", Model.of(""));
@@ -129,8 +128,8 @@ public final class HomePage extends BasePage {
             protected void onSubmit() {
                 final String urlValue = newUrl.getModelObject();
                 if (isValidHostAddress(urlValue)) {
-                    Collection<Host> hosts = choicesModel.getObject();
-                    hosts.add(new Host(Integer.toString(hosts.size()), urlValue));
+                    Collection<Host> hostsLocal = choicesModel.getObject();
+                    hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), urlValue));
                     LOGGER.info("The URL {} is added", urlValue);
                     LOGGER.info("The host list is changed to {}", choicesModel);
                     if (saveSession()) {
@@ -162,9 +161,9 @@ public final class HomePage extends BasePage {
         removeButton = new Button("removeButton") {
             @Override
             public void onSubmit() {
-                Collection<Host> hosts = choicesModel.getObject();
+                Collection<Host> hostsLocal = choicesModel.getObject();
                 LOGGER.info("These URL's will be removed {}", selected);
-                hosts.removeAll(selected);
+                hostsLocal.removeAll(selected);
                 LOGGER.info("The model is changed to {}", choicesModel);
             }
         };
