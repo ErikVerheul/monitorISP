@@ -41,7 +41,7 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
 import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
-import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMilis;
+import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMillis;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,7 +81,7 @@ public class ISPControllerTest {
     public void tearDown() {
         System.out.println("tearDown");
          instance.exit();
-         sleepMilis(140);
+         sleepMillis(140);
     }
 
     /**
@@ -106,10 +106,10 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        sleepMilis(120);
+        sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         instance.stopTemporarily();
-        sleepMilis(1400);
+        sleepMillis(1400);
         assertFalse(instance.isBusyCheckingConnections());   
     }
 
@@ -124,12 +124,12 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         
         instance.doInBackground(hosts);
-        sleepMilis(120);
+        sleepMillis(120);
         instance.stopTemporarily();
-        sleepMilis(1400);
+        sleepMillis(1400);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        sleepMilis(2000);
+        sleepMillis(2000);
         assertTrue(instance.isBusyCheckingConnections());                 
     }
 
@@ -143,9 +143,9 @@ public class ISPControllerTest {
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
         instance.doInBackground(hosts);
-        sleepMilis(120);
+        sleepMillis(120);
         instance.exit();
-        sleepMilis(140);
+        sleepMillis(140);
         assertFalse(instance.isRunning());
     }
 
@@ -158,7 +158,7 @@ public class ISPControllerTest {
         instance.start();
         assert(instance.isAlive());
         instance.exit();
-        sleepMilis(140);
+        sleepMillis(140);
         assert(!instance.isAlive());
     }
 
@@ -173,7 +173,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        sleepMilis(1400);
+        sleepMillis(1400);
         assertTrue(ISPController.successfulChecks > 0);
     }
     
@@ -188,7 +188,7 @@ public class ISPControllerTest {
         hosts.add("willnotconnect.com");
 
         instance.doInBackground(hosts);
-        sleepMilis(1400);
+        sleepMillis(1400);
         assertTrue(ISPController.failedChecks > 0);
     }
 
@@ -228,12 +228,12 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         setRouterAddress("192.168.0.6");
         instance.doInBackground(hosts);
-        sleepMilis(120);
+        sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         simulateFailure(true);
-        sleepMilis(6000);
+        sleepMillis(6000);
         simulateFailure(false);
-        sleepMilis(6000);
+        sleepMillis(6000);
         OutageListItem lastOutage = getLastOutage();
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
@@ -249,13 +249,13 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         setRouterAddress("192.168.0.6");
         instance.doInBackground(hosts);
-        sleepMilis(120);
+        sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         simulateCannotReachRouter(true);
         simulateFailure(true);
-        sleepMilis(6000);
+        sleepMillis(6000);
         simulateFailure(false);
-        sleepMilis(6000);
+        sleepMillis(6000);
         simulateCannotReachRouter(false);
         OutageListItem lastOutage = getLastOutage();
         assertTrue("No outages were registered", null != lastOutage);
@@ -271,7 +271,7 @@ public class ISPControllerTest {
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");        
         instance.doInBackground(hosts);
-        sleepMilis(120);
+        sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         OutageListItem lastOutage = getLastOutage();
         assertTrue("No outages were registered", null != lastOutage);
@@ -289,12 +289,12 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         
         instance.doInBackground(hosts);
-        sleepMilis(120);
+        sleepMillis(120);
         instance.stopTemporarily();
-        sleepMilis(1400);
+        sleepMillis(1400);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        sleepMilis(2000);
+        sleepMillis(2000);
         assertTrue(instance.isBusyCheckingConnections());
         OutageListItem lastOutage = getLastOutage();
         assertTrue("No outages were registered", null != lastOutage);

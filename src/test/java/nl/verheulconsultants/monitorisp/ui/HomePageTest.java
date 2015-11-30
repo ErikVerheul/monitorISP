@@ -8,13 +8,14 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Collection;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
+import static nl.verheulconsultants.monitorisp.service.ISPController.getPaletteModel;
+import static nl.verheulconsultants.monitorisp.service.ISPController.getSelected;
+import static nl.verheulconsultants.monitorisp.service.ISPController.getSelectedModel;
+import static nl.verheulconsultants.monitorisp.service.ISPController.initWithDefaults;
 import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.choicesModel;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.selected;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.selectedModel;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import static org.junit.Assert.assertEquals;
@@ -84,21 +85,21 @@ public class HomePageTest {
         FormTester formTester = tester.newFormTester("paletteForm", false);
         //add a host and then remove it               
         Host newHost = new Host("4", "google.com");
-        Collection<Host> hosts = choicesModel.getObject();
+        Collection<Host> hosts = getPaletteModel().getObject();
         hosts.add(newHost);
-        selected.clear();
-        selected.add(newHost);
-        System.out.println("These URL's will be removed " + selected);
-        if (hosts.removeAll(selected)) {
-            System.out.println("The model is changed to " + selectedModel);
+        getSelected().clear();
+        getSelected().add(newHost);
+        System.out.println("These URL's will be removed " + getSelected());
+        if (hosts.removeAll(getSelected())) {
+            System.out.println("The model is changed to " + getSelectedModel());
         } else {
             System.out.println("The model is not changed.");
         }
         //submit form using inner component 'button' as alternate button
         formTester.submit();
-        assertTrue("The actual number of selected items found in selectedModel is " + selectedModel.getObject().size()
-                + " The items are " + selectedModel.getObject(),
-                selectedModel.getObject().size() == 3);
+        assertTrue("The actual number of selected items found in selectedModel is " + getSelectedModel().getObject().size()
+                + " The items are " + getSelectedModel().getObject(),
+                getSelectedModel().getObject().size() == 3);
     }
 
     @Test
@@ -111,13 +112,13 @@ public class HomePageTest {
         //create a new form tester without filling its form components with a blank string
         FormTester formTester = tester.newFormTester("paletteForm", false);
         //add a host to the choices
-        Collection<Host> hosts = choicesModel.getObject();
+        Collection<Host> hosts = getPaletteModel().getObject();
         hosts.add(new Host("4", "google.com"));
         //submit form using inner component 'button' as alternate button
         formTester.submit();
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size()
-                + " The items are " + choicesModel.getObject(),
-                choicesModel.getObject().size() == 5);
+        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size()
+                + " The items are " + getPaletteModel().getObject(),
+                getPaletteModel().getObject().size() == 5);
     }
 
     @Test
@@ -132,13 +133,13 @@ public class HomePageTest {
         //submit form using inner component 'button' as alternate button
         formTester.setValue("newHost", "google.com");
         formTester.submit();
-        assertTrue("The actual number of selected items found in choicesModel is " + choicesModel.getObject().size()
-                + " The items are " + choicesModel.getObject(),
-                choicesModel.getObject().size() == 5);
+        assertTrue("The actual number of selected items found in choicesModel is " + getPaletteModel().getObject().size()
+                + " The items are " + getPaletteModel().getObject(),
+                getPaletteModel().getObject().size() == 5);
 
-        assertTrue("The actual number of selected items found in selected is " + selected.size()
-                + " The items are " + selected,
-                selected.size() == 3);
+        assertTrue("The actual number of selected items found in selected is " + getSelected().size()
+                + " The items are " + getSelected(),
+                getSelected().size() == 3);
     }
 
     @Test
@@ -187,8 +188,8 @@ public class HomePageTest {
     public void testInitWithPreviousSessionData() {
         System.out.println("initWithPreviousSessionData");
         initWithPreviousSessionData();
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 4);
-        assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 3);
+        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 4);
+        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 3);
     }
 
     /**
@@ -197,9 +198,9 @@ public class HomePageTest {
     @Test
     public void testInitWithDefaults() {
         System.out.println("initWithDefaults");
-        HomePage.initWithDefaults();
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 4);
-        assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 3);
+        initWithDefaults();
+        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 4);
+        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 3);
     }
 
     /**
@@ -208,14 +209,14 @@ public class HomePageTest {
     @Test
     public void testAddingToSelection() {
         System.out.println("testAddingToSelection");
-        HomePage.initWithDefaults();
+        initWithDefaults();
         Host newHost = new Host("4", "google.com");
-        Collection<Host> hosts = choicesModel.getObject();
+        Collection<Host> hosts = getPaletteModel().getObject();
         hosts.add(newHost);
-        List<Host> selHosts = selectedModel.getObject();
+        List<Host> selHosts = getSelectedModel().getObject();
         selHosts.add(newHost);
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 5);
-        assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 4);
+        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 4);
     }
 
     /**
@@ -224,15 +225,15 @@ public class HomePageTest {
     @Test
     public void testAddingToSelectionAndSaveSession() {
         System.out.println("testAddingToSelectionAndSaveSession");
-        HomePage.initWithDefaults();
+        initWithDefaults();
         Host newHost = new Host("4", "google.com");
-        Collection<Host> hosts = choicesModel.getObject();
+        Collection<Host> hosts = getPaletteModel().getObject();
         hosts.add(newHost);
-        List<Host> selHosts = selectedModel.getObject();
+        List<Host> selHosts = getSelectedModel().getObject();
         selHosts.add(newHost);
         saveSession();
-        assertTrue("The actual number of choice items found is " + choicesModel.getObject().size(), choicesModel.getObject().size() == 5);
-        assertTrue("The actual number of selected items found is " + selectedModel.getObject().size(), selectedModel.getObject().size() == 4);
+        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 4);
     }
 
 }

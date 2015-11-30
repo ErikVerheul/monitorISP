@@ -25,7 +25,7 @@ package nl.verheulconsultants.monitorisp.ui;
 
 import nl.verheulconsultants.monitorisp.service.ISPController;
 import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
-import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMilis;
+import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMillis;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.slf4j.Logger;
@@ -68,7 +68,7 @@ public class WicketApplication extends WebApplication {
     @Override
     public void onDestroy() {
         controller.exit();
-        sleepMilis(140);
+        sleepMillis(140);
         saveSession();
         LOGGER.info("Session data is saved.");
     }

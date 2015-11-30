@@ -25,8 +25,6 @@ package nl.verheulconsultants.monitorisp.service;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.getPaletteModel;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.getSelected;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,8 +112,8 @@ public class Utilities {
      */
     public static boolean saveSession() {
         MonitorISPData allData = new MonitorISPData();
-        allData.setPaletteModel(getPaletteModel());
-        allData.setSelected(getSelected());
+        allData.setPaletteModel(ISPController.getPaletteModel());
+        allData.setSelected(ISPController.getSelected());
         allData.setRouterAddress(ISPController.getRouterAddress());
         allData.setOutages(ISPController.getOutageData());
         allData.setStartOfService(ISPController.getStartOfService());
@@ -138,7 +136,7 @@ public class Utilities {
      *
      * @param ms the sleep time
      */
-    public static void sleepMilis(long ms) {
+    public static void sleepMillis(long ms) {
         try {
             Thread.sleep(ms);
         } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {

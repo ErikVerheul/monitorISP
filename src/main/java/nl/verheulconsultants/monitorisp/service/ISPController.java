@@ -19,10 +19,9 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
 import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
 import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
-import nl.verheulconsultants.monitorisp.ui.HomePage;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.getLastTimeDataSaved;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.initWithDefaults;
-import static nl.verheulconsultants.monitorisp.ui.HomePage.setLastTimeDataSaved;
+import nl.verheulconsultants.monitorisp.ui.Host;
+import org.apache.wicket.model.util.CollectionModel;
+import org.apache.wicket.model.util.ListModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +32,10 @@ import org.slf4j.LoggerFactory;
  * it cannot connect to the router either the disconnection is registered as a local network failure.
  */
 public class ISPController extends Thread {
-
+    private static final List<Host> hosts = new ArrayList<>();
+    static List<Host> selected = new ArrayList<>();
+    static ListModel<Host> selectedModel;  
+    static CollectionModel<Host> choicesModel;
     private static long startOfService = System.currentTimeMillis();
     private static final String NOROUTERADDRESS = "unknown";
     private static long lastContactWithAnyHost = System.currentTimeMillis();
@@ -57,12 +59,54 @@ public class ISPController extends Thread {
     private static boolean doRegisterControllerWasDown = false;
     private static boolean simulateFailure = false;
     private static boolean simulateCannotReachRouter = false;
+    private static long lastTimeDataSaved;
 
+    
+    /**
+     * @return the selected hosts.
+     */
+    public static List<Host> getSelected() {
+        return selected;
+    }
+    
+    /**
+     * Set the palette selection
+     * @param selected 
+     */
+    public static void setSelected(List<Host> selected) {
+        ISPController.selected = selected;
+        selectedModel = new ListModel<>(selected);
+        LOGGER.info("setSelected set the selection to {}.", selected);
+    }
+    
+    /**
+     * @return the model of the selected hosts.
+     */
+    public static ListModel<Host> getSelectedModel() {
+        return selectedModel;
+    }
+    
+    /**
+     * @return the palette model with all choices.
+     */
+    public static CollectionModel<Host> getPaletteModel() {
+        return choicesModel;
+    }
+    
+    /**
+     * Set the palette choices
+     * @param choicesModel 
+     */
+    public static void setPaletteModel(CollectionModel<Host> choicesModel) {
+        ISPController.choicesModel = choicesModel;
+        LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
+    }
+    
     public static void initWithPreviousSessionData() {
         MonitorISPData sessionData = new MonitorISPData();
         if (sessionData.readData()) {
-            HomePage.setPaletteModel(sessionData.getPaletteModel());
-            HomePage.setSelected(sessionData.getSelected());
+            setPaletteModel(sessionData.getPaletteModel());
+            setSelected(sessionData.getSelected());
             setRouterAddress(sessionData.getRouterAddress());
             setOutageData(sessionData.getOutages());
             setStartOfService(sessionData.getStartOfService());
@@ -71,20 +115,42 @@ public class ISPController extends Thread {
             setnumberOfInterruptions(sessionData.getNumberOfInterruptions());
             setFailedChecks(sessionData.getFailedChecks());
             setSuccessfulChecks(sessionData.getSuccessfulChecks());
-            setLastTimeDataSaved(sessionData.getTimeStamp());
+            lastTimeDataSaved = sessionData.getTimeStamp();
 
             LOGGER.info("Previous session data are loaded successfully.");
-            LOGGER.info("The timestamp read is {}.", new Date(getLastTimeDataSaved()).toString());
+            LOGGER.info("The timestamp read is {}.", new Date(lastTimeDataSaved).toString());
             LOGGER.info("The choices contain now {} hosts: {}", sessionData.getPaletteModel().getObject().size(), sessionData.getPaletteModel().getObject());
             LOGGER.info("The selection contains now {} hosts: {}", sessionData.getSelected().size(), sessionData.getSelected());
             LOGGER.info("The history contains now {} records", getOutagesSize());
         } else {
             // Initiate with default values.          
             LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
-            setLastTimeDataSaved(0L);
+            lastTimeDataSaved =0L;
             initWithDefaults();
         }
     }
+    
+    /**
+     * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
+     */
+    public static void initWithDefaults() {
+        hosts.clear();
+        hosts.add(new Host("0", "willfailconnection.com"));
+        Host uva = new Host("1", "uva.nl");
+        hosts.add(uva);
+        Host xs4all = new Host("2", "xs4all.nl");
+        hosts.add(xs4all);
+        Host vu = new Host("3", "vu.nl");
+        hosts.add(vu);
+        choicesModel = new CollectionModel<>(hosts);
+
+        selected.clear();
+        selected.add(uva);
+        selected.add(xs4all);
+        selected.add(vu);
+        selectedModel = new ListModel<>(selected);
+    }
+
 
     /**
      * The service has started and is running.
@@ -141,7 +207,7 @@ public class ISPController extends Thread {
         LOGGER.info("The controller has started.");
 
         if (doRegisterServiceWasDown) {
-            long start = getLastTimeDataSaved();
+            long start = lastTimeDataSaved;
             long now = System.currentTimeMillis();
             // do not register if there was no previous session
             if (start > 0L) {
@@ -483,7 +549,7 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Put this thread to sleep for ms miliseconds. Slice the sleep to exit fast in case of a stop or exit.
+     * Put this thread to sleep for ms milliseconds. Slice the sleep to exit fast in case of a stop or exit.
      *
      * @param ms the maximum sleep time
      */
@@ -560,7 +626,7 @@ public class ISPController extends Thread {
             x8.value = "Cannot say, router address unknown";
         } else {
             if (busyCheckingConnections) {
-                x8.value = Boolean.toString(canConnectRouter(routerAddress));
+                x8.value = Boolean.toString(!canConnectRouter(routerAddress));
             } else {
                 x8.value = "Cannot say, conroller is not running";
             }
@@ -599,5 +665,6 @@ public class ISPController extends Thread {
         }
         return sumOutages + currentISPunavailability;
     }
+   
 
 }

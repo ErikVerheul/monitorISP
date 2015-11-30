@@ -52,8 +52,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
-import org.apache.wicket.model.util.CollectionModel;
-import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.util.io.IClusterable;
 import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
@@ -62,13 +60,7 @@ import org.slf4j.LoggerFactory;
 public final class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
-    
-    static List<Host> selected = new ArrayList<>();
-    static ListModel<Host> selectedModel;
-    private static final List<Host> hosts = new ArrayList<>();
-    static CollectionModel<Host> choicesModel;
-    
+    private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);  
     private static Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
@@ -79,7 +71,6 @@ public final class HomePage extends BasePage {
     private final InputRouterAddress address;
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
-    private static long lastTimeDataSaved;
 
     public HomePage() {
         ISPController.initWithPreviousSessionData();
@@ -128,10 +119,10 @@ public final class HomePage extends BasePage {
             protected void onSubmit() {
                 final String urlValue = newUrl.getModelObject();
                 if (isValidHostAddress(urlValue)) {
-                    Collection<Host> hostsLocal = choicesModel.getObject();
+                    Collection<Host> hostsLocal = ISPController.getPaletteModel().getObject();
                     hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), urlValue));
                     LOGGER.info("The URL {} is added", urlValue);
-                    LOGGER.info("The host list is changed to {}", choicesModel);
+                    LOGGER.info("The host list is changed to {}", ISPController.getPaletteModel());
                     if (saveSession()) {
                         LOGGER.info("All data are saved.");
                     }
@@ -146,14 +137,14 @@ public final class HomePage extends BasePage {
             public void onSubmit() {
                 if (controller.isRunning()) {
                     if (!controller.isBusyCheckingConnections()) {
-                        controller.restart(getNames(selected));
-                        LOGGER.info("The service is restarted for checking connections with hosts {}", selected);
+                        controller.restart(getNames(ISPController.getSelected()));
+                        LOGGER.info("The service is restarted for checking connections with hosts {}", ISPController.getSelected());
                     } else {
-                        LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", selected);
+                        LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", ISPController.getSelected());
                     }
                 } else {
-                    controller.doInBackground(getNames(selected));
-                    LOGGER.info("The service is started for checking connections with hosts {}", selected);
+                    controller.doInBackground(getNames(ISPController.getSelected()));
+                    LOGGER.info("The service is started for checking connections with hosts {}", ISPController.getSelected());
                 }
             }
         };
@@ -161,10 +152,10 @@ public final class HomePage extends BasePage {
         removeButton = new Button("removeButton") {
             @Override
             public void onSubmit() {
-                Collection<Host> hostsLocal = choicesModel.getObject();
-                LOGGER.info("These URL's will be removed {}", selected);
-                hostsLocal.removeAll(selected);
-                LOGGER.info("The model is changed to {}", choicesModel);
+                Collection<Host> hostsLocal = ISPController.getPaletteModel().getObject();
+                LOGGER.info("These URL's will be removed {}", ISPController.getSelected());
+                hostsLocal.removeAll(ISPController.getSelected());
+                LOGGER.info("The model is changed to {}", ISPController.getPaletteModel());
             }
         };
 
@@ -179,11 +170,11 @@ public final class HomePage extends BasePage {
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
         palette = new Palette<>("palette1",
-                selectedModel,
-                choicesModel,
+                ISPController.getSelectedModel(),
+                ISPController.getPaletteModel(),
                 renderer, 10, true, false);
-        LOGGER.info("The palette is initiated with choices {}.", choicesModel);
-        LOGGER.info("The palette is initiated with selection {}.", selected);
+        LOGGER.info("The palette is initiated with choices {}.", ISPController.getPaletteModel());
+        LOGGER.info("The palette is initiated with selection {}.", ISPController.getSelected());
 
         // version 7.x.x
         palette.add(new DefaultTheme());
@@ -263,77 +254,6 @@ public final class HomePage extends BasePage {
         outageListContainer.add(outageListView);
         // finally add the container to the page
         add(outageListContainer);
-    }
-    
-    /**
-     * @return the palette model with all choices.
-     */
-    public static CollectionModel<Host> getPaletteModel() {
-        return choicesModel;
-    }
-    
-    /**
-     * Set the palette choices
-     * @param choicesModel 
-     */
-    public static void setPaletteModel(CollectionModel<Host> choicesModel) {
-        HomePage.choicesModel = choicesModel;
-        LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
-    }
-
-    /**
-     * @return the selected hosts.
-     */
-    public static List<Host> getSelected() {
-        return selected;
-    }
-    
-    /**
-     * Set the palette selection
-     * @param selected 
-     */
-    public static void setSelected(List<Host> selected) {
-        HomePage.selected = selected;
-        selectedModel = new ListModel<>(selected);
-        LOGGER.info("setSelected set the selection to {}.", selected);
-    }
-    
-    
-    /**
-     * Return the date of the data save of the previous session.
-     * @return the date as long
-     */
-    public static long getLastTimeDataSaved() {
-        return lastTimeDataSaved;
-    }
-    
-    /**
-     * Set the date of the data save of the previous session.
-     * @param lastTimeDataSaved
-     */
-    public static void setLastTimeDataSaved(long lastTimeDataSaved) {
-        HomePage.lastTimeDataSaved = lastTimeDataSaved;
-    }
-
-    /**
-     * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
-     */
-    public static void initWithDefaults() {
-        hosts.clear();
-        hosts.add(new Host("0", "willfailconnection.com"));
-        Host uva = new Host("1", "uva.nl");
-        hosts.add(uva);
-        Host xs4all = new Host("2", "xs4all.nl");
-        hosts.add(xs4all);
-        Host vu = new Host("3", "vu.nl");
-        hosts.add(vu);
-        choicesModel = new CollectionModel<>(hosts);
-
-        selected.clear();
-        selected.add(uva);
-        selected.add(xs4all);
-        selected.add(vu);
-        selectedModel = new ListModel<>(selected);
     }
 
     private List<String> getNames(List<Host> hosts) {
