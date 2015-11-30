@@ -171,7 +171,7 @@ public class ISPController extends Thread {
                 break;
             }
             // wait for instructions to restart or to exit completely
-            sleepMillis(1000);
+            sleepMillisSliced(1000);
         } while (!exit);
 
         running = false;
@@ -351,7 +351,7 @@ public class ISPController extends Thread {
                 currentISPunavailability = lastFail - outageStart;
             }
             // wait 5 seconds to check the ISP connection again
-            sleepMillis(5000);
+            sleepMillisSliced(5000);
         }
         if (busyCheckingConnections) {
             LOGGER.info("The controller has stopped.\n");
@@ -410,7 +410,7 @@ public class ISPController extends Thread {
             } else {
                 failedChecks++;
                 // wait 1 second before contacting the next host in the list
-                sleepMillis(1000);
+                sleepMillisSliced(1000);
             }
         }
         return hostFound;
@@ -466,9 +466,9 @@ public class ISPController extends Thread {
     /**
      * Put this thread to sleep for ms miliseconds. Slice the sleep to exit fast in case of a stop or exit.
      *
-     * @param ms the sleep time
+     * @param ms the maximum sleep time
      */
-    void sleepMillis(long ms) {
+    private void sleepMillisSliced(long ms) {
         int sliceNr = 100;
         long slice = ms / sliceNr;
         for (int i = 0; i < sliceNr && !exit && !stop; i++) {

@@ -83,7 +83,7 @@ public class OutageListItem implements Serializable {
     public long getDuration() {
         return duration;
     }
-    
+
     /**
      * Return the cause type of an outage.
      *
@@ -99,24 +99,22 @@ public class OutageListItem implements Serializable {
      * @return the cause as String
      */
     public String getOutageCauseAsString() {
-        if (cause == ISP) {
-            return "ISP";
-        }
-        if (cause == INTERNAL) {
-            return "internal network problem";
-        }
-        if (cause == SERVICEDOWN) {
-            return "service was down";
-        }
-        if (cause == CONTROLLERDOWN) {
-            return "controller was down";
-        }
-        return "";
+        switch (cause) {
+            case ISP:
+                return "ISP";
+            case INTERNAL:
+                return "internal network problem";
+            case SERVICEDOWN:
+                return "service was down";
+            case CONTROLLERDOWN:
+                return "controller was down";
+            default: return "";
+        }        
     }
-    
+
     @Override
     public String toString() {
-        return "Outage [" + index + ", from:" + new Date(start).toString() + ", to:" + new Date(end).toString() + 
-                ", duration:" + millisToTime(duration) + ", cause = " + getOutageCauseAsString() + "]";
+        return "Outage [" + index + ", from:" + new Date(start).toString() + ", to:" + new Date(end).toString()
+                + ", duration:" + millisToTime(duration) + ", cause = " + getOutageCauseAsString() + "]";
     }
 }

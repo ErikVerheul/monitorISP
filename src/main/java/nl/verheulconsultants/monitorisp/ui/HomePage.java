@@ -67,7 +67,7 @@ public final class HomePage extends BasePage {
     static List<Host> selected = new ArrayList<>();
     static ListModel<Host> selectedModel;
     private static final List<Host> hosts = new ArrayList<>();
-    static CollectionModel<Host> choicesModel = new CollectionModel<>(hosts);
+    static CollectionModel<Host> choicesModel;
     
     private static Palette<Host> palette;
     private final Form<?> formSelectHosts;
@@ -319,15 +319,15 @@ public final class HomePage extends BasePage {
      * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
      */
     public static void initWithDefaults() {
-        Collection<Host> hostsLocal = choicesModel.getObject();
-        hostsLocal.clear();
-        hostsLocal.add(new Host("0", "willfailconnection.com"));
+        hosts.clear();
+        hosts.add(new Host("0", "willfailconnection.com"));
         Host uva = new Host("1", "uva.nl");
-        hostsLocal.add(uva);
+        hosts.add(uva);
         Host xs4all = new Host("2", "xs4all.nl");
-        hostsLocal.add(xs4all);
+        hosts.add(xs4all);
         Host vu = new Host("3", "vu.nl");
-        hostsLocal.add(vu);
+        hosts.add(vu);
+        choicesModel = new CollectionModel<>(hosts);
 
         selected.clear();
         selected.add(uva);

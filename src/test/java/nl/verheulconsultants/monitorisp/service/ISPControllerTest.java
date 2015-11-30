@@ -36,6 +36,7 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
+import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMilis;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -251,17 +252,4 @@ public class ISPControllerTest {
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == CONTROLLERDOWN);
     }
 
-
-    /**
-     * Put this thread to sleep for ms milliseconds.
-     *
-     * @param ms the sleep time
-     */
-    private void sleepMilis(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
-            LOGGER.info("A thread sleep was interrupted because of {}", ex);
-        }
-    }
 }

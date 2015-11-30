@@ -132,5 +132,18 @@ public class Utilities {
             return false;
         }
     }
+    
+    /**
+     * Put this thread to sleep for ms milliseconds.
+     *
+     * @param ms the sleep time
+     */
+    public static void sleepMilis(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
+            LOGGER.info("A thread sleep was interrupted because of {}", ex);
+        }
+    }
 
 }

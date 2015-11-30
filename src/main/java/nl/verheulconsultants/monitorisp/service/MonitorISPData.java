@@ -53,46 +53,90 @@ public class MonitorISPData implements Serializable {
     private long successfulChecks;
     private long timeStamp;
 
+    /**
+     * Setter
+     * @param paletteModel 
+     */
     public void setPaletteModel(CollectionModel<Host> paletteModel) {
         this.paletteModel = paletteModel;
     }
 
+    /**
+     * Setter
+     * @param selected 
+     */
     public void setSelected(List<Host> selected) {
         this.selected = selected;
     }
 
+    /**
+     * Setter
+     * @param routerAddress 
+     */
     public void setRouterAddress(String routerAddress) {
         this.routerAddress = routerAddress;
     }
-
+    
+    /**
+     * Setter
+     * @param outages 
+     */
     public void setOutages(List<OutageListItem> outages) {
         this.outages = outages;
     }
     
+    /**
+     * Setter
+     * @param startOfService 
+     */
     public void setStartOfService(long startOfService) {
         this.startOfService = startOfService;
     }
     
+    /**
+     * Setter
+     * @param lastContactWithAnyHost 
+     */
     public void setLastContactWithAnyHost(long lastContactWithAnyHost) {
         this.lastContactWithAnyHost = lastContactWithAnyHost;
     }
     
+    /**
+     * Setter
+     * @param lastFail 
+     */
     public void setLastFail(long lastFail) {
         this.lastFail = lastFail;
     }
     
+    /**
+     * Setter
+     * @param numberOfInterruptions 
+     */
     public void setNumberOfInterruptions(long numberOfInterruptions) {
         this.numberOfInterruptions = numberOfInterruptions;
     }
     
+    /**
+     * Setter
+     * @param failedChecks 
+     */
     public void setFailedChecks(long failedChecks) {
         this.failedChecks = failedChecks;
     }
     
+    /**
+     * Setter
+     * @param successfulChecks 
+     */
     public void setSuccessfulChecks(long successfulChecks) {
         this.successfulChecks = successfulChecks;
     }
     
+    /**
+     * Setter
+     * @param timeStamp 
+     */
     public void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
@@ -110,6 +154,11 @@ public class MonitorISPData implements Serializable {
                 && dataRead.startOfService > 0L && dataRead.lastContactWithAnyHost > 0L && dataRead.timeStamp > 0L;
     }
 
+    /**
+     * Save all data of the current session.
+     * @param allData
+     * @return true is successful
+     */
     public boolean saveData(MonitorISPData allData) {
         if (allSet()) {
             ObjectOutputStream oos;
@@ -127,6 +176,10 @@ public class MonitorISPData implements Serializable {
         }
     }
     
+    /**
+     * Read all data of the previous session.
+     * @return true is successful
+     */
     public boolean readData() {
         try (FileInputStream fin = new FileInputStream(getSessionDataFileName())) {
             ObjectInputStream ois = new ObjectInputStream(fin);
@@ -146,46 +199,90 @@ public class MonitorISPData implements Serializable {
         }
     }
     
+    /**
+     * Getter
+     * @return paletteModel
+     */
     public CollectionModel<Host> getPaletteModel() {
         return dataRead.paletteModel;
     }
     
+    /**
+     * Getter
+     * @return selected
+     */
     public List<Host> getSelected() {
         return dataRead.selected;
     }
     
+    /**
+     * Getter
+     * @return routerAddress
+     */
     public String getRouterAddress() {
         return dataRead.routerAddress;
     }
     
+    /**
+     * Getter
+     * @return outages
+     */
     public List<OutageListItem> getOutages() {
         return dataRead.outages;
     }
     
+    /**
+     * Getter
+     * @return startOfService
+     */
     public long getStartOfService() {
         return dataRead.startOfService;
     }
     
+    /**
+     * Getter
+     * @return lastContactWithAnyHost
+     */
     public long getLastContactWithAnyHost() {
         return dataRead.lastContactWithAnyHost;
     }
     
+    /**
+     * Getter
+     * @return lastFail
+     */
     public long getLastFail() {
         return dataRead.lastFail;
     }
     
+    /**
+     * Getter
+     * @return numberOfInterruptions
+     */
     public long getNumberOfInterruptions() {
         return dataRead.numberOfInterruptions;
     }
     
+    /**
+     * Getter
+     * @return failedChecks
+     */
     public long getFailedChecks() {
         return dataRead.failedChecks;
     }
     
+    /**
+     * Getter
+     * @return successfulChecks
+     */
     public long getSuccessfulChecks() {
         return dataRead.successfulChecks;
     }
     
+    /**
+     * Getter
+     * @return timeStamp
+     */
     public long getTimeStamp() {
         return dataRead.timeStamp;
     }
