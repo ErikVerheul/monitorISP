@@ -38,6 +38,7 @@ public class HomePageTest {
      */
     @Before
     public void setUp() {
+        System.out.println("setUp");
         tester = new WicketTester(new WicketApplication());
 
         setSessionsDataFileNameForTest();
@@ -55,6 +56,7 @@ public class HomePageTest {
 
     @Test
     public void homepageRendersSuccessfully() {
+        System.out.println("homepageRendersSuccessfully");
         //start and render the test page
         tester.startPage(HomePage.class);
 
@@ -64,6 +66,7 @@ public class HomePageTest {
 
     @Test
     public void submitPallette() {
+        System.out.println("submitPallette");
         //start and render the test page
         tester.startPage(HomePage.class);
         //assert rendered page class
@@ -159,6 +162,7 @@ public class HomePageTest {
 
     @Test
     public void submitStart() {
+        System.out.println("submitStart");
         //start and render the test page
         tester.startPage(HomePage.class);
         //assert rendered page class
@@ -171,6 +175,7 @@ public class HomePageTest {
 
     @Test
     public void submitStop() {
+        System.out.println("submitStop");
         //start and render the test page
         tester.startPage(HomePage.class);
         //assert rendered page class

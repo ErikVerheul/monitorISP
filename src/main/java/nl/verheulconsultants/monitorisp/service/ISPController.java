@@ -32,9 +32,10 @@ import org.slf4j.LoggerFactory;
  * it cannot connect to the router either the disconnection is registered as a local network failure.
  */
 public class ISPController extends Thread {
+
     private static final List<Host> hosts = new ArrayList<>();
     static List<Host> selected = new ArrayList<>();
-    static ListModel<Host> selectedModel;  
+    static ListModel<Host> selectedModel;
     static CollectionModel<Host> choicesModel;
     private static long startOfService = System.currentTimeMillis();
     private static final String NOROUTERADDRESS = "unknown";
@@ -61,48 +62,53 @@ public class ISPController extends Thread {
     private static boolean simulateCannotReachRouter = false;
     private static long lastTimeDataSaved;
 
-    
     /**
      * @return the selected hosts.
      */
     public static List<Host> getSelected() {
         return selected;
     }
-    
+
     /**
      * Set the palette selection
-     * @param selected 
+     *
+     * @param selected
      */
     private static void setSelected(List<Host> selected) {
         ISPController.selected = selected;
         selectedModel = new ListModel<>(selected);
         LOGGER.info("setSelected set the selection to {}.", selected);
     }
-    
+
     /**
      * @return the model of the selected hosts.
      */
     public static ListModel<Host> getSelectedModel() {
         return selectedModel;
     }
-    
+
     /**
      * @return the palette model with all choices.
      */
     public static CollectionModel<Host> getPaletteModel() {
         return choicesModel;
     }
-    
+
     /**
      * Set the palette choices
-     * @param choicesModel 
+     *
+     * @param choicesModel
      */
     private static void setPaletteModel(CollectionModel<Host> choicesModel) {
         ISPController.choicesModel = choicesModel;
         LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
     }
-    
-    public static void initWithPreviousSessionData() {
+
+    /**
+     * Initiate with the data of the previous session or, if not possible, with default values.
+     * @return true if initiated with previous session data
+     */
+    public static boolean initWithPreviousSessionData() {
         MonitorISPData sessionData = new MonitorISPData();
         if (sessionData.readData()) {
             setPaletteModel(sessionData.getPaletteModel());
@@ -122,14 +128,15 @@ public class ISPController extends Thread {
             LOGGER.info("The choices contain now {} hosts: {}", sessionData.getPaletteModel().getObject().size(), sessionData.getPaletteModel().getObject());
             LOGGER.info("The selection contains now {} hosts: {}", sessionData.getSelected().size(), sessionData.getSelected());
             LOGGER.info("The history contains now {} records", getOutagesSize());
-        } else {
-            // Initiate with default values.          
-            LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
-            lastTimeDataSaved =0L;
-            initWithDefaults();
+            return true;
         }
+        // Initiate with default values.          
+        LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
+        lastTimeDataSaved = 0L;
+        initWithDefaults();
+        return false;
     }
-    
+
     /**
      * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
      */
@@ -150,7 +157,6 @@ public class ISPController extends Thread {
         selected.add(vu);
         selectedModel = new ListModel<>(selected);
     }
-
 
     /**
      * The service has started and is running.
@@ -665,6 +671,5 @@ public class ISPController extends Thread {
         }
         return sumOutages + currentISPunavailability;
     }
-   
 
 }

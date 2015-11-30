@@ -108,7 +108,8 @@ public class OutageListItem implements Serializable {
                 return "service was down";
             case CONTROLLERDOWN:
                 return "controller was down";
-            default: return "unknown outage type";
+            default: 
+                return "unknown outage type";
         }        
     }
 

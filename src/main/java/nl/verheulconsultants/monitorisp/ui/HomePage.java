@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 public final class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);  
+    private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private static Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
@@ -71,9 +71,10 @@ public final class HomePage extends BasePage {
     private final InputRouterAddress address;
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
+    private final boolean startAutomatically;
 
     public HomePage() {
-        ISPController.initWithPreviousSessionData();
+        startAutomatically = ISPController.initWithPreviousSessionData();
         address = new InputRouterAddress(ISPController.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
         newUrl = new TextField<>("newHost", Model.of(""));
@@ -135,17 +136,7 @@ public final class HomePage extends BasePage {
         startButton = new Button("startButton") {
             @Override
             public void onSubmit() {
-                if (controller.isRunning()) {
-                    if (!controller.isBusyCheckingConnections()) {
-                        controller.restart(getNames(ISPController.getSelected()));
-                        LOGGER.info("The service is restarted for checking connections with hosts {}", ISPController.getSelected());
-                    } else {
-                        LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", ISPController.getSelected());
-                    }
-                } else {
-                    controller.doInBackground(getNames(ISPController.getSelected()));
-                    LOGGER.info("The service is started for checking connections with hosts {}", ISPController.getSelected());
-                }
+                startRunning();
             }
         };
 
@@ -159,10 +150,6 @@ public final class HomePage extends BasePage {
             }
         };
 
-        constructorContinued();
-    }
-
-    private void constructorContinued() {
         // Show a message.
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
@@ -254,6 +241,25 @@ public final class HomePage extends BasePage {
         outageListContainer.add(outageListView);
         // finally add the container to the page
         add(outageListContainer);
+
+        if (startAutomatically) {
+            LOGGER.info("The controller will be started automatically.");
+            startRunning();
+        }
+    }
+
+    private void startRunning() {
+        if (controller.isRunning()) {
+            if (!controller.isBusyCheckingConnections()) {
+                controller.restart(getNames(ISPController.getSelected()));
+                LOGGER.info("The service is restarted for checking connections with hosts {}", ISPController.getSelected());
+            } else {
+                LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", ISPController.getSelected());
+            }
+        } else {
+            controller.doInBackground(getNames(ISPController.getSelected()));
+            LOGGER.info("The service is started for checking connections with hosts {}", ISPController.getSelected());
+        }
     }
 
     private List<String> getNames(List<Host> hosts) {
