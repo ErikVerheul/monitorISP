@@ -73,7 +73,7 @@ public class ISPController extends Thread {
      * Set the palette selection
      * @param selected 
      */
-    public static void setSelected(List<Host> selected) {
+    private static void setSelected(List<Host> selected) {
         ISPController.selected = selected;
         selectedModel = new ListModel<>(selected);
         LOGGER.info("setSelected set the selection to {}.", selected);
@@ -97,7 +97,7 @@ public class ISPController extends Thread {
      * Set the palette choices
      * @param choicesModel 
      */
-    public static void setPaletteModel(CollectionModel<Host> choicesModel) {
+    private static void setPaletteModel(CollectionModel<Host> choicesModel) {
         ISPController.choicesModel = choicesModel;
         LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
     }
