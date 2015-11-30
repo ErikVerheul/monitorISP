@@ -32,7 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.ISPController.getLastOutage;
 import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
+import static nl.verheulconsultants.monitorisp.service.ISPController.setRouterAddress;
+import static nl.verheulconsultants.monitorisp.service.ISPController.simulateCannotReachRouter;
+import static nl.verheulconsultants.monitorisp.service.ISPController.simulateFailure;
 import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
+import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
+import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
 import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
@@ -196,7 +201,7 @@ public class ISPControllerTest {
         List<String> hURLs = new ArrayList();
         hURLs.add("uva.nl");
         boolean expResult = true;
-        boolean result = instance.checkISP(hURLs);
+        boolean result = instance.checkISP(hURLs, true);
         assertEquals(expResult, result);
     }
     
@@ -209,8 +214,52 @@ public class ISPControllerTest {
         List<String> hURLs = new ArrayList();
         hURLs.add("willnotconnect.com");
         boolean expResult = false;
-        boolean result = instance.checkISP(hURLs);
+        boolean result = instance.checkISP(hURLs, true);
         assertEquals(expResult, result);
+    }
+    
+    /**
+     * Test if a record is registered when service the ISP can not be reached.
+     */
+    @Test
+    public void testISPInterruptedRegistration() {
+        System.out.println("testISPInterruptedRegistration");
+        List<String> hosts = new ArrayList();
+        hosts.add("uva.nl");
+        setRouterAddress("192.168.0.6");
+        instance.doInBackground(hosts);
+        sleepMilis(120);
+        assertTrue(instance.isBusyCheckingConnections());
+        simulateFailure(true);
+        sleepMilis(6000);
+        simulateFailure(false);
+        sleepMilis(6000);
+        OutageListItem lastOutage = getLastOutage();
+        assertTrue("No outages were registered", null != lastOutage);
+        assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
+    }
+    
+    /**
+     * Test if a record is registered when service the ISP can not be reached.
+     */
+    @Test
+    public void testInternalInterruptedRegistration() {
+        System.out.println("testInternalInterruptedRegistration");
+        List<String> hosts = new ArrayList();
+        hosts.add("uva.nl");
+        setRouterAddress("192.168.0.6");
+        instance.doInBackground(hosts);
+        sleepMilis(120);
+        assertTrue(instance.isBusyCheckingConnections());
+        simulateCannotReachRouter(true);
+        simulateFailure(true);
+        sleepMilis(6000);
+        simulateFailure(false);
+        sleepMilis(6000);
+        simulateCannotReachRouter(false);
+        OutageListItem lastOutage = getLastOutage();
+        assertTrue("No outages were registered", null != lastOutage);
+        assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == INTERNAL);
     }
     
     /**

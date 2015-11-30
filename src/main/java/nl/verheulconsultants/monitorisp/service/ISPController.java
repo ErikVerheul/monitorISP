@@ -53,10 +53,10 @@ public class ISPController extends Thread {
     private long outageStart = 0L;
     private long outageEnd;
     private static String routerAddress = NOROUTERADDRESS;
-    private static boolean outageCausedInternal = false;
     private static boolean doRegisterServiceWasDown = true;
     private static boolean doRegisterControllerWasDown = false;
     private static boolean simulateFailure = false;
+    private static boolean simulateCannotReachRouter = false;
 
     public static void initWithPreviousSessionData() {
         MonitorISPData sessionData = new MonitorISPData();
@@ -139,7 +139,7 @@ public class ISPController extends Thread {
         running = true;
         stop = false;
         LOGGER.info("The controller has started.");
-        
+
         if (doRegisterServiceWasDown) {
             long start = getLastTimeDataSaved();
             long now = System.currentTimeMillis();
@@ -163,7 +163,7 @@ public class ISPController extends Thread {
                     doRegisterControllerWasDown = false;
                     LOGGER.info("Controller was down is registered");
                 }
-                
+
                 innerLoop(selectedHostsURLs);
             } else {
                 LOGGER.warn("Cannot run the service with an empty selection list");
@@ -327,14 +327,14 @@ public class ISPController extends Thread {
         while (!exit && !stop) {
             busyCheckingConnections = true;
             loopStart = System.currentTimeMillis();
-            if (checkISP(selectedURLs)) {
+            if (checkISP(selectedURLs, true)) {
                 canReachISP = true;
                 lastContactWithAnyHost = System.currentTimeMillis();
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
                     outages.add(new OutageListItem(outages.size(), outageStart,
-                            outageEnd, outageEnd - outageStart, INTERNAL));
+                            outageEnd, outageEnd - outageStart, canConnectRouter(routerAddress) ? ISP : INTERNAL));
                     outageStart = 0L;
                 }
             } else {
@@ -342,7 +342,6 @@ public class ISPController extends Thread {
                 if (canReachISP) {
                     numberOfInterruptions++;
                     outageStart = loopStart;
-                    outageCausedInternal = !canConnectRouter(routerAddress);
                 }
                 canReachISP = false;
                 LOGGER.warn("The ISP cannot be reached.");
@@ -372,16 +371,19 @@ public class ISPController extends Thread {
     }
 
     private boolean canConnectRouter(String routerIP) {
+        if (simulateCannotReachRouter) {
+            return false;
+        }
         // if the router address is not set we can not exclude internal network failure
         if (NOROUTERADDRESS.equalsIgnoreCase(routerIP)) {
             return true;
         }
-        // if the router address is not avalid address we can not exclude internal network failure
+        // if the router address is not a valid address we can not exclude internal network failure
         if (!isValidHostAddress(routerIP)) {
             LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerIP);
             return true;
         }
-        return checkISP(new ArrayList<>(Arrays.asList(routerIP)));
+        return checkISP(new ArrayList<>(Arrays.asList(routerIP)), false);
     }
 
     /**
@@ -389,28 +391,45 @@ public class ISPController extends Thread {
      *
      * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
      */
-    public void simulateFailure(boolean yesNo) {
+    public static void simulateFailure(boolean yesNo) {
         simulateFailure = yesNo;
+    }
+
+    /**
+     * A method for test purposes only.
+     *
+     * @param yesNo if true a connection to the router address will fail. If false real connection test are performed.
+     */
+    public static void simulateCannotReachRouter(boolean yesNo) {
+        simulateCannotReachRouter = yesNo;
     }
 
     /**
      * Try to connect to any host in the list
      *
+     * @param hURLs the hosts to test
+     * @param doCount if true count success or failure
      * @return true if a host can be contacted and false if not one host from the list can be reached.
      */
-    boolean checkISP(List<String> hURLs) {
+    boolean checkISP(List<String> hURLs, boolean doCount) {
         boolean hostFound = false;
-        for (String host : hURLs) {
-            // test a TCP connection on port 80 with the destination host and a time-out of 1000 ms.
-            if (!simulateFailure && testConnection(host, 80, 1000)) {
-                hostFound = true;
-                successfulChecks++;
-                // when successfull there is no need to try the other selectedHostsURLs
-                break;
-            } else {
-                failedChecks++;
-                // wait 1 second before contacting the next host in the list
-                sleepMillisSliced(1000);
+        if (!simulateFailure) {
+            for (String host : hURLs) {
+                // test a TCP connection on port 80 with the destination host and a time-out of 1000 ms.
+                if (testConnection(host, 80, 1000)) {
+                    hostFound = true;
+                    if (doCount) {
+                        successfulChecks++;
+                    }
+                    // when successfull there is no need to try the other selectedHostsURLs
+                    break;
+                } else {
+                    if (doCount) {
+                        failedChecks++;
+                    }
+                    // wait 1 second before contacting the next host in the list
+                    sleepMillisSliced(1000);
+                }
             }
         }
         return hostFound;
@@ -541,7 +560,7 @@ public class ISPController extends Thread {
             x8.value = "Cannot say, router address unknown";
         } else {
             if (busyCheckingConnections) {
-                x8.value = Boolean.toString(outageCausedInternal);
+                x8.value = Boolean.toString(canConnectRouter(routerAddress));
             } else {
                 x8.value = "Cannot say, conroller is not running";
             }
