@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.ISPController.getLastOutage;
 import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
+import static nl.verheulconsultants.monitorisp.service.ISPController.setIntest;
 import static nl.verheulconsultants.monitorisp.service.ISPController.setRouterAddress;
 import static nl.verheulconsultants.monitorisp.service.ISPController.simulateCannotReachRouter;
 import static nl.verheulconsultants.monitorisp.service.ISPController.simulateFailure;
@@ -47,6 +48,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +57,14 @@ public class ISPControllerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
     ISPController instance;
 
-    public ISPControllerTest() {
+    /**
+     * Prevent an automatic start with the saved previous session data.
+     */
+    @BeforeClass
+    public static void setUpClass() {
+        setIntest();
     }
-
+    
     @Before
     public void setUp() {
         System.out.println("setUp");

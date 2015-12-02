@@ -13,6 +13,7 @@ import static nl.verheulconsultants.monitorisp.service.ISPController.getSelected
 import static nl.verheulconsultants.monitorisp.service.ISPController.getSelectedModel;
 import static nl.verheulconsultants.monitorisp.service.ISPController.initWithDefaults;
 import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
+import static nl.verheulconsultants.monitorisp.service.ISPController.setIntest;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
@@ -21,6 +22,7 @@ import org.apache.wicket.util.tester.WicketTester;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,14 @@ public class HomePageTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePageTest.class);
     private WicketTester tester;
 
+    /**
+     * Prevent an automatic start with the saved previous session data.
+     */
+    @BeforeClass
+    public static void setUpClass() {
+        setIntest();
+    }
+    
     /**
      * Setup each test with a new instance of the application and set of data consisting of 4 choices all together from which 3 are selected.
      */
@@ -51,6 +61,12 @@ public class HomePageTest {
             Files.copy(sourcePath, getTestHomeDir().resolve(source.getName()), REPLACE_EXISTING);
         } catch (IOException ex) {
             LOGGER.error("File copy failed with exception {}", ex);
+        }
+        
+        if (initWithPreviousSessionData()) {
+            LOGGER.info("Preset previous session test data are used for initialization.");
+        } else {
+            LOGGER.info("Preset previous session test data could not be read, defaults are set");
         }
     }
 

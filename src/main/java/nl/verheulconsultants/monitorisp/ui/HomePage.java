@@ -71,10 +71,14 @@ public final class HomePage extends BasePage {
     private final InputRouterAddress address;
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
-    private final boolean startAutomatically;
+    private boolean startAutomatically = true;
 
     public HomePage() {
-        startAutomatically = ISPController.initWithPreviousSessionData();
+        // Prevent spurious reloads by checking if the contoller is allready running
+        // Only start automatically when the previous session data coule be read
+        if (!controller.isRunning()) {
+            startAutomatically = ISPController.initWithPreviousSessionData();
+        }
         address = new InputRouterAddress(ISPController.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
         newUrl = new TextField<>("newHost", Model.of(""));
@@ -156,7 +160,7 @@ public final class HomePage extends BasePage {
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
         add(new FeedbackPanel("feedback"));
-
+        
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
         palette = new Palette<>("palette1",
                 ISPController.getSelectedModel(),
@@ -244,9 +248,12 @@ public final class HomePage extends BasePage {
         // finally add the container to the page
         add(outageListContainer);
 
-        if (startAutomatically) {
-            LOGGER.info("The controller will be started automatically.");
-            startRunning();
+        // Prevent spurious restarts by checking if the contoller is allready running
+        if (!controller.isRunning()) {
+            if (startAutomatically) {
+                LOGGER.info("The controller will be started automatically.");
+                startRunning();
+            }
         }
     }
 
