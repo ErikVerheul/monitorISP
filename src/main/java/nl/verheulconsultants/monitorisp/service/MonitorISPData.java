@@ -160,6 +160,7 @@ public class MonitorISPData implements Serializable {
      * @return true is successful
      */
     public boolean saveData(MonitorISPData allData) {
+        LOGGER.info("Save all data of the current session.");
         if (allSet()) {
             ObjectOutputStream oos;
             try (FileOutputStream fout = new FileOutputStream(getSessionDataFileName())) {
@@ -181,6 +182,7 @@ public class MonitorISPData implements Serializable {
      * @return true is successful
      */
     public boolean readData() {
+        LOGGER.info("Read all data of the previous session.");
         try (FileInputStream fin = new FileInputStream(getSessionDataFileName())) {
             ObjectInputStream ois = new ObjectInputStream(fin);
             dataRead = (MonitorISPData) ois.readObject();

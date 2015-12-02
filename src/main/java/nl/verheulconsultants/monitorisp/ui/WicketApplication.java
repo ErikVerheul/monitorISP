@@ -69,8 +69,9 @@ public class WicketApplication extends WebApplication {
     public void onDestroy() {
         controller.exit();
         sleepMillis(140);
-        saveSession();
-        LOGGER.info("Session data is saved.");
+        if (saveSession()) {
+            LOGGER.info("Session data is saved.");
+        }
     }
 
 }

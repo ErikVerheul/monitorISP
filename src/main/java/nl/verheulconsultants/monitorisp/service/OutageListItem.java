@@ -35,15 +35,15 @@ public class OutageListItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
     int index;
-    long start;
-    long end;
+    long outageStart;
+    long outageEnd;
     long duration;
     int cause;
 
     OutageListItem(int index, long start, long end, long duration, int cause) {
         this.index = index;
-        this.start = start;
-        this.end = end;
+        this.outageStart = start;
+        this.outageEnd = end;
         this.duration = duration;
         this.cause = cause;
     }
@@ -58,21 +58,21 @@ public class OutageListItem implements Serializable {
     }
 
     /**
-     * Returns the outage start date and time.
+     * Returns the outage outageStart date and time.
      *
-     * @return start date
+     * @return outageStart date
      */
     public String getStart() {
-        return new Date(start).toString();
+        return new Date(outageStart).toString();
     }
 
     /**
-     * Returns the outage end date and time.
+     * Returns the outage outageEnd date and time.
      *
-     * @return end date
+     * @return outageEnd date
      */
     public String getEnd() {
-        return new Date(end).toString();
+        return new Date(outageEnd).toString();
     }
 
     /**
@@ -115,7 +115,7 @@ public class OutageListItem implements Serializable {
 
     @Override
     public String toString() {
-        return "Outage [" + index + ", from:" + new Date(start).toString() + ", to:" + new Date(end).toString()
+        return "Outage [" + index + ", from:" + new Date(outageStart).toString() + ", to:" + new Date(outageEnd).toString()
                 + ", duration:" + millisToTime(duration) + ", cause = " + getOutageCauseAsString() + "]";
     }
 }

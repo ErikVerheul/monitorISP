@@ -239,6 +239,9 @@ public class HomePageTest {
         saveSession();
         assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 5);
         assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 4);
+        initWithPreviousSessionData();
+        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 4);
     }
 
 }

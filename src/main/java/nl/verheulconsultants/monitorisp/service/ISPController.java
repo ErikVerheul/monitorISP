@@ -61,6 +61,7 @@ public class ISPController extends Thread {
     private static boolean simulateFailure = false;
     private static boolean simulateCannotReachRouter = false;
     private static long lastTimeDataSaved;
+    private static boolean canConnectWithRouter;
 
     /**
      * @return the selected hosts.
@@ -106,6 +107,7 @@ public class ISPController extends Thread {
 
     /**
      * Initiate with the data of the previous session or, if not possible, with default values.
+     *
      * @return true if initiated with previous session data
      */
     public static boolean initWithPreviousSessionData() {
@@ -277,7 +279,7 @@ public class ISPController extends Thread {
     }
 
     /**
-     * The startOfService is the date the service was started the first time. Save this value for the next start of the service.
+     * The startOfService is the date the service was started the first time. Save this value for the next outageStart of the service.
      *
      * @return
      */
@@ -399,14 +401,15 @@ public class ISPController extends Thread {
         while (!exit && !stop) {
             busyCheckingConnections = true;
             loopStart = System.currentTimeMillis();
-            if (checkISP(selectedURLs, true)) {
+            if (checkISP(selectedURLs)) {
                 canReachISP = true;
                 lastContactWithAnyHost = System.currentTimeMillis();
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
+                    canConnectWithRouter = canConnectRouter(routerAddress);
                     outages.add(new OutageListItem(outages.size(), outageStart,
-                            outageEnd, outageEnd - outageStart, canConnectRouter(routerAddress) ? ISP : INTERNAL));
+                            outageEnd, outageEnd - outageStart, canConnectWithRouter ? ISP : INTERNAL));
                     outageStart = 0L;
                 }
             } else {
@@ -448,6 +451,7 @@ public class ISPController extends Thread {
         }
         // if the router address is not set we can not exclude internal network failure
         if (NOROUTERADDRESS.equalsIgnoreCase(routerIP)) {
+            LOGGER.warn("The router address is not set. The internal network error detection is omitted");
             return true;
         }
         // if the router address is not a valid address we can not exclude internal network failure
@@ -455,7 +459,7 @@ public class ISPController extends Thread {
             LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerIP);
             return true;
         }
-        return checkISP(new ArrayList<>(Arrays.asList(routerIP)), false);
+        return checkISP(new ArrayList<>(Arrays.asList(routerIP)));
     }
 
     /**
@@ -464,6 +468,11 @@ public class ISPController extends Thread {
      * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
      */
     public static void simulateFailure(boolean yesNo) {
+        if (yesNo) {            
+            LOGGER.info("The ISP is SIMULATED to not be reachable");
+        } else {
+            LOGGER.info("The ISP unreachable SIMULATION is RESET to be reachable");
+        }
         simulateFailure = yesNo;
     }
 
@@ -473,6 +482,7 @@ public class ISPController extends Thread {
      * @param yesNo if true a connection to the router address will fail. If false real connection test are performed.
      */
     public static void simulateCannotReachRouter(boolean yesNo) {
+        LOGGER.info("The router is SIMULATED to not be reachable");
         simulateCannotReachRouter = yesNo;
     }
 
@@ -480,25 +490,20 @@ public class ISPController extends Thread {
      * Try to connect to any host in the list
      *
      * @param hURLs the hosts to test
-     * @param doCount if true count success or failure
      * @return true if a host can be contacted and false if not one host from the list can be reached.
      */
-    boolean checkISP(List<String> hURLs, boolean doCount) {
+    boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
         if (!simulateFailure) {
             for (String host : hURLs) {
                 // test a TCP connection on port 80 with the destination host and a time-out of 1000 ms.
                 if (testConnection(host, 80, 1000)) {
                     hostFound = true;
-                    if (doCount) {
-                        successfulChecks++;
-                    }
+                    successfulChecks++;
                     // when successfull there is no need to try the other selectedHostsURLs
                     break;
                 } else {
-                    if (doCount) {
-                        failedChecks++;
-                    }
+                    failedChecks++;
                     // wait 1 second before contacting the next host in the list
                     sleepMillisSliced(1000);
                 }
@@ -632,7 +637,7 @@ public class ISPController extends Thread {
             x8.value = "Cannot say, router address unknown";
         } else {
             if (busyCheckingConnections) {
-                x8.value = Boolean.toString(!canConnectRouter(routerAddress));
+                x8.value = Boolean.toString(!canConnectWithRouter);
             } else {
                 x8.value = "Cannot say, conroller is not running";
             }

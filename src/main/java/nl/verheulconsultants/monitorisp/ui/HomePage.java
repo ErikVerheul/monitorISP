@@ -95,7 +95,9 @@ public final class HomePage extends BasePage {
                 if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
                     ISPController.setRouterAddress(addressValue);
                     LOGGER.info("The router address is set to {}", addressValue);
-                    saveSession();
+                    if (saveSession()) {
+                        LOGGER.info("All data are saved.");
+                    }
                 } else {
                     error("Wrong router address. Please try again or type unknown");
                 }
