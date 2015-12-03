@@ -291,9 +291,9 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         simulateFailure(true);
-        sleepMillis(6000);
+        sleepMillis(700);
         simulateFailure(false);
-        sleepMillis(6000);
+        sleepMillis(700);
         simulateCannotReachRouter(false);
         OutageListItem lastOutage = getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
