@@ -39,7 +39,7 @@ public class ISPController extends Thread {
     static CollectionModel<Host> choicesModel;
     private static long startOfService = System.currentTimeMillis();
     private static final String NOROUTERADDRESS = "unknown";
-    private static long lastContactWithAnyHost = System.currentTimeMillis();
+    private static long lastContactWithAnyHost = 0L;
     private static long lastFail = 0L;
     static long successfulChecks = 0L;
     static long failedChecks = 0L;
@@ -56,12 +56,12 @@ public class ISPController extends Thread {
     private long outageStart = 0L;
     private long outageEnd;
     private static String routerAddress = NOROUTERADDRESS;
-    private static boolean doRegisterServiceWasDown = true;
-    private static boolean doRegisterControllerWasDown = false;
     private static boolean simulateFailure = false;
     private static boolean simulateCannotReachRouter = false;
     private static long lastTimeDataSaved;
     private static boolean canConnectWithRouter;
+    private static long controllerDownTimeStamp =  0L;
+    private static boolean outageDetected = false;
 
     /**
      * @return the selected hosts.
@@ -104,7 +104,7 @@ public class ISPController extends Thread {
         ISPController.choicesModel = choicesModel;
         LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
     }
-    
+
     /**
      * Initiate with the data of the previous session or, if not possible, with default values.
      *
@@ -182,6 +182,7 @@ public class ISPController extends Thread {
      * Stop checking connections temporarily.
      */
     public void stopTemporarily() {
+        controllerDownTimeStamp = System.currentTimeMillis();
         stop = true;
     }
 
@@ -192,9 +193,7 @@ public class ISPController extends Thread {
      */
     public void restart(List<String> hosts) {
         this.selectedHostsURLs = hosts;
-        if (!doRegisterServiceWasDown) {
-            doRegisterControllerWasDown = true;
-        }
+        handleControllerWasDown();
         stop = false;
     }
 
@@ -214,30 +213,12 @@ public class ISPController extends Thread {
         stop = false;
         LOGGER.info("The controller has started.");
 
-        if (doRegisterServiceWasDown) {
-            long start = lastTimeDataSaved;
-            long now = System.currentTimeMillis();
-            // do not register if there was no previous session
-            if (start > 0L) {
-                outages.add(new OutageListItem(outages.size(), start, now, now - start, SERVICEDOWN));
-                LOGGER.info("Service was down is registered");
-            }
-            doRegisterServiceWasDown = false;
-        }
         /**
          * Outer loop is always loping unless exit = true. Note that the event that the controller was not running is registered. There are two causes: 1. The
          * controller was stopped in the UI and restarted. 2. The service was down and restarted.
          */
         do {
             if (!selectedHostsURLs.isEmpty()) {
-                if (doRegisterControllerWasDown) {
-                    long start = lastContactWithAnyHost;
-                    long now = System.currentTimeMillis();
-                    outages.add(new OutageListItem(outages.size(), start, now, now - start, CONTROLLERDOWN));
-                    doRegisterControllerWasDown = false;
-                    LOGGER.info("Controller was down is registered");
-                }
-
                 innerLoop(selectedHostsURLs);
             } else {
                 LOGGER.warn("Cannot run the service with an empty selection list");
@@ -249,6 +230,20 @@ public class ISPController extends Thread {
         } while (!exit);
 
         running = false;
+    }
+    
+    private void handleServiceWasDown() {
+        long start = lastContactWithAnyHost;
+        long now = System.currentTimeMillis();
+        outages.add(new OutageListItem(outages.size(), start, now, now - start, SERVICEDOWN));
+        LOGGER.info("Service was down is registered");
+    }
+
+    private void handleControllerWasDown() {
+        long start = controllerDownTimeStamp;
+        long now = System.currentTimeMillis();
+        outages.add(new OutageListItem(outages.size(), start, now, now - start, CONTROLLERDOWN));
+        LOGGER.info("Controller was down is registered");
     }
 
     /**
@@ -299,7 +294,7 @@ public class ISPController extends Thread {
     /**
      * The lastContactWithAnyHost is the date the service had a successful contact with any of the selected hosts.
      *
-     * @return
+     * @return the date or 0L when no contact was made.
      */
     public static long getLastContactWithAnyHost() {
         return lastContactWithAnyHost;
@@ -394,7 +389,7 @@ public class ISPController extends Thread {
 
     /**
      * Inner loop checking if connections to the hosts are possible When loping busyCheckingConnections = true Registers the periods when no connections could
-     * be made.
+     * be made. Will return at an exit or stop.
      */
     private void innerLoop(List<String> selectedURLs) {
         long loopStart;
@@ -411,9 +406,11 @@ public class ISPController extends Thread {
                     outages.add(new OutageListItem(outages.size(), outageStart,
                             outageEnd, outageEnd - outageStart, canConnectWithRouter ? ISP : INTERNAL));
                     outageStart = 0L;
+                    outageDetected = false;
                 }
             } else {
                 // connection failed first time after successful connections
+                outageDetected = true;
                 if (canReachISP) {
                     numberOfInterruptions++;
                     outageStart = loopStart;
@@ -427,6 +424,7 @@ public class ISPController extends Thread {
             // wait 5 seconds to check the ISP connection again
             sleepMillisSliced(5000);
         }
+        if (stop) controllerDownTimeStamp = System.currentTimeMillis();
         if (busyCheckingConnections) {
             LOGGER.info("The controller has stopped.\n");
             LOGGER.info("{} Connection checks are executed, {} were successful.",
@@ -442,6 +440,7 @@ public class ISPController extends Thread {
      */
     public void doInBackground(List<String> hosts) {
         this.selectedHostsURLs = hosts;
+        handleServiceWasDown();
         start();
     }
 
@@ -468,7 +467,7 @@ public class ISPController extends Thread {
      * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
      */
     public static void simulateFailure(boolean yesNo) {
-        if (yesNo) {            
+        if (yesNo) {
             LOGGER.info("The ISP is SIMULATED to not be reachable");
         } else {
             LOGGER.info("The ISP unreachable SIMULATION is RESET to be reachable");
@@ -560,16 +559,19 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Put this thread to sleep for ms milliseconds. Slice the sleep to exit fast in case of a stop or exit.
+     * Put this thread to sleep for ms milliseconds. Slice the sleep to exit fast in case of a stop or exit. Sleep only one slice while an outage is ongoing.
      *
      * @param ms the maximum sleep time
      */
     private void sleepMillisSliced(long ms) {
-        int sliceNr = 100;
+        int sliceNr = 10;
         long slice = ms / sliceNr;
         for (int i = 0; i < sliceNr && !exit && !stop; i++) {
             try {
                 Thread.sleep(slice);
+                if (outageDetected) {
+                    break;
+                }
             } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
                 LOGGER.info("A thread sleep was interrupted because of {}", ex);
             }

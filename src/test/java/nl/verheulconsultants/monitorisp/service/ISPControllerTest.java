@@ -87,7 +87,7 @@ public class ISPControllerTest {
     public void tearDown() {
         System.out.println("tearDown");
         instance.exit();
-        sleepMillis(140);
+        sleepMillis(500);
         if (controller.isRunning()) {
             LOGGER.warn("The controller is still running!");
         } else {
@@ -157,7 +157,7 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         instance.exit();
-        sleepMillis(140);
+        sleepMillis(500);
         assertFalse(instance.isRunning());
     }
 
@@ -170,7 +170,7 @@ public class ISPControllerTest {
         instance.start();
         assert (instance.isAlive());
         instance.exit();
-        sleepMillis(140);
+        sleepMillis(500);
         assert (!instance.isAlive());
     }
 
