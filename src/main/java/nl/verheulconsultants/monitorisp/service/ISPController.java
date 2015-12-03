@@ -62,7 +62,6 @@ public class ISPController extends Thread {
     private static boolean simulateCannotReachRouter = false;
     private static long lastTimeDataSaved;
     private static boolean canConnectWithRouter;
-    private static boolean inTest = false;
 
     /**
      * @return the selected hosts.
@@ -106,14 +105,6 @@ public class ISPController extends Thread {
         LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
     }
     
-    public static boolean isInTest() {
-        return inTest;
-    }
-    
-    public static void setIntest() {
-        ISPController.inTest = true;
-    }
-
     /**
      * Initiate with the data of the previous session or, if not possible, with default values.
      *

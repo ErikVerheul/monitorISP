@@ -70,7 +70,7 @@ public class WicketApplication extends WebApplication {
         controller.exit();
         sleepMillis(140);
         if (saveSession()) {
-            LOGGER.info("Session data is saved.");
+            LOGGER.info("Session data is saved at exiting the application.");
         }
     }
 

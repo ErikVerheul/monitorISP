@@ -71,12 +71,18 @@ public final class HomePage extends BasePage {
     private final InputRouterAddress address;
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
-    private boolean startAutomatically = true;
+    private boolean startAutomatically;
 
+    /**
+     * Wicket initializes this page multiple times.
+     * Be aware not to execute code multiple times if not allowed.
+     */
     public HomePage() {
         // Prevent spurious reloads by checking if the contoller is allready running
-        // Only start automatically when the previous session data coule be read
-        if (!controller.isRunning()) {
+        // Only start automatically when the previous session data could be read
+        if (controller.isRunning()) {
+            startAutomatically = false;
+        } else {
             startAutomatically = ISPController.initWithPreviousSessionData();
         }
         address = new InputRouterAddress(ISPController.getRouterAddress());
@@ -160,7 +166,7 @@ public final class HomePage extends BasePage {
         add(new Label("message1", "The application home dir is " + APPHOMEDIR));
         add(new Label("message2", "The log file is located here " + getLogFileName()));
         add(new FeedbackPanel("feedback"));
-        
+
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
         palette = new Palette<>("palette1",
                 ISPController.getSelectedModel(),
@@ -248,12 +254,9 @@ public final class HomePage extends BasePage {
         // finally add the container to the page
         add(outageListContainer);
 
-        // Prevent spurious restarts by checking if the contoller is allready running
-        if (!controller.isRunning()) {
-            if (startAutomatically) {
-                LOGGER.info("The controller will be started automatically.");
-                startRunning();
-            }
+        if (startAutomatically) {
+            LOGGER.info("The controller will be started automatically.");
+            startRunning();
         }
     }
 

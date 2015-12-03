@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.ISPController.getLastOutage;
 import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
-import static nl.verheulconsultants.monitorisp.service.ISPController.setIntest;
 import static nl.verheulconsultants.monitorisp.service.ISPController.setRouterAddress;
 import static nl.verheulconsultants.monitorisp.service.ISPController.simulateCannotReachRouter;
 import static nl.verheulconsultants.monitorisp.service.ISPController.simulateFailure;
@@ -48,28 +47,22 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * ISPController tests. Each test starts the controller and uses a fresh copy of a set of session data located in the test resources.
+ */
 public class ISPControllerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
     ISPController instance;
 
-    /**
-     * Prevent an automatic start with the saved previous session data.
-     */
-    @BeforeClass
-    public static void setUpClass() {
-        setIntest();
-    }
-    
     @Before
     public void setUp() {
         System.out.println("setUp");
         instance = new ISPController();
-
+        LOGGER.info("New Controller instance instantiated");
         setSessionsDataFileNameForTest();
         // copy a test file to the test directory (will be overwritten)
         File resourcesDirectory = new File("src/test/resources");
@@ -78,10 +71,11 @@ public class ISPControllerTest {
         //copy the test file to the test directory with the same name as the source
         try {
             Files.copy(sourcePath, getTestHomeDir().resolve(source.getName()), REPLACE_EXISTING);
+            LOGGER.info("Fresh last session data copied");
         } catch (IOException ex) {
             LOGGER.error("File copy failed with exception {}", ex);
         }
-
+        // Must load the session data explicit as Homepage is not doing it.
         if (initWithPreviousSessionData()) {
             LOGGER.info("Preset previous session test data are used for initialization.");
         } else {
@@ -96,6 +90,8 @@ public class ISPControllerTest {
         sleepMillis(140);
         if (controller.isRunning()) {
             LOGGER.warn("The controller is still running!");
+        } else {
+            LOGGER.info("The controller has exited.");
         }
     }
 
@@ -252,6 +248,7 @@ public class ISPControllerTest {
         simulateFailure(false);
         sleepMillis(6000);
         OutageListItem lastOutage = getLastOutage();
+        LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
     }
@@ -274,6 +271,7 @@ public class ISPControllerTest {
         simulateFailure(false);
         sleepMillis(6000);
         OutageListItem lastOutage = getLastOutage();
+        LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
     }
@@ -298,6 +296,7 @@ public class ISPControllerTest {
         sleepMillis(6000);
         simulateCannotReachRouter(false);
         OutageListItem lastOutage = getLastOutage();
+        LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == INTERNAL);
     }
@@ -320,6 +319,7 @@ public class ISPControllerTest {
         simulateFailure(false);
         sleepMillis(6000);
         OutageListItem lastOutage = getLastOutage();
+        LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
     }
@@ -337,6 +337,7 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         OutageListItem lastOutage = getLastOutage();
+        LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == SERVICEDOWN);
     }
@@ -359,6 +360,7 @@ public class ISPControllerTest {
         sleepMillis(2000);
         assertTrue(instance.isBusyCheckingConnections());
         OutageListItem lastOutage = getLastOutage();
+        LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == CONTROLLERDOWN);
     }
