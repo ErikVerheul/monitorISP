@@ -182,7 +182,6 @@ public class ISPController extends Thread {
      * Stop checking connections temporarily.
      */
     public void stopTemporarily() {
-        controllerDownTimeStamp = System.currentTimeMillis();
         stop = true;
     }
 
@@ -424,7 +423,9 @@ public class ISPController extends Thread {
             // wait 5 seconds to check the ISP connection again
             sleepMillisSliced(5000);
         }
-        if (stop) controllerDownTimeStamp = System.currentTimeMillis();
+        if (stop) {
+            controllerDownTimeStamp = System.currentTimeMillis();
+        }
         if (busyCheckingConnections) {
             LOGGER.info("The controller has stopped.\n");
             LOGGER.info("{} Connection checks are executed, {} were successful.",

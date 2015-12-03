@@ -105,9 +105,6 @@ public final class HomePage extends BasePage {
                 if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
                     ISPController.setRouterAddress(addressValue);
                     LOGGER.info("The router address is set to {}", addressValue);
-                    if (saveSession()) {
-                        LOGGER.info("All data are saved.");
-                    }
                 } else {
                     error("Wrong router address. Please try again or type unknown");
                 }
@@ -136,9 +133,6 @@ public final class HomePage extends BasePage {
                     hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), urlValue));
                     LOGGER.info("The URL {} is added", urlValue);
                     LOGGER.info("The host list is changed to {}", ISPController.getPaletteModel());
-                    if (saveSession()) {
-                        LOGGER.info("All data are saved.");
-                    }
                 } else {
                     error("Wrong host address. Please try again.");
                 }
