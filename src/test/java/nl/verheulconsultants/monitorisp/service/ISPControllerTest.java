@@ -62,7 +62,7 @@ public class ISPControllerTest {
     public void setUp() {
         System.out.println("setUp");
         instance = new ISPController();
-        LOGGER.info("New Controller instance instantiated");
+        LOGGER.info("New Controller instance instantiated.");
         setSessionsDataFileNameForTest();
         // copy a test file to the test directory (will be overwritten)
         File resourcesDirectory = new File("src/test/resources");
@@ -240,7 +240,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
         setRouterAddress("192.168.0.6");
 
-        instance.doInBackground(hosts);
+        instance.doInBackground(hosts);        
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         simulateFailure(true);
@@ -291,10 +291,9 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
         simulateFailure(true);
-        sleepMillis(700);
+        sleepMillis(6000);
         simulateFailure(false);
-        sleepMillis(700);
-        simulateCannotReachRouter(false);
+        sleepMillis(6000);       
         OutageListItem lastOutage = getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);

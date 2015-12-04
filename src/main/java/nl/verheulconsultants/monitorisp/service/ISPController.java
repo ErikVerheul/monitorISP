@@ -34,10 +34,10 @@ import org.slf4j.LoggerFactory;
 public class ISPController extends Thread {
 
     private static final List<Host> hosts = new ArrayList<>();
-    static List<Host> selected = new ArrayList<>();
+    static List<Host> selected;
     static ListModel<Host> selectedModel;
     static CollectionModel<Host> choicesModel;
-    private static long startOfService = System.currentTimeMillis();
+    private static long startOfService;
     private static final String NOROUTERADDRESS = "unknown";
     private static long lastContactWithAnyHost = 0L;
     private static long lastFail = 0L;
@@ -47,29 +47,38 @@ public class ISPController extends Thread {
     private static long currentISPunavailability = 0L;
     private static boolean canReachISP = true;
     private static boolean busyCheckingConnections = false;
-    private static List<OutageListItem> outages = new CopyOnWriteArrayList<>();
+    private static List<OutageListItem> outages;
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
-    private List<String> selectedHostsURLs = new ArrayList<>();
+    private List<String> selectedHostsURLs;
     private long outageStart = 0L;
     private long outageEnd;
-    private static String routerAddress = NOROUTERADDRESS;
-    private static boolean simulateFailure = false;
-    private static boolean simulateCannotReachRouter = false;
+    private static String routerAddress;
+    private static boolean simulateFailure;
+    private static boolean simulateCannotReachRouter;
     private static long lastTimeDataSaved;
     private static boolean canConnectWithRouter;
-    private static long controllerDownTimeStamp =  0L;
-    private static boolean outageDetected = false;
+    private static long controllerDownTimeStamp = 0L;
 
+    public ISPController() {
+        selected = new ArrayList<>();
+        selectedHostsURLs = new ArrayList<>();
+        startOfService = System.currentTimeMillis();
+        outages = new CopyOnWriteArrayList<>();
+        routerAddress = NOROUTERADDRESS;
+        simulateFailure = false;
+        simulateCannotReachRouter = false;
+    }
+    
     /**
      * @return the selected hosts.
      */
     public static List<Host> getSelected() {
         return selected;
     }
-
+    
     /**
      * Set the palette selection
      *
@@ -230,7 +239,7 @@ public class ISPController extends Thread {
 
         running = false;
     }
-    
+
     private void handleServiceWasDown() {
         long start = lastContactWithAnyHost;
         long now = System.currentTimeMillis();
@@ -396,23 +405,24 @@ public class ISPController extends Thread {
             busyCheckingConnections = true;
             loopStart = System.currentTimeMillis();
             if (checkISP(selectedURLs)) {
+                // Success, ISP can be connected               
                 canReachISP = true;
                 lastContactWithAnyHost = System.currentTimeMillis();
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
                     outageEnd = lastContactWithAnyHost;
-                    canConnectWithRouter = canConnectRouter(routerAddress);
                     outages.add(new OutageListItem(outages.size(), outageStart,
                             outageEnd, outageEnd - outageStart, canConnectWithRouter ? ISP : INTERNAL));
                     outageStart = 0L;
-                    outageDetected = false;
                 }
+                canConnectWithRouter = true;
             } else {
-                // connection failed first time after successful connections
-                outageDetected = true;
                 if (canReachISP) {
+                    // Connection failed first time after successful connections
                     numberOfInterruptions++;
                     outageStart = loopStart;
+                    canConnectWithRouter = canConnectRouter();
+                    LOGGER.info("canConnectWithRouter is set to {}", canConnectWithRouter);
                 }
                 canReachISP = false;
                 LOGGER.warn("The ISP cannot be reached.");
@@ -423,7 +433,7 @@ public class ISPController extends Thread {
             // wait 5 seconds to check the ISP connection again
             sleepMillisSliced(5000);
         }
-        
+
         if (busyCheckingConnections) {
             controllerDownTimeStamp = System.currentTimeMillis();
             LOGGER.info("The controller has stopped.\n");
@@ -444,21 +454,21 @@ public class ISPController extends Thread {
         start();
     }
 
-    private boolean canConnectRouter(String routerIP) {
+    private boolean canConnectRouter() {
         if (simulateCannotReachRouter) {
             return false;
         }
         // if the router address is not set we can not exclude internal network failure
-        if (NOROUTERADDRESS.equalsIgnoreCase(routerIP)) {
+        if (NOROUTERADDRESS.equalsIgnoreCase(routerAddress)) {
             LOGGER.warn("The router address is not set. The internal network error detection is omitted");
             return true;
         }
         // if the router address is not a valid address we can not exclude internal network failure
-        if (!isValidHostAddress(routerIP)) {
-            LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerIP);
+        if (!isValidHostAddress(routerAddress)) {
+            LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerAddress);
             return true;
         }
-        return checkISP(new ArrayList<>(Arrays.asList(routerIP)));
+        return checkRouter();
     }
 
     /**
@@ -481,7 +491,11 @@ public class ISPController extends Thread {
      * @param yesNo if true a connection to the router address will fail. If false real connection test are performed.
      */
     public static void simulateCannotReachRouter(boolean yesNo) {
-        LOGGER.info("The router is SIMULATED to not be reachable");
+        if (yesNo) {
+            LOGGER.info("The router is SIMULATED to not be reachable");
+        } else {
+            LOGGER.info("The router unreachable SIMULATION is RESET to be reachable");
+        }
         simulateCannotReachRouter = yesNo;
     }
 
@@ -493,7 +507,9 @@ public class ISPController extends Thread {
      */
     boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
-        if (!simulateFailure) {
+        if (simulateFailure) {
+            LOGGER.info("Failed check SIMULATED");
+        } else {
             for (String host : hURLs) {
                 // test a TCP connection on port 80 with the destination host and a time-out of 1000 ms.
                 if (testConnection(host, 80, 1000)) {
@@ -509,6 +525,14 @@ public class ISPController extends Thread {
             }
         }
         return hostFound;
+    }
+
+    /**
+     * Check if the router address can be reached.
+     * @return true if the router can be reached
+     */
+    private boolean checkRouter() {
+        return testConnection(routerAddress, 80, 1000);
     }
 
     /**
@@ -569,7 +593,7 @@ public class ISPController extends Thread {
         for (int i = 0; i < sliceNr && !exit && !stop; i++) {
             try {
                 Thread.sleep(slice);
-                if (outageDetected) {
+                if (!canReachISP) {
                     break;
                 }
             } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
