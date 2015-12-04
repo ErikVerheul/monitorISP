@@ -31,7 +31,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getSessionDataFileName;
-import nl.verheulconsultants.monitorisp.ui.Host;
 import org.apache.wicket.model.util.CollectionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

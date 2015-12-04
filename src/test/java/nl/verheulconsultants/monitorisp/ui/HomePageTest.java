@@ -1,5 +1,6 @@
 package nl.verheulconsultants.monitorisp.ui;
 
+import nl.verheulconsultants.monitorisp.service.Host;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

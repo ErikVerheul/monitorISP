@@ -23,6 +23,7 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
+import nl.verheulconsultants.monitorisp.service.Host;
 import java.util.ArrayList;
 import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.Collection;
