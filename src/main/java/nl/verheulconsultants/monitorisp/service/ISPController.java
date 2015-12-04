@@ -423,7 +423,6 @@ public class ISPController extends Thread {
                     LOGGER.info("canConnectWithRouter is set to {}", canConnectWithRouter);
                 }
                 canReachISP = false;
-                LOGGER.warn("The ISP cannot be reached.");
                 lastFail = System.currentTimeMillis();
                 // update the current unavailability
                 currentISPunavailability = lastFail - outageStart;
@@ -683,12 +682,12 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Get all outage data.
+     * Get all outage data in reversed order. The most recent first.
      *
      * @return the full list
      */
     public static List getOutageData() {
-        return outages;
+        return ReversedView.of(outages);
     }
 
     private long getTotalISPUnavailability() {

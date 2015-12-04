@@ -25,7 +25,11 @@ package nl.verheulconsultants.monitorisp.service;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.Enumeration;
 import org.apache.http.conn.util.InetAddressUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +134,7 @@ public class Utilities {
             return false;
         }
     }
-    
+
     /**
      * Put this thread to sleep for ms milliseconds.
      *
@@ -141,6 +145,25 @@ public class Utilities {
             Thread.sleep(ms);
         } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
             LOGGER.info("A thread sleep was interrupted because of {}", ex);
+        }
+    }
+
+    public static String getLogFileName() {
+        FileAppender fileAppender = null;
+
+        Enumeration appenders = LogManager.getRootLogger().getAllAppenders();
+
+        while (appenders.hasMoreElements()) {
+            Appender currAppender = (Appender) appenders.nextElement();
+            if (currAppender instanceof FileAppender) {
+                fileAppender = (FileAppender) currAppender;
+            }
+        }
+
+        if (fileAppender != null) {
+            return fileAppender.getFile();
+        } else {
+            return "Log file location not found.";
         }
     }
 

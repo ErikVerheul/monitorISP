@@ -157,9 +157,7 @@ public final class HomePage extends BasePage {
             }
         };
 
-        // Show a message.
-        add(new Label("message1", "The application home dir is " + APPHOMEDIR));
-        add(new Label("message2", "The log file is located here " + getLogFileName()));
+        // To show a message.
         add(new FeedbackPanel("feedback"));
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
@@ -275,25 +273,6 @@ public final class HomePage extends BasePage {
             names.add(h.getName());
         }
         return names;
-    }
-
-    private String getLogFileName() {
-        FileAppender fileAppender = null;
-
-        Enumeration appenders = LogManager.getRootLogger().getAllAppenders();
-
-        while (appenders.hasMoreElements()) {
-            Appender currAppender = (Appender) appenders.nextElement();
-            if (currAppender instanceof FileAppender) {
-                fileAppender = (FileAppender) currAppender;
-            }
-        }
-
-        if (fileAppender != null) {
-            return fileAppender.getFile();
-        } else {
-            return "Log file location not found.";
-        }
     }
 
     /**
