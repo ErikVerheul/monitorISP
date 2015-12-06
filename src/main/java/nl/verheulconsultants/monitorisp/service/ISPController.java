@@ -60,6 +60,9 @@ public class ISPController extends Thread {
     private static boolean canConnectWithRouter;
     private static long controllerDownTimeStamp = 0L;
 
+    /**
+     * The controller running as a thread to check if a number of hosts can be reached.
+     */
     public ISPController() {
         selected = new ArrayList<>();
         selectedHostsURLs = new ArrayList<>();
@@ -69,14 +72,14 @@ public class ISPController extends Thread {
         simulateFailure = false;
         simulateCannotReachRouter = false;
     }
-    
+
     /**
      * @return the selected hosts.
      */
     public static List<Host> getSelected() {
         return selected;
     }
-    
+
     /**
      * Set the palette selection
      *
@@ -213,7 +216,6 @@ public class ISPController extends Thread {
     }
 
     @Override
-    @SuppressWarnings("static-access")
     public void run() {
         running = true;
         stop = false;
@@ -241,15 +243,23 @@ public class ISPController extends Thread {
     private void handleServiceWasDown() {
         long start = lastContactWithAnyHost;
         long now = System.currentTimeMillis();
-        outages.add(new OutageListItem(outages.size(), start, now, now - start, SERVICEDOWN));
-        LOGGER.info("Service was down is registered");
+        try {
+            outages.add(new OutageListItem(outages.size(), start, now, now - start, SERVICEDOWN));
+            LOGGER.info("Service was down is registered");
+        } catch (java.lang.UnsupportedOperationException ex) {
+            LOGGER.error("Could not register that Service was down, the exception is {}", ex);
+        }
     }
 
     private void handleControllerWasDown() {
         long start = controllerDownTimeStamp;
         long now = System.currentTimeMillis();
-        outages.add(new OutageListItem(outages.size(), start, now, now - start, CONTROLLERDOWN));
-        LOGGER.info("Controller was down is registered");
+        try {
+            outages.add(new OutageListItem(outages.size(), start, now, now - start, CONTROLLERDOWN));
+            LOGGER.info("Controller was down is registered");
+        } catch (java.lang.UnsupportedOperationException ex) {
+            LOGGER.error("Could not register that Controller was down, the exception is {}", ex);
+        }
     }
 
     /**
@@ -526,6 +536,7 @@ public class ISPController extends Thread {
 
     /**
      * Check if the router address can be reached.
+     *
      * @return true if the router can be reached
      */
     private boolean checkRouter() {
@@ -686,8 +697,17 @@ public class ISPController extends Thread {
      *
      * @return the full list
      */
-    public static List getOutageData() {
+    public static List getOutageDataReversedOrder() {
         return ReversedView.of(outages);
+    }
+    
+    /**
+     * Get all outage data in normal order. The most recent last.
+     *
+     * @return the full list
+     */
+    public static List getOutageData() {
+        return outages;
     }
 
     private long getTotalISPUnavailability() {

@@ -141,16 +141,16 @@ public class MonitorISPData implements Serializable {
     }
     
     
-    // Check if all fields are set for writing. Some values are not checked as they can be zero.
+    // Check if all fields are set for writing. Some values are not checked as they can be zero. 
     private boolean allSet() {
         return paletteModel != null && selected != null && routerAddress != null && outages != null 
-                && startOfService > 0L && lastContactWithAnyHost > 0L;
+                && startOfService > 0L && timeStamp > 0L;
     }
     
     // Check if all fields are read. Some values are not checked as they can be zero.
     private boolean allRead() {
         return dataRead.paletteModel != null && dataRead.selected != null && dataRead.routerAddress != null && dataRead.outages != null 
-                && dataRead.startOfService > 0L && dataRead.lastContactWithAnyHost > 0L && dataRead.timeStamp > 0L;
+                && dataRead.startOfService > 0L && dataRead.timeStamp > 0L;
     }
 
     /**

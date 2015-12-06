@@ -88,10 +88,10 @@ public class ISPControllerTest {
         System.out.println("tearDown");
         instance.exit();
         sleepMillis(500);
-        if (controller.isRunning()) {
-            LOGGER.warn("The controller is still running!");
+        if (controller.isAlive()) {
+            LOGGER.warn("The controller thread is still running!");
         } else {
-            LOGGER.info("The controller has exited.");
+            LOGGER.info("The controller thread has exited.");
         }
     }
 

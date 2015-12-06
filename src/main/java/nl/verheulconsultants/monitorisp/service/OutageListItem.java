@@ -47,7 +47,7 @@ public class OutageListItem implements Serializable {
         this.duration = duration;
         this.cause = cause;
     }
-
+    
     /**
      * Returns the index starting with 1 for the first outage.
      *

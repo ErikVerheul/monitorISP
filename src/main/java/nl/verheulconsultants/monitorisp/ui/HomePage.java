@@ -27,15 +27,11 @@ import nl.verheulconsultants.monitorisp.service.Host;
 import java.util.ArrayList;
 import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.ISPController;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.LogManager;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.extensions.markup.html.form.palette.theme.DefaultTheme;
@@ -221,7 +217,7 @@ public final class HomePage extends BasePage {
         IModel listOutageViewModel = new LoadableDetachableModel() {
             @Override
             protected Object load() {
-                return ISPController.getOutageData();
+                return ISPController.getOutageDataReversedOrder();
             }
         };
 
