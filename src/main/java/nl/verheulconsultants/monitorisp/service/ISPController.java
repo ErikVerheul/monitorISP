@@ -34,7 +34,7 @@ public class ISPController extends Thread {
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private static final List<Host> hosts = new ArrayList<>();
     private final MonitorISPData sessionData;
-    private static ListModel<Host> selectedModel;
+    private ListModel<Host> selectedModel;
     static final String NOROUTERADDRESS = "unknown";
     private static long currentISPunavailability = 0L;
     private static boolean canReachISP = true;
@@ -45,10 +45,10 @@ public class ISPController extends Thread {
     private List<String> selectedHostsURLs;
     private long outageStart = 0L;
     private long outageEnd;
-    private static boolean simulateFailure;
-    private static boolean simulateCannotReachRouter;
-    private static boolean canConnectWithRouter;
-    private static long controllerDownTimeStamp = 0L;
+    private boolean simulateFailure;
+    private boolean simulateCannotReachRouter;
+    private boolean canConnectWithRouter;
+    private long controllerDownTimeStamp = 0L;
 
     /**
      * The controller running as a thread to check if a number of hosts can be reached.
@@ -343,7 +343,7 @@ public class ISPController extends Thread {
      *
      * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
      */
-    public static void simulateFailure(boolean yesNo) {
+    public void simulateFailure(boolean yesNo) {
         if (yesNo) {
             LOGGER.info("The ISP is SIMULATED to not be reachable");
         } else {
@@ -357,7 +357,7 @@ public class ISPController extends Thread {
      *
      * @param yesNo if true a connection to the router address will fail. If false real connection test are performed.
      */
-    public static void simulateCannotReachRouter(boolean yesNo) {
+    public void simulateCannotReachRouter(boolean yesNo) {
         if (yesNo) {
             LOGGER.info("The router is SIMULATED to not be reachable");
         } else {

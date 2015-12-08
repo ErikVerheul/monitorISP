@@ -63,7 +63,7 @@ public final class HomePage extends BasePage {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private static final ISPController controller  = getController();
-    private static Palette<Host> palette;
+    private Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
     private final Button startButton;

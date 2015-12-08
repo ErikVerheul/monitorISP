@@ -237,9 +237,9 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);        
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        ISPController.simulateFailure(true);
+        instance.simulateFailure(true);
         sleepMillis(6000);
-        ISPController.simulateFailure(false);
+        instance.simulateFailure(false);
         sleepMillis(6000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
@@ -260,9 +260,9 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        ISPController.simulateFailure(true);
+        instance.simulateFailure(true);
         sleepMillis(6000);
-        ISPController.simulateFailure(false);
+        instance.simulateFailure(false);
         sleepMillis(6000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
@@ -279,14 +279,14 @@ public class ISPControllerTest {
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
         instance.setRouterAddress("192.168.0.6");
-        ISPController.simulateCannotReachRouter(true);
+        instance.simulateCannotReachRouter(true);
 
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        ISPController.simulateFailure(true);
+        instance.simulateFailure(true);
         sleepMillis(6000);
-        ISPController.simulateFailure(false);
+        instance.simulateFailure(false);
         sleepMillis(6000);       
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
@@ -307,9 +307,9 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        ISPController.simulateFailure(true);
+        instance.simulateFailure(true);
         sleepMillis(6000);
-        ISPController.simulateFailure(false);
+        instance.simulateFailure(false);
         sleepMillis(6000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);

@@ -80,8 +80,7 @@ public class MonitorISPData implements Serializable {
 
     // Check if the fields are set for writing. Some values are not checked as they can be zero. 
     private boolean allSet() {
-        if (null != paletteModel.getObject()
-                && !paletteModel.getObject().isEmpty()
+        if (!paletteModel.getObject().isEmpty()
                 && null != selected
                 && null != routerAddress
                 && null != outages
@@ -90,12 +89,12 @@ public class MonitorISPData implements Serializable {
             return true;
         } else {
             LOGGER.error("WRITE Check falied: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
-                    paletteModel, 
-                    null == paletteModel ? 0 : paletteModel.getObject().size(), 
-                    selected, 
-                    routerAddress, 
-                    outages, 
-                    startOfService, 
+                    paletteModel,
+                    null == paletteModel ? 0 : paletteModel.getObject().size(),
+                    selected,
+                    routerAddress,
+                    outages,
+                    startOfService,
                     timeStamp);
             return false;
         }
@@ -103,8 +102,7 @@ public class MonitorISPData implements Serializable {
 
     // Check if the fields are read. Some values are not checked as they can be zero or not yet initialized.
     private boolean allRead() {
-        if (null != dataRead.paletteModel.getObject()
-                && !dataRead.paletteModel.getObject().isEmpty()
+        if (!dataRead.paletteModel.getObject().isEmpty()
                 && null != dataRead.selected
                 && null != dataRead.routerAddress
                 && null != dataRead.outages
@@ -113,12 +111,12 @@ public class MonitorISPData implements Serializable {
             return true;
         } else {
             LOGGER.error("READ check failed: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
-                    dataRead.paletteModel, 
-                    null == dataRead.paletteModel ? 0 : dataRead.paletteModel.getObject().size(), 
-                    dataRead.selected, 
-                    dataRead.routerAddress, 
-                    dataRead.outages, 
-                    dataRead.startOfService, 
+                    dataRead.paletteModel,
+                    null == dataRead.paletteModel ? 0 : dataRead.paletteModel.getObject().size(),
+                    dataRead.selected,
+                    dataRead.routerAddress,
+                    dataRead.outages,
+                    dataRead.startOfService,
                     dataRead.timeStamp);
             return false;
         }
@@ -133,9 +131,8 @@ public class MonitorISPData implements Serializable {
         LOGGER.info("Save all data of the current session.");
         timeStamp = System.currentTimeMillis();
         if (allSet()) {
-            ObjectOutputStream oos;
-            try (FileOutputStream fout = new FileOutputStream(getSessionDataFileName())) {
-                oos = new ObjectOutputStream(fout);
+            try (FileOutputStream fout = new FileOutputStream(getSessionDataFileName());
+                    ObjectOutputStream oos = new ObjectOutputStream(fout)) {
                 oos.writeObject(this);
                 return true;
             } catch (IOException ex) {
@@ -155,8 +152,8 @@ public class MonitorISPData implements Serializable {
      */
     public boolean loadData() {
         LOGGER.info("Read all data of the previous session.");
-        try (FileInputStream fin = new FileInputStream(getSessionDataFileName())) {
-            ObjectInputStream ois = new ObjectInputStream(fin);
+        try (FileInputStream fin = new FileInputStream(getSessionDataFileName());
+                ObjectInputStream ois = new ObjectInputStream(fin)) {
             dataRead = (MonitorISPData) ois.readObject();
             if (allRead()) {
                 this.paletteModel = dataRead.paletteModel;
