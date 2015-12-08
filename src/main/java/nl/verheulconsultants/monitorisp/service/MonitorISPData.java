@@ -29,7 +29,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import static nl.verheulconsultants.monitorisp.service.ISPController.NOROUTERADDRESS;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getSessionDataFileName;
 import org.apache.wicket.model.util.CollectionModel;
 import org.slf4j.Logger;
@@ -38,133 +41,83 @@ import org.slf4j.LoggerFactory;
 public class MonitorISPData implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitorISPData.class);
-    private static final long serialVersionUID = 1L;
-    private CollectionModel<Host> paletteModel;
-    private List<Host> selected;
-    private String routerAddress;
-    private List<OutageListItem> outages;
     private MonitorISPData dataRead;
-    private long startOfService;
-    private long lastContactWithAnyHost;
-    private long lastFail;
-    private long numberOfInterruptions;
-    private long failedChecks;
-    private long successfulChecks;
-    private long timeStamp;
+    private static final long serialVersionUID = 1L;
 
-    /**
-     * Setter
-     * @param paletteModel 
-     */
-    public void setPaletteModel(CollectionModel<Host> paletteModel) {
-        this.paletteModel = paletteModel;
+    CollectionModel<Host> paletteModel;
+    List<Host> selected;
+    String routerAddress;
+    List<OutageListItem> outages;
+    long startOfService;
+    long lastContactWithAnyHost;
+    long lastFail;
+    long numberOfInterruptions;
+    long failedChecks;
+    long successfulChecks;
+    long timeStamp;
+
+    MonitorISPData() {
+        paletteModel = new CollectionModel<>();
+        selected = new ArrayList<>();
+        routerAddress = NOROUTERADDRESS;
+        outages = new CopyOnWriteArrayList<>();
+        startOfService = System.currentTimeMillis();
+        lastContactWithAnyHost = 0L;
+        lastFail = 0L;
+        numberOfInterruptions = 0L;
+        failedChecks = 0L;
+        successfulChecks = 0L;
+        timeStamp = 0L;
+        LOGGER.info("MonitorISPData is initialized");
     }
 
-    /**
-     * Setter
-     * @param selected 
-     */
-    public void setSelected(List<Host> selected) {
-        this.selected = selected;
-    }
-
-    /**
-     * Setter
-     * @param routerAddress 
-     */
-    public void setRouterAddress(String routerAddress) {
-        this.routerAddress = routerAddress;
-    }
-    
-    /**
-     * Setter
-     * @param outages 
-     */
-    public void setOutages(List<OutageListItem> outages) {
-        this.outages = outages;
-    }
-    
-    /**
-     * Setter
-     * @param startOfService 
-     */
-    public void setStartOfService(long startOfService) {
-        this.startOfService = startOfService;
-    }
-    
-    /**
-     * Setter
-     * @param lastContactWithAnyHost 
-     */
-    public void setLastContactWithAnyHost(long lastContactWithAnyHost) {
-        this.lastContactWithAnyHost = lastContactWithAnyHost;
-    }
-    
-    /**
-     * Setter
-     * @param lastFail 
-     */
-    public void setLastFail(long lastFail) {
-        this.lastFail = lastFail;
-    }
-    
-    /**
-     * Setter
-     * @param numberOfInterruptions 
-     */
-    public void setNumberOfInterruptions(long numberOfInterruptions) {
-        this.numberOfInterruptions = numberOfInterruptions;
-    }
-    
-    /**
-     * Setter
-     * @param failedChecks 
-     */
-    public void setFailedChecks(long failedChecks) {
-        this.failedChecks = failedChecks;
-    }
-    
-    /**
-     * Setter
-     * @param successfulChecks 
-     */
-    public void setSuccessfulChecks(long successfulChecks) {
-        this.successfulChecks = successfulChecks;
-    }
-    
-    /**
-     * Setter
-     * @param timeStamp 
-     */
-    public void setTimeStamp(long timeStamp) {
-        this.timeStamp = timeStamp;
-    }
-    
-    
-    // Check if all fields are set for writing. Some values are not checked as they can be zero. 
+    // Check if the fields are set for writing. Some values are not checked as they can be zero. 
     private boolean allSet() {
-        return paletteModel != null && selected != null && routerAddress != null && outages != null 
-                && startOfService > 0L && timeStamp > 0L;
+        if (null != paletteModel.getObject()
+                && paletteModel.getObject().size() > 0
+                && null != selected
+                && null != routerAddress
+                && null != outages
+                && startOfService > 0L
+                && timeStamp > 0L) {
+            return true;
+        } else {
+            LOGGER.error("WRITE Check falied: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
+                    paletteModel, null == paletteModel ? 0 : paletteModel.getObject().size(), selected, routerAddress, outages, startOfService, timeStamp);
+            return false;
+        }
     }
-    
-    // Check if all fields are read. Some values are not checked as they can be zero.
+
+    // Check if the fields are read. Some values are not checked as they can be zero or not yet initialized.
     private boolean allRead() {
-        return dataRead.paletteModel != null && dataRead.selected != null && dataRead.routerAddress != null && dataRead.outages != null 
-                && dataRead.startOfService > 0L && dataRead.timeStamp > 0L;
+        if (null != dataRead.paletteModel.getObject()
+                && dataRead.paletteModel.getObject().size() > 0
+                && null != dataRead.selected
+                && null != dataRead.routerAddress
+                && null != dataRead.outages
+                && dataRead.startOfService > 0L
+                && dataRead.timeStamp > 0L) {
+            return true;
+        } else {
+            LOGGER.error("READ check failed: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
+                    dataRead.paletteModel, null == dataRead.paletteModel ? 0 : dataRead.paletteModel.getObject().size(), dataRead.selected, dataRead.routerAddress, dataRead.outages, dataRead.startOfService, dataRead.timeStamp);
+            return false;
+        }
     }
 
     /**
      * Save all data of the current session.
-     * @param allData
+     *
      * @return true is successful
      */
-    public boolean saveData(MonitorISPData allData) {
+    public boolean saveData() {
         LOGGER.info("Save all data of the current session.");
+        timeStamp = System.currentTimeMillis();
         if (allSet()) {
             ObjectOutputStream oos;
             try (FileOutputStream fout = new FileOutputStream(getSessionDataFileName())) {
                 oos = new ObjectOutputStream(fout);
-                oos.writeObject(allData);
+                oos.writeObject(this);
                 return true;
             } catch (IOException ex) {
                 LOGGER.error("The application data can not be saved in file {}. The exception is {}", getSessionDataFileName(), ex);
@@ -175,17 +128,29 @@ public class MonitorISPData implements Serializable {
             return false;
         }
     }
-    
+
     /**
      * Read all data of the previous session.
-     * @return true is successful
+     *
+     * @return true if data is read successful
      */
-    public boolean readData() {
+    public boolean loadData() {
         LOGGER.info("Read all data of the previous session.");
         try (FileInputStream fin = new FileInputStream(getSessionDataFileName())) {
             ObjectInputStream ois = new ObjectInputStream(fin);
             dataRead = (MonitorISPData) ois.readObject();
             if (allRead()) {
+                this.paletteModel = dataRead.paletteModel;
+                this.selected = dataRead.selected;
+                this.routerAddress = dataRead.routerAddress;
+                this.outages = dataRead.outages;
+                this.startOfService = dataRead.startOfService;
+                this.lastContactWithAnyHost = dataRead.lastContactWithAnyHost;
+                this.lastFail = dataRead.lastFail;
+                this.numberOfInterruptions = dataRead.numberOfInterruptions;
+                this.failedChecks = dataRead.failedChecks;
+                this.successfulChecks = dataRead.successfulChecks;
+                this.timeStamp = dataRead.timeStamp;
                 return true;
             } else {
                 LOGGER.error("Not all expected data was read.");
@@ -199,94 +164,5 @@ public class MonitorISPData implements Serializable {
             return false;
         }
     }
-    
-    /**
-     * Getter
-     * @return paletteModel
-     */
-    public CollectionModel<Host> getPaletteModel() {
-        return dataRead.paletteModel;
-    }
-    
-    /**
-     * Getter
-     * @return selected
-     */
-    public List<Host> getSelected() {
-        return dataRead.selected;
-    }
-    
-    /**
-     * Getter
-     * @return routerAddress
-     */
-    public String getRouterAddress() {
-        return dataRead.routerAddress;
-    }
-    
-    /**
-     * Getter
-     * @return outages
-     */
-    public List<OutageListItem> getOutages() {
-        return dataRead.outages;
-    }
-    
-    /**
-     * Getter
-     * @return startOfService
-     */
-    public long getStartOfService() {
-        return dataRead.startOfService;
-    }
-    
-    /**
-     * Getter
-     * @return lastContactWithAnyHost
-     */
-    public long getLastContactWithAnyHost() {
-        return dataRead.lastContactWithAnyHost;
-    }
-    
-    /**
-     * Getter
-     * @return lastFail
-     */
-    public long getLastFail() {
-        return dataRead.lastFail;
-    }
-    
-    /**
-     * Getter
-     * @return numberOfInterruptions
-     */
-    public long getNumberOfInterruptions() {
-        return dataRead.numberOfInterruptions;
-    }
-    
-    /**
-     * Getter
-     * @return failedChecks
-     */
-    public long getFailedChecks() {
-        return dataRead.failedChecks;
-    }
-    
-    /**
-     * Getter
-     * @return successfulChecks
-     */
-    public long getSuccessfulChecks() {
-        return dataRead.successfulChecks;
-    }
-    
-    /**
-     * Getter
-     * @return timeStamp
-     */
-    public long getTimeStamp() {
-        return dataRead.timeStamp;
-    }
-    
 
 }

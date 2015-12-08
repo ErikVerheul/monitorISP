@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.Collection;
 import java.util.List;
-import nl.verheulconsultants.monitorisp.service.ISPController;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
@@ -80,16 +79,16 @@ public final class HomePage extends BasePage {
         if (controller.isRunning()) {
             startAutomatically = false;
         } else {
-            startAutomatically = ISPController.initWithPreviousSessionData();
+            startAutomatically = controller.initWithPreviousSessionData();
         }
-        address = new InputRouterAddress(ISPController.getRouterAddress());
+        address = new InputRouterAddress(controller.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
         newUrl = new TextField<>("newHost", Model.of(""));
 
         formSelectHosts = new Form<Void>("paletteForm") {
             @Override
             protected void onSubmit() {
-                if (saveSession()) {
+                if (controller.getSessionData().saveData()) {
                     LOGGER.info("All data are saved.");
                 }
             }
@@ -100,7 +99,7 @@ public final class HomePage extends BasePage {
             protected void onSubmit() {
                 final String addressValue = routerAddress.getModelObject();
                 if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
-                    ISPController.setRouterAddress(addressValue);
+                    controller.setRouterAddress(addressValue);
                     LOGGER.info("The router address is set to {}", addressValue);
                 } else {
                     error("Wrong router address. Please try again or type unknown");
@@ -126,10 +125,10 @@ public final class HomePage extends BasePage {
             protected void onSubmit() {
                 final String urlValue = newUrl.getModelObject();
                 if (isValidHostAddress(urlValue)) {
-                    Collection<Host> hostsLocal = ISPController.getPaletteModel().getObject();
+                    Collection<Host> hostsLocal = controller.getPaletteModel().getObject();
                     hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), urlValue));
                     LOGGER.info("The URL {} is added", urlValue);
-                    LOGGER.info("The host list is changed to {}", ISPController.getPaletteModel());
+                    LOGGER.info("The host list is changed to {}", controller.getPaletteModel());
                 } else {
                     error("Wrong host address. Please try again.");
                 }
@@ -146,10 +145,10 @@ public final class HomePage extends BasePage {
         removeButton = new Button("removeButton") {
             @Override
             public void onSubmit() {
-                Collection<Host> hostsLocal = ISPController.getPaletteModel().getObject();
-                LOGGER.info("These URL's will be removed {}", ISPController.getSelected());
-                hostsLocal.removeAll(ISPController.getSelected());
-                LOGGER.info("The model is changed to {}", ISPController.getPaletteModel());
+                Collection<Host> hostsLocal = controller.getPaletteModel().getObject();
+                LOGGER.info("These URL's will be removed {}", controller.getSelected());
+                hostsLocal.removeAll(controller.getSelected());
+                LOGGER.info("The model is changed to {}", controller.getPaletteModel());
             }
         };
 
@@ -158,11 +157,11 @@ public final class HomePage extends BasePage {
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
         palette = new Palette<>("palette1",
-                ISPController.getSelectedModel(),
-                ISPController.getPaletteModel(),
+                controller.getSelectedModel(),
+                controller.getPaletteModel(),
                 renderer, 10, true, false);
-        LOGGER.info("The palette is initiated with choices {}.", ISPController.getPaletteModel());
-        LOGGER.info("The palette is initiated with selection {}.", ISPController.getSelected());
+        LOGGER.info("The palette is initiated with choices {}.", controller.getPaletteModel());
+        LOGGER.info("The palette is initiated with selection {}.", controller.getSelected());
 
         // version 7.x.x
         palette.add(new DefaultTheme());
@@ -217,7 +216,7 @@ public final class HomePage extends BasePage {
         IModel listOutageViewModel = new LoadableDetachableModel() {
             @Override
             protected Object load() {
-                return ISPController.getOutageDataReversedOrder();
+                return controller.getOutageDataReversedOrder();
             }
         };
 
@@ -252,14 +251,14 @@ public final class HomePage extends BasePage {
     private void startRunning() {
         if (controller.isRunning()) {
             if (!controller.isBusyCheckingConnections()) {
-                controller.restart(getNames(ISPController.getSelected()));
-                LOGGER.info("The service is restarted for checking connections with hosts {}", ISPController.getSelected());
+                controller.restart(getNames(controller.getSelected()));
+                LOGGER.info("The service is restarted for checking connections with hosts {}", controller.getSelected());
             } else {
-                LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", ISPController.getSelected());
+                LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", controller.getSelected());
             }
         } else {
-            controller.doInBackground(getNames(ISPController.getSelected()));
-            LOGGER.info("The service is started for checking connections with hosts {}", ISPController.getSelected());
+            controller.doInBackground(getNames(controller.getSelected()));
+            LOGGER.info("The service is started for checking connections with hosts {}", controller.getSelected());
         }
     }
 

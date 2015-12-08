@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
 import org.junit.Test;
@@ -67,7 +66,7 @@ public class UtilitiesTest {
             LOGGER.error("File copy failed with exception {}", ex);
         }
         // Must load the session data explicit as Homepage is not doing it.
-        if (initWithPreviousSessionData()) {
+        if (instance.initWithPreviousSessionData()) {
             LOGGER.info("Preset previous session test data are used for initialization.");
         } else {
             LOGGER.info("Preset previous session test data could not be read, defaults are set");

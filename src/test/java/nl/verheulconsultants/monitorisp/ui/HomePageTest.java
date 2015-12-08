@@ -8,15 +8,9 @@ import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Collection;
 import java.util.List;
-import nl.verheulconsultants.monitorisp.service.ISPController;
-import static nl.verheulconsultants.monitorisp.service.ISPController.getPaletteModel;
-import static nl.verheulconsultants.monitorisp.service.ISPController.getSelected;
-import static nl.verheulconsultants.monitorisp.service.ISPController.getSelectedModel;
-import static nl.verheulconsultants.monitorisp.service.ISPController.initWithDefaults;
-import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
-import static nl.verheulconsultants.monitorisp.service.Utilities.saveSession;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import static org.junit.Assert.assertEquals;
@@ -55,7 +49,7 @@ public class HomePageTest {
             LOGGER.error("File copy failed with exception {}", ex);
         }
         // Must load the session data explicit as WicketTester is not doing it.
-        if (initWithPreviousSessionData()) {
+        if (controller.initWithPreviousSessionData()) {
             LOGGER.info("Preset previous session test data are used for initialization.");
         } else {
             LOGGER.info("Preset previous session test data could not be read, defaults are set");
@@ -96,21 +90,21 @@ public class HomePageTest {
         FormTester formTester = tester.newFormTester("paletteForm", false);
         //add a host and then remove it               
         Host newHost = new Host("4", "google.com");
-        Collection<Host> hosts = getPaletteModel().getObject();
+        Collection<Host> hosts = controller.getPaletteModel().getObject();
         hosts.add(newHost);
-        getSelected().clear();
-        getSelected().add(newHost);
-        System.out.println("These URL's will be removed " + getSelected());
-        if (hosts.removeAll(getSelected())) {
-            System.out.println("The model is changed to " + getSelectedModel());
+        controller.getSelected().clear();
+        controller.getSelected().add(newHost);
+        System.out.println("These URL's will be removed " + controller.getSelected());
+        if (hosts.removeAll(controller.getSelected())) {
+            System.out.println("The model is changed to " + controller.getSelectedModel());
         } else {
             System.out.println("The model is not changed.");
         }
         //submit form using inner component 'button' as alternate button
         formTester.submit();
-        assertTrue("The actual number of selected items found in selectedModel is " + getSelectedModel().getObject().size()
-                + " The items are " + getSelectedModel().getObject(),
-                getSelectedModel().getObject().size() == 3);
+        assertTrue("The actual number of selected items found in selectedModel is " + controller.getSelectedModel().getObject().size()
+                + " The items are " + controller.getSelectedModel().getObject(),
+                controller.getSelectedModel().getObject().size() == 3);
     }
 
     @Test
@@ -123,13 +117,13 @@ public class HomePageTest {
         //create a new form tester without filling its form components with a blank string
         FormTester formTester = tester.newFormTester("paletteForm", false);
         //add a host to the choices
-        Collection<Host> hosts = getPaletteModel().getObject();
+        Collection<Host> hosts = controller.getPaletteModel().getObject();
         hosts.add(new Host("4", "google.com"));
         //submit form using inner component 'button' as alternate button
         formTester.submit();
-        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size()
-                + " The items are " + getPaletteModel().getObject(),
-                getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of choice items found is " + controller.getPaletteModel().getObject().size()
+                + " The items are " + controller.getPaletteModel().getObject(),
+                controller.getPaletteModel().getObject().size() == 5);
     }
 
     @Test
@@ -144,13 +138,13 @@ public class HomePageTest {
         //submit form using inner component 'button' as alternate button
         formTester.setValue("newHost", "google.com");
         formTester.submit();
-        assertTrue("The actual number of selected items found in choicesModel is " + getPaletteModel().getObject().size()
-                + " The items are " + getPaletteModel().getObject(),
-                getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of selected items found in choicesModel is " + controller.getPaletteModel().getObject().size()
+                + " The items are " + controller.getPaletteModel().getObject(),
+                controller.getPaletteModel().getObject().size() == 5);
 
-        assertTrue("The actual number of selected items found in selected is " + getSelected().size()
-                + " The items are " + getSelected(),
-                getSelected().size() == 3);
+        assertTrue("The actual number of selected items found in selected is " + controller.getSelected().size()
+                + " The items are " + controller.getSelected(),
+                controller.getSelected().size() == 3);
     }
 
     @Test
@@ -165,7 +159,7 @@ public class HomePageTest {
         //submit form using inner component 'button' as alternate button
         formTester.setValue("routerAddress", "192.168.0.6");
         formTester.submit();
-        assertEquals("The actual router address found is " + ISPController.getRouterAddress(), "192.168.0.6", ISPController.getRouterAddress());
+        assertEquals("The actual router address found is " + controller.getRouterAddress(), "192.168.0.6", controller.getRouterAddress());
     }
 
     @Test
@@ -200,9 +194,9 @@ public class HomePageTest {
     @Test
     public void testInitWithPreviousSessionData() {
         System.out.println("initWithPreviousSessionData");
-        initWithPreviousSessionData();
-        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 4);
-        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 3);
+        controller.initWithPreviousSessionData();
+        assertTrue("The actual number of choice items found is " + controller.getPaletteModel().getObject().size(), controller.getPaletteModel().getObject().size() == 4);
+        assertTrue("The actual number of selected items found is " + controller.getSelectedModel().getObject().size(), controller.getSelectedModel().getObject().size() == 3);
     }
 
     /**
@@ -211,9 +205,9 @@ public class HomePageTest {
     @Test
     public void testInitWithDefaults() {
         System.out.println("initWithDefaults");
-        initWithDefaults();
-        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 4);
-        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 3);
+        controller.initWithDefaults();
+        assertTrue("The actual number of choice items found is " + controller.getPaletteModel().getObject().size(), controller.getPaletteModel().getObject().size() == 4);
+        assertTrue("The actual number of selected items found is " + controller.getSelectedModel().getObject().size(), controller.getSelectedModel().getObject().size() == 3);
     }
 
     /**
@@ -222,14 +216,14 @@ public class HomePageTest {
     @Test
     public void testAddingToSelection() {
         System.out.println("testAddingToSelection");
-        initWithDefaults();
+        controller.initWithDefaults();
         Host newHost = new Host("4", "google.com");
-        Collection<Host> hosts = getPaletteModel().getObject();
+        Collection<Host> hosts = controller.getPaletteModel().getObject();
         hosts.add(newHost);
-        List<Host> selHosts = getSelectedModel().getObject();
+        List<Host> selHosts = controller.getSelectedModel().getObject();
         selHosts.add(newHost);
-        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 5);
-        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 4);
+        assertTrue("The actual number of choice items found is " + controller.getPaletteModel().getObject().size(), controller.getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of selected items found is " + controller.getSelectedModel().getObject().size(), controller.getSelectedModel().getObject().size() == 4);
     }
 
     /**
@@ -238,18 +232,18 @@ public class HomePageTest {
     @Test
     public void testAddingToSelectionAndSaveSession() {
         System.out.println("testAddingToSelectionAndSaveSession");
-        initWithDefaults();
+        controller.initWithDefaults();
         Host newHost = new Host("4", "google.com");
-        Collection<Host> hosts = getPaletteModel().getObject();
+        Collection<Host> hosts = controller.getPaletteModel().getObject();
         hosts.add(newHost);
-        List<Host> selHosts = getSelectedModel().getObject();
+        List<Host> selHosts = controller.getSelectedModel().getObject();
         selHosts.add(newHost);
-        saveSession();
-        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 5);
-        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 4);
-        initWithPreviousSessionData();
-        assertTrue("The actual number of choice items found is " + getPaletteModel().getObject().size(), getPaletteModel().getObject().size() == 5);
-        assertTrue("The actual number of selected items found is " + getSelectedModel().getObject().size(), getSelectedModel().getObject().size() == 4);
+        controller.getSessionData().saveData();
+        assertTrue("The actual number of choice items found is " + controller.getPaletteModel().getObject().size(), controller.getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of selected items found is " + controller.getSelectedModel().getObject().size(), controller.getSelectedModel().getObject().size() == 4);
+        controller.initWithPreviousSessionData();
+        assertTrue("The actual number of choice items found is " + controller.getPaletteModel().getObject().size(), controller.getPaletteModel().getObject().size() == 5);
+        assertTrue("The actual number of selected items found is " + controller.getSelectedModel().getObject().size(), controller.getSelectedModel().getObject().size() == 4);
     }
 
 }

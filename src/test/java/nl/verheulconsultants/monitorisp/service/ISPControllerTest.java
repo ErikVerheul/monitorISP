@@ -30,11 +30,6 @@ import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.ArrayList;
 import java.util.List;
-import static nl.verheulconsultants.monitorisp.service.ISPController.getLastOutage;
-import static nl.verheulconsultants.monitorisp.service.ISPController.initWithPreviousSessionData;
-import static nl.verheulconsultants.monitorisp.service.ISPController.setRouterAddress;
-import static nl.verheulconsultants.monitorisp.service.ISPController.simulateCannotReachRouter;
-import static nl.verheulconsultants.monitorisp.service.ISPController.simulateFailure;
 import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
 import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
@@ -42,7 +37,6 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
 import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMillis;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,12 +65,12 @@ public class ISPControllerTest {
         //copy the test file to the test directory with the same name as the source
         try {
             Files.copy(sourcePath, getTestHomeDir().resolve(source.getName()), REPLACE_EXISTING);
-            LOGGER.info("Fresh last session data copied");
+            LOGGER.info("Fresh test session data copied");
         } catch (IOException ex) {
             LOGGER.error("File copy failed with exception {}", ex);
         }
         // Must load the session data explicit as Homepage is not doing it.
-        if (initWithPreviousSessionData()) {
+        if (instance.initWithPreviousSessionData()) {
             LOGGER.info("Preset previous session test data are used for initialization.");
         } else {
             LOGGER.info("Preset previous session test data could not be read, defaults are set");
@@ -88,7 +82,7 @@ public class ISPControllerTest {
         System.out.println("tearDown");
         instance.exit();
         sleepMillis(500);
-        if (controller.isAlive()) {
+        if (instance.isAlive()) {
             LOGGER.warn("The controller thread is still running!");
         } else {
             LOGGER.info("The controller thread has exited.");
@@ -186,7 +180,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         sleepMillis(1400);
-        assertTrue(ISPController.successfulChecks > 0);
+        assertTrue(instance.getSessionData().successfulChecks > 0);
     }
 
     /**
@@ -201,7 +195,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         sleepMillis(1400);
-        assertTrue(ISPController.failedChecks > 0);
+        assertTrue(instance.getSessionData().failedChecks > 0);
     }
 
     /**
@@ -238,16 +232,16 @@ public class ISPControllerTest {
         System.out.println("testISPInterruptedRegistration");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-        setRouterAddress("192.168.0.6");
+        instance.setRouterAddress("192.168.0.6");
 
         instance.doInBackground(hosts);        
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        simulateFailure(true);
+        ISPController.simulateFailure(true);
         sleepMillis(6000);
-        simulateFailure(false);
+        ISPController.simulateFailure(false);
         sleepMillis(6000);
-        OutageListItem lastOutage = getLastOutage();
+        OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
@@ -261,16 +255,16 @@ public class ISPControllerTest {
         System.out.println("testISPInterruptedRegistrationWithFalseRouterAddress");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-        setRouterAddress("false router address");
+        instance.setRouterAddress("false router address");
 
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        simulateFailure(true);
+        ISPController.simulateFailure(true);
         sleepMillis(6000);
-        simulateFailure(false);
+        ISPController.simulateFailure(false);
         sleepMillis(6000);
-        OutageListItem lastOutage = getLastOutage();
+        OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
@@ -284,17 +278,17 @@ public class ISPControllerTest {
         System.out.println("testInternalInterruptedRegistration");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-        setRouterAddress("192.168.0.6");
-        simulateCannotReachRouter(true);
+        instance.setRouterAddress("192.168.0.6");
+        ISPController.simulateCannotReachRouter(true);
 
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        simulateFailure(true);
+        ISPController.simulateFailure(true);
         sleepMillis(6000);
-        simulateFailure(false);
+        ISPController.simulateFailure(false);
         sleepMillis(6000);       
-        OutageListItem lastOutage = getLastOutage();
+        OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == INTERNAL);
@@ -308,16 +302,16 @@ public class ISPControllerTest {
         System.out.println("testInternalInterruptedRegistrationWithFalseRouterAddress");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-        setRouterAddress("false router address");
+        instance.setRouterAddress("false router address");
 
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        simulateFailure(true);
+        ISPController.simulateFailure(true);
         sleepMillis(6000);
-        simulateFailure(false);
+        ISPController.simulateFailure(false);
         sleepMillis(6000);
-        OutageListItem lastOutage = getLastOutage();
+        OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
@@ -335,12 +329,11 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue(instance.isBusyCheckingConnections());
-        OutageListItem lastOutage = getLastOutage();
+        OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == SERVICEDOWN);
     }
-
     /**
      * Test if a record is registered when the controller is temporarily down.
      */
@@ -358,10 +351,21 @@ public class ISPControllerTest {
         instance.restart(hosts);
         sleepMillis(2000);
         assertTrue(instance.isBusyCheckingConnections());
-        OutageListItem lastOutage = getLastOutage();
-        LOGGER.info("Outage = {}", lastOutage);
+        OutageListItem lastOutage = instance.getLastOutage();
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == CONTROLLERDOWN);
+        instance.exit();
+        sleepMillis(140);
+        if (instance.getSessionData().saveData()) {
+            LOGGER.info("Session data is saved at exiting the application.");
+        } else {
+            LOGGER.error("Session data is NOT saved at exiting the application.");
+        }
+
+        LOGGER.info("Load data");
+        instance.initWithPreviousSessionData();
+        assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == CONTROLLERDOWN);
+
     }
 
 }

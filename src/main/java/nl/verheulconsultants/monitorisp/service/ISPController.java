@@ -12,7 +12,6 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
@@ -31,88 +30,58 @@ import org.slf4j.LoggerFactory;
  */
 public class ISPController extends Thread {
 
-    private static final List<Host> hosts = new ArrayList<>();
-    static List<Host> selected;
+    static final List<Host> hosts = new ArrayList<>();
+    MonitorISPData sessionData;               
     static ListModel<Host> selectedModel;
-    static CollectionModel<Host> choicesModel;
-    private static long startOfService;
-    private static final String NOROUTERADDRESS = "unknown";
-    private static long lastContactWithAnyHost = 0L;
-    private static long lastFail = 0L;
-    static long successfulChecks = 0L;
-    static long failedChecks = 0L;
-    private static long numberOfInterruptions = 0L;
-    private static long currentISPunavailability = 0L;
-    private static boolean canReachISP = true;
-    private static boolean busyCheckingConnections = false;
-    private static List<OutageListItem> outages;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
-    private boolean running = false;
-    private boolean stop = false;
-    private boolean exit = false;
-    private List<String> selectedHostsURLs;
-    private long outageStart = 0L;
-    private long outageEnd;
-    private static String routerAddress;
-    private static boolean simulateFailure;
-    private static boolean simulateCannotReachRouter;
-    private static long lastTimeDataSaved;
-    private static boolean canConnectWithRouter;
-    private static long controllerDownTimeStamp = 0L;
+    static final String NOROUTERADDRESS = "unknown";
+    static long currentISPunavailability = 0L;
+    static boolean canReachISP = true;
+    static boolean busyCheckingConnections = false;  
+    static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
+    boolean running = false;
+    boolean stop = false;
+    boolean exit = false;
+    List<String> selectedHostsURLs;
+    long outageStart = 0L;
+    long outageEnd;    
+    static boolean simulateFailure;
+    static boolean simulateCannotReachRouter;
+    static boolean canConnectWithRouter;
+    static long controllerDownTimeStamp = 0L;
 
     /**
      * The controller running as a thread to check if a number of hosts can be reached.
      */
     public ISPController() {
-        selected = new ArrayList<>();
-        selectedHostsURLs = new ArrayList<>();
-        startOfService = System.currentTimeMillis();
-        outages = new CopyOnWriteArrayList<>();
-        routerAddress = NOROUTERADDRESS;
+        sessionData = new MonitorISPData(); 
+        selectedHostsURLs = new ArrayList<>();              
         simulateFailure = false;
         simulateCannotReachRouter = false;
+    }
+
+    public MonitorISPData getSessionData() {
+        return sessionData;
     }
 
     /**
      * @return the selected hosts.
      */
-    public static List<Host> getSelected() {
-        return selected;
-    }
-
-    /**
-     * Set the palette selection
-     *
-     * @param selected
-     */
-    private static void setSelected(List<Host> selected) {
-        ISPController.selected = selected;
-        selectedModel = new ListModel<>(selected);
-        LOGGER.info("setSelected set the selection to {}.", selected);
+    public List<Host> getSelected() {
+        return sessionData.selected;
     }
 
     /**
      * @return the model of the selected hosts.
      */
-    public static ListModel<Host> getSelectedModel() {
+    public ListModel<Host> getSelectedModel() {
         return selectedModel;
     }
 
     /**
      * @return the palette model with all choices.
      */
-    public static CollectionModel<Host> getPaletteModel() {
-        return choicesModel;
-    }
-
-    /**
-     * Set the palette choices
-     *
-     * @param choicesModel
-     */
-    private static void setPaletteModel(CollectionModel<Host> choicesModel) {
-        ISPController.choicesModel = choicesModel;
-        LOGGER.info("setPaletteModel set the choices to {}.", choicesModel);
+    public CollectionModel<Host> getPaletteModel() {
+        return sessionData.paletteModel;
     }
 
     /**
@@ -120,31 +89,19 @@ public class ISPController extends Thread {
      *
      * @return true if initiated with previous session data
      */
-    public static boolean initWithPreviousSessionData() {
-        MonitorISPData sessionData = new MonitorISPData();
-        if (sessionData.readData()) {
-            setPaletteModel(sessionData.getPaletteModel());
-            setSelected(sessionData.getSelected());
-            setRouterAddress(sessionData.getRouterAddress());
-            setOutageData(sessionData.getOutages());
-            setStartOfService(sessionData.getStartOfService());
-            setLastContactWithAnyHost(sessionData.getLastContactWithAnyHost());
-            setLastFail(sessionData.getLastFail());
-            setnumberOfInterruptions(sessionData.getNumberOfInterruptions());
-            setFailedChecks(sessionData.getFailedChecks());
-            setSuccessfulChecks(sessionData.getSuccessfulChecks());
-            lastTimeDataSaved = sessionData.getTimeStamp();
-
+    public boolean initWithPreviousSessionData() {
+        if (sessionData.loadData()) {
+            selectedModel = new ListModel<>(sessionData.selected);
             LOGGER.info("Previous session data are loaded successfully.");
-            LOGGER.info("The timestamp read is {}.", new Date(lastTimeDataSaved).toString());
-            LOGGER.info("The choices contain now {} hosts: {}", sessionData.getPaletteModel().getObject().size(), sessionData.getPaletteModel().getObject());
-            LOGGER.info("The selection contains now {} hosts: {}", sessionData.getSelected().size(), sessionData.getSelected());
+            LOGGER.info("The timestamp read is {}.", new Date(sessionData.timeStamp).toString());
+            LOGGER.info("The choices contain now {} hosts: {}", sessionData.paletteModel.getObject().size(), sessionData.paletteModel.getObject());
+            LOGGER.info("The selection contains now {} hosts: {}", sessionData.selected.size(), sessionData.selected);
             LOGGER.info("The history contains now {} records", getOutagesSize());
             return true;
         }
         // Initiate with default values.          
         LOGGER.warn("Previous session data could not be read. The choices are initiated with default values.");
-        lastTimeDataSaved = 0L;
+        sessionData.timeStamp = 0L;
         initWithDefaults();
         return false;
     }
@@ -152,7 +109,7 @@ public class ISPController extends Thread {
     /**
      * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
      */
-    public static void initWithDefaults() {
+    public void initWithDefaults() {
         hosts.clear();
         hosts.add(new Host("0", "willfailconnection.com"));
         Host uva = new Host("1", "uva.nl");
@@ -161,13 +118,13 @@ public class ISPController extends Thread {
         hosts.add(xs4all);
         Host vu = new Host("3", "vu.nl");
         hosts.add(vu);
-        choicesModel = new CollectionModel<>(hosts);
+        sessionData.paletteModel = new CollectionModel<>(hosts);
 
-        selected.clear();
-        selected.add(uva);
-        selected.add(xs4all);
-        selected.add(vu);
-        selectedModel = new ListModel<>(selected);
+        sessionData.selected.clear();
+        sessionData.selected.add(uva);
+        sessionData.selected.add(xs4all);
+        sessionData.selected.add(vu);
+        selectedModel = new ListModel<>(sessionData.selected);
     }
 
     /**
@@ -192,6 +149,7 @@ public class ISPController extends Thread {
      * Stop checking connections temporarily.
      */
     public void stopTemporarily() {
+        LOGGER.info("The controller thread is temporarely stopped.");
         stop = true;
     }
 
@@ -201,6 +159,7 @@ public class ISPController extends Thread {
      * @param hosts
      */
     public void restart(List<String> hosts) {
+        LOGGER.info("The controller thread is restarted.");
         this.selectedHostsURLs = hosts;
         handleControllerWasDown();
         stop = false;
@@ -241,10 +200,10 @@ public class ISPController extends Thread {
     }
 
     private void handleServiceWasDown() {
-        long start = lastContactWithAnyHost;
+        long start = sessionData.lastContactWithAnyHost;
         long now = System.currentTimeMillis();
         try {
-            outages.add(new OutageListItem(outages.size(), start, now, now - start, SERVICEDOWN));
+            sessionData.outages.add(new OutageListItem(sessionData.outages.size(), start, now, now - start, SERVICEDOWN));
             LOGGER.info("Service was down is registered");
         } catch (java.lang.UnsupportedOperationException ex) {
             LOGGER.error("Could not register that Service was down, the exception is {}", ex);
@@ -255,7 +214,7 @@ public class ISPController extends Thread {
         long start = controllerDownTimeStamp;
         long now = System.currentTimeMillis();
         try {
-            outages.add(new OutageListItem(outages.size(), start, now, now - start, CONTROLLERDOWN));
+            sessionData.outages.add(new OutageListItem(sessionData.outages.size(), start, now, now - start, CONTROLLERDOWN));
             LOGGER.info("Controller was down is registered");
         } catch (java.lang.UnsupportedOperationException ex) {
             LOGGER.error("Could not register that Controller was down, the exception is {}", ex);
@@ -267,8 +226,8 @@ public class ISPController extends Thread {
      *
      * @return
      */
-    public static String getRouterAddress() {
-        return routerAddress;
+    public String getRouterAddress() {
+        return sessionData.routerAddress;
     }
 
     /**
@@ -276,130 +235,25 @@ public class ISPController extends Thread {
      *
      * @param address
      */
-    public static void setRouterAddress(String address) {
-        routerAddress = address;
-    }
-
-    /**
-     * Set the outages history.
-     *
-     * @param outagesData
-     */
-    public static void setOutageData(List<OutageListItem> outagesData) {
-        outages = outagesData;
-    }
-
-    /**
-     * The startOfService is the date the service was started the first time. Save this value for the next outageStart of the service.
-     *
-     * @return
-     */
-    public static long getStartOfService() {
-        return startOfService;
-    }
-
-    /**
-     * The startOfService is the date the service was started the first time. When restarted the history including this field is read from disk.
-     *
-     * @param startDate
-     */
-    public static void setStartOfService(long startDate) {
-        startOfService = startDate;
-    }
-
-    /**
-     * The lastContactWithAnyHost is the date the service had a successful contact with any of the selected hosts.
-     *
-     * @return the date or 0L when no contact was made.
-     */
-    public static long getLastContactWithAnyHost() {
-        return lastContactWithAnyHost;
-    }
-
-    /**
-     * The lastContactWithAnyHost is the date the service had a successful contact with any of the selected hosts.
-     *
-     * @param lastDate
-     */
-    public static void setLastContactWithAnyHost(long lastDate) {
-        lastContactWithAnyHost = lastDate;
-    }
-
-    /**
-     * The lastFail is the date the service had a the last unsuccessful contact with all selected hosts.
-     *
-     * @return
-     */
-    public static long getLastFail() {
-        return lastFail;
-    }
-
-    /**
-     * The lastFail is the date the service had a the last unsuccessful contact with all selected hosts.
-     *
-     * @param lastDate
-     */
-    public static void setLastFail(long lastDate) {
-        lastFail = lastDate;
-    }
-
-    /**
-     * @return the number of interruptions to date.
-     */
-    public static long getNumberOfInterruptions() {
-        return numberOfInterruptions;
-    }
-
-    /**
-     * @param number set the number of interruptions to date.
-     */
-    public static void setnumberOfInterruptions(long number) {
-        numberOfInterruptions = number;
-    }
-
-    /**
-     * @return the failed checks to date.
-     */
-    public static long getFailedChecks() {
-        return failedChecks;
-    }
-
-    /**
-     * @param number set the failed checks to date.
-     */
-    public static void setFailedChecks(long number) {
-        failedChecks = number;
-    }
-
-    /**
-     * @return the successful checks to date.
-     */
-    public static long getSuccessfulChecks() {
-        return successfulChecks;
-    }
-
-    /**
-     * @param number set the successful checks to date.
-     */
-    public static void setSuccessfulChecks(long number) {
-        successfulChecks = number;
+    public void setRouterAddress(String address) {
+        sessionData.routerAddress = address;
     }
 
     /**
      * @return the number of registered outages.
      */
-    public static int getOutagesSize() {
-        return outages.size();
+    public int getOutagesSize() {
+        return sessionData.outages.size();
     }
 
     /**
      * @return the last registered outage or null if none are available.
      */
-    public static OutageListItem getLastOutage() {
-        if (null == outages || outages.isEmpty()) {
+    public OutageListItem getLastOutage() {
+        if (null == sessionData.outages || sessionData.outages.isEmpty()) {
             return null;
         } else {
-            return outages.get(outages.size() - 1);
+            return sessionData.outages.get(sessionData.outages.size() - 1);
         }
     }
 
@@ -415,11 +269,11 @@ public class ISPController extends Thread {
             if (checkISP(selectedURLs)) {
                 // Success, ISP can be connected               
                 canReachISP = true;
-                lastContactWithAnyHost = System.currentTimeMillis();
+                sessionData.lastContactWithAnyHost = System.currentTimeMillis();
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
-                    outageEnd = lastContactWithAnyHost;
-                    outages.add(new OutageListItem(outages.size(), outageStart,
+                    outageEnd = sessionData.lastContactWithAnyHost;
+                    sessionData.outages.add(new OutageListItem(sessionData.outages.size(), outageStart,
                             outageEnd, outageEnd - outageStart, canConnectWithRouter ? ISP : INTERNAL));
                     outageStart = 0L;
                 }
@@ -427,15 +281,15 @@ public class ISPController extends Thread {
             } else {
                 if (canReachISP) {
                     // Connection failed first time after successful connections
-                    numberOfInterruptions++;
+                    sessionData.numberOfInterruptions++;
                     outageStart = loopStart;
                     canConnectWithRouter = canConnectRouter();
                     LOGGER.info("canConnectWithRouter is set to {}", canConnectWithRouter);
                 }
                 canReachISP = false;
-                lastFail = System.currentTimeMillis();
+                sessionData.lastFail = System.currentTimeMillis();
                 // update the current unavailability
-                currentISPunavailability = lastFail - outageStart;
+                currentISPunavailability = sessionData.lastFail - outageStart;
             }
             // wait 5 seconds to check the ISP connection again
             sleepMillisSliced(5000);
@@ -445,7 +299,7 @@ public class ISPController extends Thread {
             controllerDownTimeStamp = System.currentTimeMillis();
             LOGGER.info("The controller has stopped.\n");
             LOGGER.info("{} Connection checks are executed, {} were successful.",
-                    successfulChecks + failedChecks, successfulChecks);
+                    sessionData.successfulChecks + sessionData.failedChecks, sessionData.successfulChecks);
         }
         busyCheckingConnections = false;
     }
@@ -456,6 +310,7 @@ public class ISPController extends Thread {
      * @param hosts
      */
     public void doInBackground(List<String> hosts) {
+        LOGGER.info("The controller thread is created and started.");
         this.selectedHostsURLs = hosts;
         handleServiceWasDown();
         start();
@@ -466,13 +321,13 @@ public class ISPController extends Thread {
             return false;
         }
         // if the router address is not set we can not exclude internal network failure
-        if (NOROUTERADDRESS.equalsIgnoreCase(routerAddress)) {
+        if (NOROUTERADDRESS.equalsIgnoreCase(sessionData.routerAddress)) {
             LOGGER.warn("The router address is not set. The internal network error detection is omitted");
             return true;
         }
         // if the router address is not a valid address we can not exclude internal network failure
-        if (!isValidHostAddress(routerAddress)) {
-            LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", routerAddress);
+        if (!isValidHostAddress(sessionData.routerAddress)) {
+            LOGGER.warn("The router address {} is not valid. The internal network error detection is omitted", sessionData.routerAddress);
             return true;
         }
         return checkRouter();
@@ -521,11 +376,11 @@ public class ISPController extends Thread {
                 // test a TCP connection on port 80 with the destination host and a time-out of 1000 ms.
                 if (testConnection(host, 80, 1000)) {
                     hostFound = true;
-                    successfulChecks++;
+                    sessionData.successfulChecks++;
                     // when successfull there is no need to try the other selectedHostsURLs
                     break;
                 } else {
-                    failedChecks++;
+                    sessionData.failedChecks++;
                     // wait 1 second before contacting the next host in the list
                     sleepMillisSliced(1000);
                 }
@@ -540,7 +395,7 @@ public class ISPController extends Thread {
      * @return true if the router can be reached
      */
     private boolean checkRouter() {
-        return testConnection(routerAddress, 80, 1000);
+        return testConnection(sessionData.routerAddress, 80, 1000);
     }
 
     /**
@@ -615,20 +470,20 @@ public class ISPController extends Thread {
 
         StatusListItem x0 = new StatusListItem();
         x0.name = "startOfService";
-        x0.value = new Date(startOfService).toString();
+        x0.value = new Date(sessionData.startOfService).toString();
         x0.index = 1;
         ret.add(x0);
 
         StatusListItem x1 = new StatusListItem();
         x1.name = "lastContactWithAnyHost";
-        x1.value = new Date(lastContactWithAnyHost).toString();
+        x1.value = new Date(sessionData.lastContactWithAnyHost).toString();
         x1.index = 2;
         ret.add(x1);
 
         StatusListItem x2 = new StatusListItem();
         x2.name = "lastFail";
-        if (lastFail > 0) {
-            x2.value = new Date(lastFail).toString();
+        if (sessionData.lastFail > 0) {
+            x2.value = new Date(sessionData.lastFail).toString();
         } else {
             x2.value = "No failure yet";
         }
@@ -637,19 +492,19 @@ public class ISPController extends Thread {
 
         StatusListItem x3 = new StatusListItem();
         x3.name = "numberOfInterruptions";
-        x3.value = Long.toString(numberOfInterruptions);
+        x3.value = Long.toString(sessionData.numberOfInterruptions);
         x3.index = 4;
         ret.add(x3);
 
         StatusListItem x4 = new StatusListItem();
         x4.name = "failedChecks";
-        x4.value = Long.toString(failedChecks);
+        x4.value = Long.toString(sessionData.failedChecks);
         x4.index = 5;
         ret.add(x4);
 
         StatusListItem x5 = new StatusListItem();
         x5.name = "successfulChecks";
-        x5.value = Long.toString(successfulChecks);
+        x5.value = Long.toString(sessionData.successfulChecks);
         x5.index = 6;
         ret.add(x5);
 
@@ -667,7 +522,7 @@ public class ISPController extends Thread {
 
         StatusListItem x8 = new StatusListItem();
         x8.name = "outageCausedInternal";
-        if (NOROUTERADDRESS.equals(routerAddress)) {
+        if (NOROUTERADDRESS.equals(sessionData.routerAddress)) {
             x8.value = "Cannot say, router address unknown";
         } else {
             if (busyCheckingConnections) {
@@ -697,22 +552,13 @@ public class ISPController extends Thread {
      *
      * @return the full list
      */
-    public static List getOutageDataReversedOrder() {
-        return ReversedView.of(outages);
-    }
-    
-    /**
-     * Get all outage data in normal order. The most recent last.
-     *
-     * @return the full list
-     */
-    public static List getOutageData() {
-        return outages;
+    public List getOutageDataReversedOrder() {
+        return ReversedView.of(sessionData.outages);
     }
 
     private long getTotalISPUnavailability() {
         long sumOutages = 0L;
-        for (OutageListItem item : outages) {
+        for (OutageListItem item : sessionData.outages) {
             if (item.cause == ISP) {
                 sumOutages = sumOutages + item.getDuration();
             }

@@ -110,32 +110,6 @@ public class Utilities {
     }
 
     /**
-     * Saves all data of the current session.
-     *
-     * @return true if successful.
-     */
-    public static boolean saveSession() {
-        MonitorISPData allData = new MonitorISPData();
-        allData.setPaletteModel(ISPController.getPaletteModel());
-        allData.setSelected(ISPController.getSelected());
-        allData.setRouterAddress(ISPController.getRouterAddress());
-        allData.setOutages(ISPController.getOutageData());
-        allData.setStartOfService(ISPController.getStartOfService());
-        allData.setLastContactWithAnyHost(ISPController.getLastContactWithAnyHost());
-        allData.setLastFail(ISPController.getLastFail());
-        allData.setNumberOfInterruptions(ISPController.getNumberOfInterruptions());
-        allData.setFailedChecks(ISPController.getFailedChecks());
-        allData.setSuccessfulChecks(ISPController.getSuccessfulChecks());
-        allData.setTimeStamp(System.currentTimeMillis());
-        if (allData.saveData(allData)) {
-            return true;
-        } else {
-            LOGGER.error("Failure saving data.");
-            return false;
-        }
-    }
-
-    /**
      * Put this thread to sleep for ms milliseconds.
      *
      * @param ms the sleep time
