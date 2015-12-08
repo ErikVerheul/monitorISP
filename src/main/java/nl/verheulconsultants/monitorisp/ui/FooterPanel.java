@@ -33,6 +33,11 @@ import org.apache.wicket.markup.html.panel.Panel;
  */
 public final class FooterPanel extends Panel {
 
+    /**
+     * The constructor.
+     * @param id
+     * @param text 
+     */
     public FooterPanel(String id, String text) {
         super(id);
         add(new Label("footerpanel_text", text));

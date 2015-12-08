@@ -33,14 +33,26 @@ public class StatusListItem {
     String value;
     int index;
     
-    public String getAddress() {
+    /**
+     * 
+     * @return the name of the status value
+     */
+    public String getName() {
         return name;
     }
     
+    /**
+     * 
+     * @return the value of this status item
+     */
     public String getValue() {
         return value;
     }
     
+    /**
+     * 
+     * @return the index number of the status item
+     */
     public int getIndex() {
         return index;
     }

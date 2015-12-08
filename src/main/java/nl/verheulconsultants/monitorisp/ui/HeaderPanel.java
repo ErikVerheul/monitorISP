@@ -33,7 +33,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 public class HeaderPanel extends Panel {
 
     /**
-     * Construct.
+     * The constructor.
      *
      * @param componentName name of the component
      * @param title title of the application

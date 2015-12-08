@@ -33,6 +33,9 @@ import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A collection of static utilities.
+ */
 public class Utilities {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Utilities.class);
@@ -122,6 +125,11 @@ public class Utilities {
         }
     }
 
+    /**
+     * This utility is not yet used.
+     * 
+     * @return the location of the log files
+     */
     public static String getLogFileName() {
         FileAppender fileAppender = null;
 

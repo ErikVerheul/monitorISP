@@ -60,6 +60,10 @@ public class ISPController extends Thread {
         simulateCannotReachRouter = false;
     }
 
+    /**
+     * 
+     * @return all current session data
+     */
     public MonitorISPData getSessionData() {
         return sessionData;
     }

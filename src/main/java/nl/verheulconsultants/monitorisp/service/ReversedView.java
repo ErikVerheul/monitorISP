@@ -34,7 +34,14 @@ import java.util.List;
  */
 public class ReversedView<E> extends AbstractList<E> implements Serializable{
 
-    public static <E> List<E> of(List<E> list) {
+    /**
+     * The usage.
+     * 
+     * @param <E>
+     * @param list
+     * @return 
+     */
+    public static <E> List<E> of (List<E> list) {
         return new ReversedView<>(list);
     }
 

@@ -201,7 +201,7 @@ public final class HomePage extends BasePage {
             @Override
             protected void populateItem(final ListItem item) {
                 StatusListItem sli = (StatusListItem) item.getModelObject();
-                item.add(new Label("Name", sli.getAddress()));
+                item.add(new Label("Name", sli.getName()));
                 item.add(new Label("Value", sli.getValue()));
                 item.add(new Label("Index", sli.getIndex()));
             }

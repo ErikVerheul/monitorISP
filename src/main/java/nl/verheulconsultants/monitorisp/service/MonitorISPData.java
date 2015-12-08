@@ -38,6 +38,9 @@ import org.apache.wicket.model.util.CollectionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A DAO with all session data that need to be saved and loaded when the service is brought down.
+ */
 public class MonitorISPData implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitorISPData.class);

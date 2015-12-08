@@ -31,6 +31,9 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public abstract class BasePage extends WebPage {
 
+    /**
+     * The constructor.
+     */
     public BasePage() {
         super();
         add(new HeaderPanel("headerpanel", "Welcome to the Internet Service Provider monitor"));
