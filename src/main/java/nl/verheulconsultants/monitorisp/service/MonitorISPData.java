@@ -80,7 +80,8 @@ public class MonitorISPData implements Serializable {
 
     // Check if the fields are set for writing. Some values are not checked as they can be zero. 
     private boolean allSet() {
-        if (!paletteModel.getObject().isEmpty()
+        if (null != paletteModel 
+                && !paletteModel.getObject().isEmpty()
                 && null != selected
                 && null != routerAddress
                 && null != outages
@@ -90,7 +91,7 @@ public class MonitorISPData implements Serializable {
         } else {
             LOGGER.error("WRITE Check falied: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
                     paletteModel,
-                    null == paletteModel ? 0 : paletteModel.getObject().size(),
+                    paletteModel.getObject().size(),
                     selected,
                     routerAddress,
                     outages,
@@ -102,7 +103,8 @@ public class MonitorISPData implements Serializable {
 
     // Check if the fields are read. Some values are not checked as they can be zero or not yet initialized.
     private boolean allRead() {
-        if (!dataRead.paletteModel.getObject().isEmpty()
+        if (null != dataRead.paletteModel 
+                && !dataRead.paletteModel.getObject().isEmpty()
                 && null != dataRead.selected
                 && null != dataRead.routerAddress
                 && null != dataRead.outages
@@ -112,7 +114,7 @@ public class MonitorISPData implements Serializable {
         } else {
             LOGGER.error("READ check failed: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
                     dataRead.paletteModel,
-                    null == dataRead.paletteModel ? 0 : dataRead.paletteModel.getObject().size(),
+                    dataRead.paletteModel.getObject().size(),
                     dataRead.selected,
                     dataRead.routerAddress,
                     dataRead.outages,

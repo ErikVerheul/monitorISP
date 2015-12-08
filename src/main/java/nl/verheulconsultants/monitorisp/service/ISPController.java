@@ -138,7 +138,7 @@ public class ISPController extends Thread {
      * @return true if running.
      */
     public boolean isRunning() {
-        return running;
+        return running && this.isAlive();
     }
 
     /**
@@ -470,6 +470,11 @@ public class ISPController extends Thread {
         }
     }
 
+    /**
+     * These data are refreshed every 5 seconds by Wicket Javascript.
+     * 
+     * @return a list of status date.
+     */
     public List getStatusData() {
         List ret = new ArrayList();
 

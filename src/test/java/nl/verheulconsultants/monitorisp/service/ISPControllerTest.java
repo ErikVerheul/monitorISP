@@ -99,7 +99,7 @@ public class ISPControllerTest {
         boolean result = instance.isRunning();
         assertEquals(expResult, result);
     }
-
+    
     /**
      * Test of stopTemporarily method, of class ISPController.
      */
@@ -153,6 +153,7 @@ public class ISPControllerTest {
         instance.exit();
         sleepMillis(500);
         assertFalse(instance.isRunning());
+        assertFalse(instance.isAlive());
     }
 
     /**
