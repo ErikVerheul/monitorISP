@@ -30,20 +30,21 @@ import org.slf4j.LoggerFactory;
  */
 public class ISPController extends Thread {
 
+    private static final long serialVersionUID = 1L;
     static final List<Host> hosts = new ArrayList<>();
-    MonitorISPData sessionData;               
+    private final MonitorISPData sessionData;
     static ListModel<Host> selectedModel;
     static final String NOROUTERADDRESS = "unknown";
     static long currentISPunavailability = 0L;
     static boolean canReachISP = true;
-    static boolean busyCheckingConnections = false;  
+    static boolean busyCheckingConnections = false;
     static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     boolean running = false;
     boolean stop = false;
     boolean exit = false;
     List<String> selectedHostsURLs;
     long outageStart = 0L;
-    long outageEnd;    
+    long outageEnd;
     static boolean simulateFailure;
     static boolean simulateCannotReachRouter;
     static boolean canConnectWithRouter;
@@ -53,8 +54,8 @@ public class ISPController extends Thread {
      * The controller running as a thread to check if a number of hosts can be reached.
      */
     public ISPController() {
-        sessionData = new MonitorISPData(); 
-        selectedHostsURLs = new ArrayList<>();              
+        sessionData = new MonitorISPData();
+        selectedHostsURLs = new ArrayList<>();
         simulateFailure = false;
         simulateCannotReachRouter = false;
     }

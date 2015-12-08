@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WicketApplication extends WebApplication {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(WicketApplication.class);
     public static final ISPController controller = new ISPController();
 
@@ -59,6 +60,14 @@ public class WicketApplication extends WebApplication {
     @Override
     public void init() {
         super.init();
+    }
+
+    /**
+     * Make the controller available.
+     * @return the ISPController
+     */
+    public static ISPController getController() {
+        return controller;
     }
 
     /**

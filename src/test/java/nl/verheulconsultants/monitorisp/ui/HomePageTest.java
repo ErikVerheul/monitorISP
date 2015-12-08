@@ -8,9 +8,10 @@ import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Collection;
 import java.util.List;
+import nl.verheulconsultants.monitorisp.service.ISPController;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.getController;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import static org.junit.Assert.assertEquals;
@@ -26,7 +27,10 @@ import org.slf4j.LoggerFactory;
 public class HomePageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePageTest.class);
-    private WicketTester tester;
+    private final WicketApplication application = new WicketApplication();
+    private final WicketTester tester = new WicketTester(application);
+    private final HomePage homePage = new HomePage();
+    private final static ISPController controller  = getController();
     
     /**
      * Setup each test with a new instance of the application and set of data consisting of 4 choices all together from which 3 are selected.
@@ -34,7 +38,6 @@ public class HomePageTest {
     @Before
     public void setUp() {
         System.out.println("setUp");
-        tester = new WicketTester(new WicketApplication());
         LOGGER.info("New WicketTester instance instantiated");
         setSessionsDataFileNameForTest();
         // copy a test file to the test directory (will be overwritten)
@@ -60,7 +63,7 @@ public class HomePageTest {
     public void homepageRendersSuccessfully() {
         System.out.println("homepageRendersSuccessfully");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
 
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
@@ -70,7 +73,7 @@ public class HomePageTest {
     public void submitPallette() {
         System.out.println("submitPallette");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string
@@ -83,7 +86,7 @@ public class HomePageTest {
     public void removeHost() {
         System.out.println("removeHost");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string
@@ -95,23 +98,24 @@ public class HomePageTest {
         controller.getSelected().clear();
         controller.getSelected().add(newHost);
         System.out.println("These URL's will be removed " + controller.getSelected());
-        if (hosts.removeAll(controller.getSelected())) {
-            System.out.println("The model is changed to " + controller.getSelectedModel());
-        } else {
-            System.out.println("The model is not changed.");
+        if (!hosts.removeAll(controller.getSelected())) {          
+            System.out.println("The model could not be changed.");
         }
         //submit form using inner component 'button' as alternate button
         formTester.submit();
+        assertTrue("The actual number of choise items found in paletteModel is " + controller.getPaletteModel().getObject().size()
+                + " The items are " + controller.getPaletteModel().getObject(),
+                controller.getPaletteModel().getObject().size() == 4);
         assertTrue("The actual number of selected items found in selectedModel is " + controller.getSelectedModel().getObject().size()
                 + " The items are " + controller.getSelectedModel().getObject(),
-                controller.getSelectedModel().getObject().size() == 3);
+                controller.getSelectedModel().getObject().size() == 1);
     }
 
     @Test
     public void addHostToChoices() {
         System.out.println("addHostToChoices");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string
@@ -130,7 +134,7 @@ public class HomePageTest {
     public void addHostToSelection() {
         System.out.println("addHostToSelection");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string
@@ -151,7 +155,7 @@ public class HomePageTest {
     public void addRouterAddress() {
         System.out.println("addRouterAddress");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string
@@ -166,7 +170,7 @@ public class HomePageTest {
     public void submitStart() {
         System.out.println("submitStart");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string
@@ -179,7 +183,7 @@ public class HomePageTest {
     public void submitStop() {
         System.out.println("submitStop");
         //start and render the test page
-        tester.startPage(HomePage.class);
+        tester.startPage(homePage);
         //assert rendered page class
         tester.assertRenderedPage(HomePage.class);
         //create a new form tester without filling its form components with a blank string

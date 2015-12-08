@@ -28,9 +28,10 @@ import java.util.ArrayList;
 import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.Collection;
 import java.util.List;
+import nl.verheulconsultants.monitorisp.service.ISPController;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
-import static nl.verheulconsultants.monitorisp.ui.WicketApplication.controller;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.getController;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.extensions.markup.html.form.palette.theme.DefaultTheme;
@@ -57,6 +58,7 @@ public final class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
+    private static final ISPController controller  = getController();
     private static Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
@@ -269,7 +271,7 @@ public final class HomePage extends BasePage {
         }
         return names;
     }
-
+    
     /**
      * Simple data class that acts as a holder for the data for the router address field.
      */

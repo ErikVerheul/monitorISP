@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static nl.verheulconsultants.monitorisp.service.Utilities.getTestHomeDir;
 import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsDataFileNameForTest;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.getController;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
 public class UtilitiesTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
-    ISPController instance;
+    private static final ISPController controller  = getController();
 
     public UtilitiesTest() {
     }
@@ -51,7 +52,6 @@ public class UtilitiesTest {
     @Before
     public void setUp() {
         System.out.println("setUp");
-        instance = new ISPController();
         LOGGER.info("New Controller instance instantiated.");
         setSessionsDataFileNameForTest();
         // copy a test file to the test directory (will be overwritten)
@@ -66,7 +66,7 @@ public class UtilitiesTest {
             LOGGER.error("File copy failed with exception {}", ex);
         }
         // Must load the session data explicit as Homepage is not doing it.
-        if (instance.initWithPreviousSessionData()) {
+        if (controller.initWithPreviousSessionData()) {
             LOGGER.info("Preset previous session test data are used for initialization.");
         } else {
             LOGGER.info("Preset previous session test data could not be read, defaults are set");
