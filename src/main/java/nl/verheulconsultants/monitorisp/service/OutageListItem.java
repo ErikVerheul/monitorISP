@@ -31,6 +31,10 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
 import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
 import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
 
+/**
+ * Class for storing the different outage occurrences.
+ * 
+ */
 public class OutageListItem implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -27,6 +27,11 @@ import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.List;
 
+/**
+ * A helper class to create a upside-down view on the outages list.
+ * 
+ * @param <E> 
+ */
 public class ReversedView<E> extends AbstractList<E> implements Serializable{
 
     public static <E> List<E> of(List<E> list) {

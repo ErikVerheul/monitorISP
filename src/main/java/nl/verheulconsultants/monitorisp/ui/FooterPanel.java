@@ -27,6 +27,10 @@ package nl.verheulconsultants.monitorisp.ui;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
+/**
+ * Standard Wicket setup.
+ * 
+ */
 public final class FooterPanel extends Panel {
 
     public FooterPanel(String id, String text) {

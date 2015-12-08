@@ -54,6 +54,10 @@ import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Standard Wicket setup.
+ * 
+ */
 public final class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
@@ -157,7 +161,7 @@ public final class HomePage extends BasePage {
         // To show a message.
         add(new FeedbackPanel("feedback"));
 
-        IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("name", "id");
+        IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("hostAddress", "id");
         palette = new Palette<>("palette1",
                 controller.getSelectedModel(),
                 controller.getPaletteModel(),
@@ -197,7 +201,7 @@ public final class HomePage extends BasePage {
             @Override
             protected void populateItem(final ListItem item) {
                 StatusListItem sli = (StatusListItem) item.getModelObject();
-                item.add(new Label("Name", sli.getName()));
+                item.add(new Label("Name", sli.getAddress()));
                 item.add(new Label("Value", sli.getValue()));
                 item.add(new Label("Index", sli.getIndex()));
             }
@@ -253,23 +257,23 @@ public final class HomePage extends BasePage {
     private void startRunning() {
         if (controller.isRunning()) {
             if (!controller.isBusyCheckingConnections()) {
-                controller.restart(getNames(controller.getSelected()));
+                controller.restart(getAddresses(controller.getSelected()));
                 LOGGER.info("The service is restarted for checking connections with hosts {}", controller.getSelected());
             } else {
                 LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", controller.getSelected());
             }
         } else {
-            controller.doInBackground(getNames(controller.getSelected()));
+            controller.doInBackground(getAddresses(controller.getSelected()));
             LOGGER.info("The service is started for checking connections with hosts {}", controller.getSelected());
         }
     }
 
-    private List<String> getNames(List<Host> hosts) {
-        List<String> names = new ArrayList<>();
+    private List<String> getAddresses(List<Host> hosts) {
+        List<String> addresses = new ArrayList<>();
         for (Host h : hosts) {
-            names.add(h.getName());
+            addresses.add(h.getHostAddress());
         }
-        return names;
+        return addresses;
     }
     
     /**

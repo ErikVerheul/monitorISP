@@ -56,6 +56,10 @@ public class MonitorISPData implements Serializable {
     long successfulChecks;
     long timeStamp;
 
+    /**
+     * A DAO for saving and loading all session data in one go.
+     *
+     */
     MonitorISPData() {
         paletteModel = new CollectionModel<>();
         selected = new ArrayList<>();
@@ -74,7 +78,7 @@ public class MonitorISPData implements Serializable {
     // Check if the fields are set for writing. Some values are not checked as they can be zero. 
     private boolean allSet() {
         if (null != paletteModel.getObject()
-                && paletteModel.getObject().size() > 0
+                && !paletteModel.getObject().isEmpty()
                 && null != selected
                 && null != routerAddress
                 && null != outages
@@ -83,7 +87,13 @@ public class MonitorISPData implements Serializable {
             return true;
         } else {
             LOGGER.error("WRITE Check falied: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
-                    paletteModel, null == paletteModel ? 0 : paletteModel.getObject().size(), selected, routerAddress, outages, startOfService, timeStamp);
+                    paletteModel, 
+                    null == paletteModel ? 0 : paletteModel.getObject().size(), 
+                    selected, 
+                    routerAddress, 
+                    outages, 
+                    startOfService, 
+                    timeStamp);
             return false;
         }
     }
@@ -91,7 +101,7 @@ public class MonitorISPData implements Serializable {
     // Check if the fields are read. Some values are not checked as they can be zero or not yet initialized.
     private boolean allRead() {
         if (null != dataRead.paletteModel.getObject()
-                && dataRead.paletteModel.getObject().size() > 0
+                && !dataRead.paletteModel.getObject().isEmpty()
                 && null != dataRead.selected
                 && null != dataRead.routerAddress
                 && null != dataRead.outages
@@ -100,7 +110,13 @@ public class MonitorISPData implements Serializable {
             return true;
         } else {
             LOGGER.error("READ check failed: \npaletteModel = {}, \n#choices = {}, \nselected = {}, \nrouterAddress = {}, \noutages = {}, \nstartOfService = {}, \ntimeStamp = {}",
-                    dataRead.paletteModel, null == dataRead.paletteModel ? 0 : dataRead.paletteModel.getObject().size(), dataRead.selected, dataRead.routerAddress, dataRead.outages, dataRead.startOfService, dataRead.timeStamp);
+                    dataRead.paletteModel, 
+                    null == dataRead.paletteModel ? 0 : dataRead.paletteModel.getObject().size(), 
+                    dataRead.selected, 
+                    dataRead.routerAddress, 
+                    dataRead.outages, 
+                    dataRead.startOfService, 
+                    dataRead.timeStamp);
             return false;
         }
     }

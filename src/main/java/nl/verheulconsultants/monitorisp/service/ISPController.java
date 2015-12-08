@@ -31,24 +31,24 @@ import org.slf4j.LoggerFactory;
 public class ISPController extends Thread {
 
     private static final long serialVersionUID = 1L;
-    static final List<Host> hosts = new ArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
+    private static final List<Host> hosts = new ArrayList<>();
     private final MonitorISPData sessionData;
-    static ListModel<Host> selectedModel;
+    private static ListModel<Host> selectedModel;
     static final String NOROUTERADDRESS = "unknown";
-    static long currentISPunavailability = 0L;
-    static boolean canReachISP = true;
-    static boolean busyCheckingConnections = false;
-    static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
-    boolean running = false;
-    boolean stop = false;
-    boolean exit = false;
-    List<String> selectedHostsURLs;
-    long outageStart = 0L;
-    long outageEnd;
-    static boolean simulateFailure;
-    static boolean simulateCannotReachRouter;
-    static boolean canConnectWithRouter;
-    static long controllerDownTimeStamp = 0L;
+    private static long currentISPunavailability = 0L;
+    private static boolean canReachISP = true;
+    private static boolean busyCheckingConnections = false;    
+    private boolean running = false;
+    private boolean stop = false;
+    private boolean exit = false;
+    private List<String> selectedHostsURLs;
+    private long outageStart = 0L;
+    private long outageEnd;
+    private static boolean simulateFailure;
+    private static boolean simulateCannotReachRouter;
+    private static boolean canConnectWithRouter;
+    private static long controllerDownTimeStamp = 0L;
 
     /**
      * The controller running as a thread to check if a number of hosts can be reached.

@@ -25,43 +25,39 @@ package nl.verheulconsultants.monitorisp.service;
 
 import java.io.Serializable;
 
+/**
+ * Class for storing a host in a format that matches the Palette requirements.
+ * 
+ */
 public class Host implements Serializable {
 
     private static final long serialVersionUID = 1L;
     String id;
-    String name;
+    String hostAddress;
 
     /**
-     * Palette needs an object with an id and a name.
-     * Here the name is the domain address of the host.
+     * Palette needs an object with an id and a hostAddress.
+     * Here the hostAddress is the domain address of the host.
      * 
      * @param id
-     * @param name 
+     * @param hostAddress
      */
-    public Host(String id, String name) {
+    public Host(String id, String hostAddress) {
         super();
         this.id = id;
-        this.name = name;
+        this.hostAddress = hostAddress;
     }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    
+    /**
+     * 
+     * @return the host address
+     */
+    public String getHostAddress() {
+        return hostAddress;
     }
     
     @Override
     public String toString() {
-        return "Host [id = " + id + ", name = " + name + "]";
+        return "Host [id = " + id + ", address = " + hostAddress + "]";
     }
 }

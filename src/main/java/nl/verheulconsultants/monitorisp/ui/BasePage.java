@@ -25,6 +25,10 @@ package nl.verheulconsultants.monitorisp.ui;
 
 import org.apache.wicket.markup.html.WebPage;
 
+/**
+ * Standard Wicket setup.
+ * 
+ */
 public abstract class BasePage extends WebPage {
 
     public BasePage() {

@@ -33,7 +33,7 @@ public class StatusListItem {
     String value;
     int index;
     
-    public String getName() {
+    public String getAddress() {
         return name;
     }
     

@@ -26,6 +26,10 @@ package nl.verheulconsultants.monitorisp.ui;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
+/**
+ * Standard Wicket setup.
+ * 
+ */
 public class HeaderPanel extends Panel {
 
     /**
