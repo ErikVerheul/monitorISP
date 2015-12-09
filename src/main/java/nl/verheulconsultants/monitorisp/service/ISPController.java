@@ -38,7 +38,7 @@ public class ISPController extends Thread {
     static final String NOROUTERADDRESS = "unknown";
     private static long currentISPunavailability = 0L;
     private static boolean canReachISP = true;
-    private static boolean busyCheckingConnections = false;    
+    private static boolean busyCheckingConnections = false;
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
@@ -61,7 +61,7 @@ public class ISPController extends Thread {
     }
 
     /**
-     * 
+     *
      * @return all current session data
      */
     public MonitorISPData getSessionData() {
@@ -289,7 +289,7 @@ public class ISPController extends Thread {
                     sessionData.numberOfInterruptions++;
                     outageStart = loopStart;
                     canConnectWithRouter = canConnectRouter();
-                    LOGGER.info("canConnectWithRouter is set to {}", canConnectWithRouter);
+                    LOGGER.info("canConnectWithRouter is set to {} and will be set to true at the first successful connection.", canConnectWithRouter);
                 }
                 canReachISP = false;
                 sessionData.lastFail = System.currentTimeMillis();
@@ -413,8 +413,6 @@ public class ISPController extends Thread {
     private boolean testConnection(String host, Integer port, int timeout) {
         InetAddress inetAddress;
         InetSocketAddress socketAddress;
-        SocketChannel sc = null;
-
         try {
             inetAddress = InetAddress.getByName(host);
         } catch (UnknownHostException e) {
@@ -430,23 +428,13 @@ public class ISPController extends Thread {
         }
 
         // Open the channel, set it to blocking, initiate connect
-        try {
-            sc = SocketChannel.open();
+        try (SocketChannel sc = SocketChannel.open()) {
             sc.configureBlocking(true);
             sc.socket().connect(socketAddress, timeout);
-            LOGGER.debug("{}/{} cannot be reached.", new Object[]{host, inetAddress.getHostAddress()});
             return true;
         } catch (IOException e) {
             LOGGER.info("{}/{} cannot be reached. The cause is {}", new Object[]{host, inetAddress.getHostAddress(), e});
             return false;
-        } finally {
-            if (sc != null) {
-                try {
-                    sc.close();
-                } catch (IOException e) {
-                    LOGGER.warn("The socket channel with host {} could not be closed. The cause is {}", new Object[]{host, e});
-                }
-            }
         }
     }
 
@@ -472,7 +460,7 @@ public class ISPController extends Thread {
 
     /**
      * These data are refreshed every 5 seconds by Wicket Javascript.
-     * 
+     *
      * @return a list of status date.
      */
     public List getStatusData() {
