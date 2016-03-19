@@ -104,6 +104,16 @@
         </dependency>
     </dependencies>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <!-- [Erik] see http://docs.sonarqube.org/display/SONAR/Analyzing+with+SonarQube+Scanner+for+Maven -->
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <resources>
             <resource>
                 <filtering>false</filtering>
@@ -187,6 +197,7 @@
         </plugins>
     </build>
     
+    <!-- now in settings.xml in M2 directory
     <profiles>
         <profile>
             <id>sonar</id>
@@ -194,7 +205,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <!-- Optional URL to server. Default value is http://localhost:9000 -->
+                < Optional URL to server. Default value is http://localhost:9000 >
                 <sonar.host.url>
                     http://192.168.0.251:9000/sonarqube/
                 </sonar.host.url>
@@ -205,7 +216,7 @@
                 <sonar.jdbc.password>sonar</sonar.jdbc.password>
             </properties>
         </profile>
-    </profiles>
+    </profiles-->
 
 
 </project>
