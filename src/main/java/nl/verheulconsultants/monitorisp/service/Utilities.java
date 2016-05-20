@@ -98,7 +98,7 @@ public class Utilities {
      * Convert a duration in milliseconds to string.
      *
      * @param millis
-     * @return a string with format hh:mm:ss
+     * @return a string with format dd:hh:mm:ss
      */
     public static String millisToTime(long millis) {
         long second = 0;
@@ -109,7 +109,7 @@ public class Utilities {
             second = (millis / 1000) % 60;
             minute = (millis / (1000 * 60)) % 60;
             hour = (millis / (1000 * 60 * 60)) % 24;
-            day = (millis / (1000 * 60 * 60 * 24));
+            day = millis / (1000 * 60 * 60 * 24);
         }
         return String.format("%02d:%02d:%02d:%02d", day, hour, minute, second) + " [d:h:m:s]";
     }
