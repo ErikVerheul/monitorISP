@@ -104,12 +104,14 @@ public class Utilities {
         long second = 0;
         long minute = 0;
         long hour = 0;
+        long day = 0;
         if (millis > 0) {
             second = (millis / 1000) % 60;
             minute = (millis / (1000 * 60)) % 60;
             hour = (millis / (1000 * 60 * 60)) % 24;
+            day = (millis / (1000 * 60 * 60 * 24));
         }
-        return String.format("%02d:%02d:%02d", hour, minute, second) + " [h:m:s]";
+        return String.format("%02d:%02d:%02d:%02d", day, hour, minute, second) + " [d:h:m:s]";
     }
 
     /**

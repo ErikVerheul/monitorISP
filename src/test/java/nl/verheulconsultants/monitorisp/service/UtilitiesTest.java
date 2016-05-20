@@ -80,9 +80,13 @@ public class UtilitiesTest {
     public void testMillisToTime() {
         System.out.println("millisToTime");
         long millis = 100000L;
-        String expResult = "00:01:40 [h:m:s]";
+        String expResult = "00:00:01:40 [d:h:m:s]";
         String result = Utilities.millisToTime(millis);
         assertEquals(expResult, result);
+        long dayPlusmillis = millis + 24*60*60*1000;
+        String expResult2 = "01:00:01:40 [d:h:m:s]";
+        result = Utilities.millisToTime(dayPlusmillis);
+        assertEquals(expResult2, result);
     }
 
     /**
