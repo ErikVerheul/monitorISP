@@ -30,7 +30,7 @@
     <groupId>nl.verheulconsultants.monitorisp</groupId>
     <artifactId>monitorisp</artifactId>
     <packaging>war</packaging>
-    <version>0.5</version>
+    <version>0.6</version>
     <name>MonitorISP</name>
     <description></description>
 
@@ -47,8 +47,8 @@
         </license>
     </licenses>
     <properties>
-        <wicket.version>7.2.0</wicket.version>
-        <jetty.version>7.6.13.v20130916</jetty.version>
+        <wicket.version>7.4.0</wicket.version>
+        <jetty.version>7.6.19.v20160209</jetty.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- allowed values: R7, 1.0, 1.5, 2.0 or none -->
         <wtp.version>none</wtp.version>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
 
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.2.5</version>
+            <version>4.5.2</version>
             <type>jar</type>
         </dependency>
     </dependencies>
