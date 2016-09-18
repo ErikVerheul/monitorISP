@@ -43,7 +43,6 @@ public class Host implements Serializable {
      * @param hostAddress
      */
     public Host(String id, String hostAddress) {
-        super();
         this.id = id;
         this.hostAddress = hostAddress;
     }
