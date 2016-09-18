@@ -8,7 +8,16 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+/**
+ *
+ */
 public class Start {
+
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         int timeout = (int) Duration.ONE_HOUR.getMilliseconds();
 
@@ -18,7 +27,7 @@ public class Start {
         // Set some timeout options to make debugging easier.
         connector.setMaxIdleTime(timeout);
         connector.setSoLingerTime(-1);
-        connector.setPort(8080);
+        connector.setPort(8_080);
         server.addConnector(connector);
 
         Resource keystore = Resource.newClassPathResource("/keystore");
@@ -30,7 +39,7 @@ public class Start {
             // use this certificate anywhere important as the passwords are
             // available in the source.
 
-            connector.setConfidentialPort(8443);
+            connector.setConfidentialPort(8_443);
 
             SslContextFactory factory = new SslContextFactory();
             factory.setKeyStoreResource(keystore);
@@ -39,7 +48,7 @@ public class Start {
             factory.setKeyManagerPassword("wicket");
             SslSocketConnector sslConnector = new SslSocketConnector(factory);
             sslConnector.setMaxIdleTime(timeout);
-            sslConnector.setPort(8443);
+            sslConnector.setPort(8_443);
             sslConnector.setAcceptors(4);
             server.addConnector(sslConnector);
 

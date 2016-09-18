@@ -57,12 +57,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Standard Wicket setup.
  * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
-public final class HomePage extends BasePage {
+public class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
-    private static final ISPController controller  = getController();
+    private static final ISPController CONTROLLER  = getController();
     private Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
@@ -82,19 +83,19 @@ public final class HomePage extends BasePage {
     public HomePage() {
         // Prevent spurious reloads by checking if the contoller is allready running
         // Only start automatically when the previous session data could be read
-        if (controller.isRunning()) {
+        if (CONTROLLER.isRunning()) {
             startAutomatically = false;
         } else {
-            startAutomatically = controller.initWithPreviousSessionData();
+            startAutomatically = CONTROLLER.initWithPreviousSessionData();
         }
-        address = new InputRouterAddress(controller.getRouterAddress());
+        address = new InputRouterAddress(CONTROLLER.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
         newUrl = new TextField<>("newHost", Model.of(""));
 
         formSelectHosts = new Form<Void>("paletteForm") {
             @Override
             protected void onSubmit() {
-                if (controller.getSessionData().saveData()) {
+                if (CONTROLLER.getSessionData().saveData()) {
                     LOGGER.info("All data are saved.");
                 }
             }
@@ -105,7 +106,7 @@ public final class HomePage extends BasePage {
             protected void onSubmit() {
                 final String addressValue = routerAddress.getModelObject();
                 if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
-                    controller.setRouterAddress(addressValue);
+                    CONTROLLER.setRouterAddress(addressValue);
                     LOGGER.info("The router address is set to {}", addressValue);
                 } else {
                     error("Wrong router address. Please try again or type unknown");
@@ -116,9 +117,9 @@ public final class HomePage extends BasePage {
         stopButton = new Button("stopButton") {
             @Override
             public void onSubmit() {
-                if (controller != null
-                        && controller.isBusyCheckingConnections()) {
-                    controller.stopTemporarily();
+                if (CONTROLLER != null
+                        && CONTROLLER.isBusyCheckingConnections()) {
+                    CONTROLLER.stopTemporarily();
                     LOGGER.info("The service is stopped temporarely.");
                 } else {
                     LOGGER.info("Can not stop, the controller is not running.");
@@ -131,10 +132,10 @@ public final class HomePage extends BasePage {
             protected void onSubmit() {
                 final String urlValue = newUrl.getModelObject();
                 if (isValidHostAddress(urlValue)) {
-                    Collection<Host> hostsLocal = controller.getPaletteModel().getObject();
+                    Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
                     hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), urlValue));
                     LOGGER.info("The URL {} is added", urlValue);
-                    LOGGER.info("The host list is changed to {}", controller.getPaletteModel());
+                    LOGGER.info("The host list is changed to {}", CONTROLLER.getPaletteModel());
                 } else {
                     error("Wrong host address. Please try again.");
                 }
@@ -151,10 +152,10 @@ public final class HomePage extends BasePage {
         removeButton = new Button("removeButton") {
             @Override
             public void onSubmit() {
-                Collection<Host> hostsLocal = controller.getPaletteModel().getObject();
-                LOGGER.info("These URL's will be removed {}", controller.getSelected());
-                hostsLocal.removeAll(controller.getSelected());
-                LOGGER.info("The model is changed to {}", controller.getPaletteModel());
+                Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
+                LOGGER.info("These URL's will be removed {}", CONTROLLER.getSelected());
+                hostsLocal.removeAll(CONTROLLER.getSelected());
+                LOGGER.info("The model is changed to {}", CONTROLLER.getPaletteModel());
             }
         };
 
@@ -163,11 +164,11 @@ public final class HomePage extends BasePage {
 
         IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("hostAddress", "id");
         palette = new Palette<>("palette1",
-                controller.getSelectedModel(),
-                controller.getPaletteModel(),
+                CONTROLLER.getSelectedModel(),
+                CONTROLLER.getPaletteModel(),
                 renderer, 10, true, false);
-        LOGGER.info("The palette is initiated with choices {}.", controller.getPaletteModel());
-        LOGGER.info("The palette is initiated with selection {}.", controller.getSelected());
+        LOGGER.info("The palette is initiated with choices {}.", CONTROLLER.getPaletteModel());
+        LOGGER.info("The palette is initiated with selection {}.", CONTROLLER.getSelected());
 
         // version 7.x.x
         palette.add(new DefaultTheme());
@@ -193,7 +194,7 @@ public final class HomePage extends BasePage {
         IModel listStatusViewModel = new LoadableDetachableModel() {
             @Override
             protected Object load() {
-                return controller.getStatusData();
+                return CONTROLLER.getStatusData();
             }
         };
 
@@ -222,7 +223,7 @@ public final class HomePage extends BasePage {
         IModel listOutageViewModel = new LoadableDetachableModel() {
             @Override
             protected Object load() {
-                return controller.getOutageDataReversedOrder();
+                return CONTROLLER.getOutageDataReversedOrder();
             }
         };
 
@@ -255,24 +256,24 @@ public final class HomePage extends BasePage {
     }
 
     private void startRunning() {
-        if (controller.isRunning()) {
-            if (!controller.isBusyCheckingConnections()) {
-                controller.restart(getAddresses(controller.getSelected()));
-                LOGGER.info("The service is restarted for checking connections with hosts {}", controller.getSelected());
+        if (CONTROLLER.isRunning()) {
+            if (!CONTROLLER.isBusyCheckingConnections()) {
+                CONTROLLER.restart(getAddresses(CONTROLLER.getSelected()));
+                LOGGER.info("The service is restarted for checking connections with hosts {}", CONTROLLER.getSelected());
             } else {
-                LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", controller.getSelected());
+                LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", CONTROLLER.getSelected());
             }
         } else {
-            controller.doInBackground(getAddresses(controller.getSelected()));
-            LOGGER.info("The service is started for checking connections with hosts {}", controller.getSelected());
+            CONTROLLER.doInBackground(getAddresses(CONTROLLER.getSelected()));
+            LOGGER.info("The service is started for checking connections with hosts {}", CONTROLLER.getSelected());
         }
     }
 
     private List<String> getAddresses(List<Host> hosts) {
         List<String> addresses = new ArrayList<>();
-        for (Host h : hosts) {
+        hosts.stream().forEach((h) -> {
             addresses.add(h.getHostAddress());
-        }
+        });
         return addresses;
     }
     

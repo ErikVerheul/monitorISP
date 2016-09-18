@@ -29,6 +29,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 /**
  * Standard Wicket setup.
  * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class HeaderPanel extends Panel {
 

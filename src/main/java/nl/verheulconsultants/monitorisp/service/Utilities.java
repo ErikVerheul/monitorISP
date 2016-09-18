@@ -35,23 +35,44 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A collection of static utilities.
+ * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class Utilities {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Utilities.class);
+
+    /**
+     *
+     */
     public static final String APPHOMEDIR = "C:\\MonitorISP\\";
     private static final String TESTHOMEDIR = "C:\\MonitorISP\\test\\";
     private static String sessionDataFileName = APPHOMEDIR + "MonitorISPData.bin";
+
+    /**
+     *
+     */
     public static final int ISP = 0;
+
+    /**
+     *
+     */
     public static final int INTERNAL = 1;
+
+    /**
+     *
+     */
     public static final int SERVICEDOWN = 2;
+
+    /**
+     *
+     */
     public static final int CONTROLLERDOWN = 3;
 
-    //Prevent this utility class to be instantiated.
-    private Utilities() {
-
-    }
-
+    /**
+     *
+     * @return
+     */
     public static String getSessionDataFileName() {
         return sessionDataFileName;
     }
@@ -106,10 +127,10 @@ public class Utilities {
         long hour = 0;
         long day = 0;
         if (millis > 0) {
-            second = (millis / 1000) % 60;
-            minute = (millis / (1000 * 60)) % 60;
-            hour = (millis / (1000 * 60 * 60)) % 24;
-            day = millis / (1000 * 60 * 60 * 24);
+            second = (millis / 1_000) % 60;
+            minute = (millis / (1_000 * 60)) % 60;
+            hour = (millis / (1_000 * 60 * 60)) % 24;
+            day = millis / (1_000 * 60 * 60 * 24);
         }
         return String.format("%02d:%02d:%02d:%02d", day, hour, minute, second) + " [d:h:m:s]";
     }
@@ -149,6 +170,10 @@ public class Utilities {
         } else {
             return "Log file location not found.";
         }
+    }
+    //Prevent this utility class to be instantiated.
+    private Utilities() {
+        
     }
 
 }

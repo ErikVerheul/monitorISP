@@ -28,6 +28,7 @@ import java.io.Serializable;
 /**
  * Class for storing a host in a format that matches the Palette requirements.
  * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class Host implements Serializable {
 

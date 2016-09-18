@@ -30,8 +30,9 @@ import org.apache.wicket.markup.html.panel.Panel;
 /**
  * Standard Wicket setup.
  * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
-public final class FooterPanel extends Panel {
+public class FooterPanel extends Panel {
 
     /**
      * The constructor.

@@ -34,6 +34,7 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
 /**
  * Class for storing the different outage occurrences.
  * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class OutageListItem implements Serializable {
 

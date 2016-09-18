@@ -40,12 +40,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A DAO with all session data that need to be saved and loaded when the service is brought down.
+ * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class MonitorISPData implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitorISPData.class);
-    private MonitorISPData dataRead;
     private static final long serialVersionUID = 1L;
+    private MonitorISPData dataRead;
 
     CollectionModel<Host> paletteModel;
     List<Host> selected;

@@ -34,12 +34,23 @@ import org.slf4j.LoggerFactory;
  * Application object for your web application. If you want to run this application without deploying, run the Start class.
  *
  * @see nl.verheulconsultants.monitorisp.Start#main(String[])
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class WicketApplication extends WebApplication {
 
-    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(WicketApplication.class);
-    public static final ISPController controller = new ISPController();
+
+    /**
+     *
+     */
+    public static final ISPController CONTROLLER = new ISPController();
+    /**
+     * Make the CONTROLLER available.
+     * @return the ISPController
+     */
+    public static ISPController getController() {
+        return CONTROLLER;
+    }
 
     /**
      * Set the home page.
@@ -58,26 +69,19 @@ public class WicketApplication extends WebApplication {
      * @see org.apache.wicket.Application#init()
      */
     @Override
-    public final void init() {
+    public void init() {
         super.init();
     }
 
-    /**
-     * Make the controller available.
-     * @return the ISPController
-     */
-    public static ISPController getController() {
-        return controller;
-    }
 
     /**
      * Kill the running thread and save current session data before service exit.
      */
     @Override
     public void onDestroy() {
-        controller.exit();
+        CONTROLLER.exit();
         sleepMillis(140);
-        if (controller.getSessionData().saveData()) {
+        if (CONTROLLER.getSessionData().saveData()) {
             LOGGER.info("Session data is saved at exiting the application.");
         }
     }

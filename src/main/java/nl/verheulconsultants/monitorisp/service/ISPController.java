@@ -27,18 +27,20 @@ import org.slf4j.LoggerFactory;
  *
  * If successful with one host it sleeps for 5 seconds to try again. If it cannot connect to any host in the list a disconnection is registered. If in this case
  * it cannot connect to the router either the disconnection is registered as a local network failure.
+ * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class ISPController extends Thread {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
-    private static final List<Host> hosts = new ArrayList<>();
-    private final MonitorISPData sessionData;
-    private ListModel<Host> selectedModel;
+    private static final List<Host> HOSTS = new ArrayList<>();
     static final String NOROUTERADDRESS = "unknown";
     private static long currentISPunavailability = 0L;
     private static boolean canReachISP = true;
     private static boolean busyCheckingConnections = false;
+    private final MonitorISPData sessionData;
+    private ListModel<Host> selectedModel;
     private boolean running = false;
     private boolean stop = false;
     private boolean exit = false;
@@ -116,15 +118,15 @@ public class ISPController extends Thread {
      * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
      */
     public void initWithDefaults() {
-        hosts.clear();
-        hosts.add(new Host("0", "willfailconnection.com"));
+        HOSTS.clear();
+        HOSTS.add(new Host("0", "willfailconnection.com"));
         Host uva = new Host("1", "uva.nl");
-        hosts.add(uva);
+        HOSTS.add(uva);
         Host xs4all = new Host("2", "xs4all.nl");
-        hosts.add(xs4all);
+        HOSTS.add(xs4all);
         Host vu = new Host("3", "vu.nl");
-        hosts.add(vu);
-        sessionData.paletteModel = new CollectionModel<>(hosts);
+        HOSTS.add(vu);
+        sessionData.paletteModel = new CollectionModel<>(HOSTS);
 
         sessionData.selected.clear();
         sessionData.selected.add(uva);
@@ -199,7 +201,7 @@ public class ISPController extends Thread {
                 break;
             }
             // wait for instructions to restart or to exit completely
-            sleepMillisFixed(1000);
+            sleepMillisFixed(1_000);
         } while (!exit);
 
         running = false;
@@ -301,7 +303,7 @@ public class ISPController extends Thread {
                 currentISPunavailability = sessionData.lastFail - outageStart;
             }
             // wait max 5 seconds to check the ISP connection again
-            sleepMillisSliced(5000);
+            sleepMillisSliced(5_000);
         }
 
         if (busyCheckingConnections) {
@@ -393,7 +395,7 @@ public class ISPController extends Thread {
                 } else {
                     sessionData.failedChecks++;
                     // wait 1 second before contacting the next host in the list
-                    sleepMillisFixed(1000);
+                    sleepMillisFixed(1_000);
                 }
             }
         }
@@ -406,7 +408,7 @@ public class ISPController extends Thread {
      * @return true if the router can be reached
      */
     private boolean checkRouter() {
-        return testConnection(sessionData.routerAddress, 80, 1000);
+        return testConnection(sessionData.routerAddress, 80, 1_000);
     }
 
     /**
@@ -577,7 +579,7 @@ public class ISPController extends Thread {
         long sumOutages = 0L;
         for (OutageListItem item : sessionData.outages) {
             if (item.cause == ISP) {
-                sumOutages = sumOutages + item.getDuration();
+                sumOutages += item.getDuration();
             }
         }
         return sumOutages + currentISPunavailability;

@@ -39,16 +39,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author erik
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class UtilitiesTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
-    private static final ISPController controller  = getController();
+    private static final ISPController CONTROLLER  = getController();
 
+    /**
+     *
+     */
     public UtilitiesTest() {
     }
 
+    /**
+     *
+     */
     @Before
     public void setUp() {
         System.out.println("setUp");
@@ -66,7 +72,7 @@ public class UtilitiesTest {
             LOGGER.error("File copy failed with exception {}", ex);
         }
         // Must load the session data explicit as Homepage is not doing it.
-        if (controller.initWithPreviousSessionData()) {
+        if (CONTROLLER.initWithPreviousSessionData()) {
             LOGGER.info("Preset previous session test data are used for initialization.");
         } else {
             LOGGER.info("Preset previous session test data could not be read, defaults are set");
@@ -79,11 +85,11 @@ public class UtilitiesTest {
     @Test
     public void testMillisToTime() {
         System.out.println("millisToTime");
-        long millis = 100000L;
+        long millis = 100_000L;
         String expResult = "00:00:01:40 [d:h:m:s]";
         String result = Utilities.millisToTime(millis);
         assertEquals(expResult, result);
-        long dayPlusmillis = millis + 24*60*60*1000;
+        long dayPlusmillis = millis + 24*60*60*1_000;
         String expResult2 = "01:00:01:40 [d:h:m:s]";
         result = Utilities.millisToTime(dayPlusmillis);
         assertEquals(expResult2, result);

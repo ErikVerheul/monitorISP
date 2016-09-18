@@ -25,7 +25,8 @@ package nl.verheulconsultants.monitorisp.service;
 
 /**
  * A simple class to record the status of the monitor.
- * @author erik
+ * 
+ * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class StatusListItem {
 

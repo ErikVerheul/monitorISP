@@ -29,11 +29,21 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.setSessionsData
 import static org.junit.Assert.*;
 import org.junit.Before;
 
+/**
+ *
+ * @author Erik Verheul <erik@verheulconsultants.nl>
+ */
 public class MyUrlValidatorTest {
     
+    /**
+     *
+     */
     public MyUrlValidatorTest() {
     }
     
+    /**
+     *
+     */
     @Before
     public void setUp() {
         setSessionsDataFileNameForTest();

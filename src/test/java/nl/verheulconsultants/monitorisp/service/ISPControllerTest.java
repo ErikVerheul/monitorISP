@@ -53,6 +53,9 @@ public class ISPControllerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
     ISPController instance;
 
+    /**
+     *
+     */
     @Before
     public void setUp() {
         System.out.println("setUp");
@@ -78,11 +81,14 @@ public class ISPControllerTest {
         }
     }
 
+    /**
+     *
+     */
     @After
     public void tearDown() {
         System.out.println("tearDown");
         instance.exit();
-        sleepMillis(1500);
+        sleepMillis(1_500);
         if (instance.isAlive()) {
             LOGGER.warn("The controller thread is still running!");
         } else {
@@ -115,7 +121,7 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.stopTemporarily();
-        sleepMillis(1100);
+        sleepMillis(1_100);
         assertFalse(instance.isBusyCheckingConnections());
     }
 
@@ -132,10 +138,10 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         instance.stopTemporarily();
-        sleepMillis(1100);
+        sleepMillis(1_100);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        sleepMillis(1100);
+        sleepMillis(1_100);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
     }
 
@@ -152,7 +158,7 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         instance.exit();
-        sleepMillis(1500);
+        sleepMillis(1_500);
         assertFalse(instance.isRunning());
         assertFalse(instance.isAlive());
     }
@@ -166,7 +172,7 @@ public class ISPControllerTest {
         instance.start();
         assert (instance.isAlive());
         instance.exit();
-        sleepMillis(1500);
+        sleepMillis(1_500);
         assert (!instance.isAlive());
     }
 
@@ -181,7 +187,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        sleepMillis(1500);
+        sleepMillis(1_500);
         assertTrue(instance.getSessionData().successfulChecks > 0);
     }
 
@@ -196,7 +202,7 @@ public class ISPControllerTest {
         hosts.add("willnotconnect.com");
 
         instance.doInBackground(hosts);
-        sleepMillis(1500);
+        sleepMillis(1_500);
         assertTrue(instance.getSessionData().failedChecks > 0);
     }
 
@@ -241,9 +247,9 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         instance.simulateFailure(false);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
@@ -265,9 +271,9 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         instance.simulateFailure(false);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
@@ -290,9 +296,9 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         instance.simulateFailure(false);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
@@ -314,9 +320,9 @@ public class ISPControllerTest {
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         instance.simulateFailure(false);
-        sleepMillis(6000);
+        sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
@@ -353,16 +359,16 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         instance.stopTemporarily();
-        sleepMillis(1500);
+        sleepMillis(1_500);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        sleepMillis(1500);
+        sleepMillis(1_500);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         OutageListItem lastOutage = instance.getLastOutage();
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == CONTROLLERDOWN);
         instance.exit();
-        sleepMillis(1500);
+        sleepMillis(1_500);
         if (instance.getSessionData().saveData()) {
             LOGGER.info("Session data is saved at exiting the application.");
         } else {
