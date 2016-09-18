@@ -45,7 +45,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ISPController tests. Each test starts the controller and uses a fresh copy of a set of session data located in the test resources.
+ * ISPController tests. Each test starts the controller and uses a fresh copy of
+ * a set of session data located in the test resources.
  */
 public class ISPControllerTest {
 
@@ -81,7 +82,7 @@ public class ISPControllerTest {
     public void tearDown() {
         System.out.println("tearDown");
         instance.exit();
-        sleepMillis(500);
+        sleepMillis(1500);
         if (instance.isAlive()) {
             LOGGER.warn("The controller thread is still running!");
         } else {
@@ -99,7 +100,7 @@ public class ISPControllerTest {
         boolean result = instance.isRunning();
         assertEquals(expResult, result);
     }
-    
+
     /**
      * Test of stopTemporarily method, of class ISPController.
      */
@@ -112,9 +113,9 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         sleepMillis(120);
-        assertTrue(instance.isBusyCheckingConnections());
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.stopTemporarily();
-        sleepMillis(1400);
+        sleepMillis(1100);
         assertFalse(instance.isBusyCheckingConnections());
     }
 
@@ -131,11 +132,11 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         instance.stopTemporarily();
-        sleepMillis(1400);
+        sleepMillis(1100);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        sleepMillis(2000);
-        assertTrue(instance.isBusyCheckingConnections());
+        sleepMillis(1100);
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
     }
 
     /**
@@ -151,7 +152,7 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         instance.exit();
-        sleepMillis(500);
+        sleepMillis(1500);
         assertFalse(instance.isRunning());
         assertFalse(instance.isAlive());
     }
@@ -165,7 +166,7 @@ public class ISPControllerTest {
         instance.start();
         assert (instance.isAlive());
         instance.exit();
-        sleepMillis(500);
+        sleepMillis(1500);
         assert (!instance.isAlive());
     }
 
@@ -180,7 +181,7 @@ public class ISPControllerTest {
         hosts.add("uva.nl");
 
         instance.doInBackground(hosts);
-        sleepMillis(1400);
+        sleepMillis(1500);
         assertTrue(instance.getSessionData().successfulChecks > 0);
     }
 
@@ -195,7 +196,7 @@ public class ISPControllerTest {
         hosts.add("willnotconnect.com");
 
         instance.doInBackground(hosts);
-        sleepMillis(1400);
+        sleepMillis(1500);
         assertTrue(instance.getSessionData().failedChecks > 0);
     }
 
@@ -233,11 +234,12 @@ public class ISPControllerTest {
         System.out.println("testISPInterruptedRegistration");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
+        //Set this value to your nearest router ip.
         instance.setRouterAddress("192.168.0.6");
 
-        instance.doInBackground(hosts);        
+        instance.doInBackground(hosts);
         sleepMillis(120);
-        assertTrue(instance.isBusyCheckingConnections());
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
         sleepMillis(6000);
         instance.simulateFailure(false);
@@ -249,7 +251,8 @@ public class ISPControllerTest {
     }
 
     /**
-     * Test if a record is registered when the ISP can not be reached and a false router address is entered.
+     * Test if a record is registered when the ISP can not be reached and a
+     * false router address is entered.
      */
     @Test
     public void testISPInterruptedRegistrationWithFalseRouterAddress() {
@@ -260,7 +263,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         sleepMillis(120);
-        assertTrue(instance.isBusyCheckingConnections());
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
         sleepMillis(6000);
         instance.simulateFailure(false);
@@ -272,7 +275,8 @@ public class ISPControllerTest {
     }
 
     /**
-     * Test if a record is registered when the ISP can not be reached due to an internal network failure.
+     * Test if a record is registered when the ISP can not be reached due to an
+     * internal network failure.
      */
     @Test
     public void testInternalInterruptedRegistration() {
@@ -284,11 +288,11 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         sleepMillis(120);
-        assertTrue(instance.isBusyCheckingConnections());
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
         sleepMillis(6000);
         instance.simulateFailure(false);
-        sleepMillis(6000);       
+        sleepMillis(6000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
@@ -296,7 +300,8 @@ public class ISPControllerTest {
     }
 
     /**
-     * Test if a record is registered when the ISP can not be reached due to an internal network failure and a false router address is entered.
+     * Test if a record is registered when the ISP can not be reached due to an
+     * internal network failure and a false router address is entered.
      */
     @Test
     public void testInternalInterruptedRegistrationWithFalseRouterAddress() {
@@ -307,7 +312,7 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         sleepMillis(120);
-        assertTrue(instance.isBusyCheckingConnections());
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         instance.simulateFailure(true);
         sleepMillis(6000);
         instance.simulateFailure(false);
@@ -329,12 +334,13 @@ public class ISPControllerTest {
 
         instance.doInBackground(hosts);
         sleepMillis(120);
-        assertTrue(instance.isBusyCheckingConnections());
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == SERVICEDOWN);
     }
+
     /**
      * Test if a record is registered when the controller is temporarily down.
      */
@@ -347,16 +353,16 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         instance.stopTemporarily();
-        sleepMillis(1400);
+        sleepMillis(1500);
         assertFalse(instance.isBusyCheckingConnections());
         instance.restart(hosts);
-        sleepMillis(2000);
-        assertTrue(instance.isBusyCheckingConnections());
+        sleepMillis(1500);
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
         OutageListItem lastOutage = instance.getLastOutage();
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == CONTROLLERDOWN);
         instance.exit();
-        sleepMillis(140);
+        sleepMillis(1500);
         if (instance.getSessionData().saveData()) {
             LOGGER.info("Session data is saved at exiting the application.");
         } else {

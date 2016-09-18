@@ -91,6 +91,7 @@ public class ISPController extends Thread {
 
     /**
      * Initiate with the data of the previous session or, if not possible, with default values.
+     * ToDo: fix logging addres = null in choises ans selection while it's not.
      *
      * @return true if initiated with previous session data
      */
@@ -198,7 +199,7 @@ public class ISPController extends Thread {
                 break;
             }
             // wait for instructions to restart or to exit completely
-            sleepMillisSliced(1000);
+            sleepMillisFixed(1000);
         } while (!exit);
 
         running = false;
@@ -263,8 +264,11 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Inner loop checking if connections to the hosts are possible When loping busyCheckingConnections = true Registers the periods when no connections could
-     * be made. Will return at an exit or stop.
+     * Inner loop checking if connections to the hosts are possible.
+     * 
+     * When looping busyCheckingConnections == true. 
+     * Registers the periods when no connections could be made. 
+     * Will return at an exit or stop.
      */
     private void innerLoop(List<String> selectedURLs) {
         long loopStart;
@@ -296,7 +300,7 @@ public class ISPController extends Thread {
                 // update the current unavailability
                 currentISPunavailability = sessionData.lastFail - outageStart;
             }
-            // wait 5 seconds to check the ISP connection again
+            // wait max 5 seconds to check the ISP connection again
             sleepMillisSliced(5000);
         }
 
@@ -367,7 +371,9 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Try to connect to any host in the list
+     * Try to connect to any host in the list.
+     * This method will return almost immediately when the first host can be reached or 
+     * take max nrOfHosts x 1900 ms.
      *
      * @param hURLs the hosts to test
      * @return true if a host can be contacted and false if not one host from the list can be reached.
@@ -378,8 +384,8 @@ public class ISPController extends Thread {
             LOGGER.info("Failed check SIMULATED");
         } else {
             for (String host : hURLs) {
-                // test a TCP connection on port 80 with the destination host and a time-out of 1000 ms.
-                if (testConnection(host, 80, 1000)) {
+                // test a TCP connection on port 80 with the destination host and a time-out of 900 ms.
+                if (testConnection(host, 80, 900)) {
                     hostFound = true;
                     sessionData.successfulChecks++;
                     // when successfull there is no need to try the other selectedHostsURLs
@@ -387,7 +393,7 @@ public class ISPController extends Thread {
                 } else {
                     sessionData.failedChecks++;
                     // wait 1 second before contacting the next host in the list
-                    sleepMillisSliced(1000);
+                    sleepMillisFixed(1000);
                 }
             }
         }
@@ -455,6 +461,19 @@ public class ISPController extends Thread {
             } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
                 LOGGER.info("A thread sleep was interrupted because of {}", ex);
             }
+        }
+    }
+    
+    /**
+     * Put this thread to sleep for a fixed time of ms milliseconds.
+     *
+     * @param ms the fixed sleep time
+     */
+    private void sleepMillisFixed(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
+            LOGGER.info("A thread sleep was interrupted because of {}", ex);
         }
     }
 
