@@ -93,7 +93,7 @@ public class ISPController extends Thread {
 
     /**
      * Initiate with the data of the previous session or, if not possible, with default values.
-     * ToDo: fix logging addres = null in choises ans selection while it's not.
+     * ToDo: fix logging address = null in choices and selection while it's not.
      *
      * @return true if initiated with previous session data
      */
