@@ -47,7 +47,7 @@ public class ISPController extends Thread {
     private List<String> selectedHostsURLs;
     private long outageStart = 0L;
     private long outageEnd;
-    private boolean simulateFailure;
+    private boolean simulateISPFailure;
     private boolean simulateCannotReachRouter;
     private boolean canConnectWithRouter;
     private long controllerDownTimeStamp = 0L;
@@ -58,7 +58,7 @@ public class ISPController extends Thread {
     public ISPController() {
         sessionData = new MonitorISPData();
         selectedHostsURLs = new ArrayList<>();
-        simulateFailure = false;
+        simulateISPFailure = false;
         simulateCannotReachRouter = false;
     }
 
@@ -355,7 +355,7 @@ public class ISPController extends Thread {
         } else {
             LOGGER.info("The ISP unreachable SIMULATION is RESET to be reachable");
         }
-        simulateFailure = yesNo;
+        simulateISPFailure = yesNo;
     }
 
     /**
@@ -382,7 +382,7 @@ public class ISPController extends Thread {
      */
     boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
-        if (simulateFailure) {
+        if (simulateISPFailure) {
             LOGGER.info("Failed ISP check SIMULATED");
         } else {
             for (String host : hURLs) {
