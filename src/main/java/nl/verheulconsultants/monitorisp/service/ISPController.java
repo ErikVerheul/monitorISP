@@ -349,7 +349,7 @@ public class ISPController extends Thread {
      *
      * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
      */
-    public void simulateFailure(boolean yesNo) {
+    public void simulateISPfailure(boolean yesNo) {
         if (yesNo) {
             LOGGER.info("The ISP is SIMULATED to not be reachable");
         } else {
@@ -375,7 +375,7 @@ public class ISPController extends Thread {
     /**
      * Try to connect to any host in the list.
      * This method will return almost immediately when the first host can be reached or 
-     * take max nrOfHosts x 1900 ms.
+     * take max nrOfHosts x 1900 mS.
      *
      * @param hURLs the hosts to test
      * @return true if a host can be contacted and false if not one host from the list can be reached.
@@ -383,7 +383,7 @@ public class ISPController extends Thread {
     boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
         if (simulateFailure) {
-            LOGGER.info("Failed check SIMULATED");
+            LOGGER.info("Failed ISP check SIMULATED");
         } else {
             for (String host : hURLs) {
                 // test a TCP connection on port 80 with the destination host and a time-out of 900 ms.

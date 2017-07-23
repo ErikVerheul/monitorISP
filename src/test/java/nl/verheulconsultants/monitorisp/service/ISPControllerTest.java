@@ -246,33 +246,59 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
-        instance.simulateFailure(true);
+        instance.simulateISPfailure(true);
         sleepMillis(6_000);
-        instance.simulateFailure(false);
+        instance.simulateISPfailure(false);
         sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
     }
+    
+    /**
+     * Test if a "service was down" record is registered message overrides the ISP can not be reached message.
+     */
+    @Test
+    public void testISPInterruptedOverrideRegistration() {
+        System.out.println("testISPInterruptedOverrideRegistration");
+        List<String> hosts = new ArrayList();
+        hosts.add("uva.nl");
+        //Set this value to your nearest router ip.
+        instance.setRouterAddress("192.168.0.6");
+
+        instance.doInBackground(hosts);
+        sleepMillis(120);
+        assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
+        instance.simulateISPfailure(true);
+        sleepMillis(120);
+        instance.simulateCannotReachRouter(true);
+        sleepMillis(6_000);
+        instance.simulateISPfailure(false);
+        sleepMillis(6_000);
+        OutageListItem lastOutage = instance.getLastOutage();
+        LOGGER.info("Outage = {}", lastOutage);
+        assertTrue("No outages were registered", null != lastOutage);
+        assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == INTERNAL);
+    }
 
     /**
      * Test if a record is registered when the ISP can not be reached and a
-     * false router address is entered.
+     * wrong router address is entered.
      */
     @Test
     public void testISPInterruptedRegistrationWithFalseRouterAddress() {
         System.out.println("testISPInterruptedRegistrationWithFalseRouterAddress");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-        instance.setRouterAddress("false router address");
+        instance.setRouterAddress("'wrong router address'");
 
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
-        instance.simulateFailure(true);
+        instance.simulateISPfailure(true);
         sleepMillis(6_000);
-        instance.simulateFailure(false);
+        instance.simulateISPfailure(false);
         sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
@@ -295,9 +321,9 @@ public class ISPControllerTest {
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
-        instance.simulateFailure(true);
+        instance.simulateISPfailure(true);
         sleepMillis(6_000);
-        instance.simulateFailure(false);
+        instance.simulateISPfailure(false);
         sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
@@ -307,21 +333,21 @@ public class ISPControllerTest {
 
     /**
      * Test if a record is registered when the ISP can not be reached due to an
-     * internal network failure and a false router address is entered.
+     * internal network failure and a wrong router address is entered.
      */
     @Test
     public void testInternalInterruptedRegistrationWithFalseRouterAddress() {
         System.out.println("testInternalInterruptedRegistrationWithFalseRouterAddress");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-        instance.setRouterAddress("false router address");
+        instance.setRouterAddress("'wrong router address'");
 
         instance.doInBackground(hosts);
         sleepMillis(120);
         assertTrue("The controller is NOT checking connections now", instance.isBusyCheckingConnections());
-        instance.simulateFailure(true);
+        instance.simulateISPfailure(true);
         sleepMillis(6_000);
-        instance.simulateFailure(false);
+        instance.simulateISPfailure(false);
         sleepMillis(6_000);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
