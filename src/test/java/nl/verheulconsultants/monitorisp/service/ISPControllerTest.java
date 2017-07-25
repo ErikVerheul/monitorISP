@@ -276,6 +276,7 @@ public class ISPControllerTest {
         sleepMillis(6_000);
         instance.simulateISPfailure(false);
         sleepMillis(6_000);
+        instance.simulateCannotReachRouter(false);
         OutageListItem lastOutage = instance.getLastOutage();
         LOGGER.info("Outage = {}", lastOutage);
         assertTrue("No outages were registered", null != lastOutage);
