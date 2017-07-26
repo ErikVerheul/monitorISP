@@ -107,7 +107,7 @@ public class MonitorISPData implements Serializable {
     private boolean allRead() {
         if (null != dataRead.paletteModel 
                 && !dataRead.paletteModel.getObject().isEmpty()
-                && null != dataRead.selected
+                && !dataRead.selected.isEmpty()
                 && null != dataRead.routerAddress
                 && null != dataRead.outages
                 && dataRead.startOfService > 0L
