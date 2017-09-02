@@ -31,7 +31,10 @@ import org.slf4j.LoggerFactory;
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class ISPController extends Thread {
-
+    public final static int PORT = 80;
+    public final static int TIMEOUT_5_SEC = 5_000;
+    public final static int TIMEOUT_ONE_SEC = 1_000;
+    public final static int TIMEOUT_900_MIL = 900;
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private static final List<Host> HOSTS = new ArrayList<>();
@@ -302,8 +305,8 @@ public class ISPController extends Thread {
                 // update the current unavailability
                 currentISPunavailability = sessionData.lastFail - outageStart;
             }
-            // wait max 5 seconds to check the ISP connection again
-            sleepMillisSliced(5_000);
+            // wait to check the ISP connection again
+            sleepMillisSliced(TIMEOUT_5_SEC);
         }
 
         if (busyCheckingConnections) {
@@ -386,8 +389,8 @@ public class ISPController extends Thread {
             LOGGER.info("Failed ISP check SIMULATED");
         } else {
             for (String host : hURLs) {
-                // test a TCP connection on port 80 with the destination host and a time-out of 900 ms.
-                if (testConnection(host, 80, 900)) {
+                // test a TCP connection with the destination host and a time-out.
+                if (testConnection(host, PORT, TIMEOUT_900_MIL)) {
                     hostFound = true;
                     sessionData.successfulChecks++;
                     // when successfull there is no need to try the other selectedHostsURLs
@@ -395,20 +398,20 @@ public class ISPController extends Thread {
                 } else {
                     sessionData.failedChecks++;
                     // wait 1 second before contacting the next host in the list
-                    sleepMillisFixed(1_000);
+                    sleepMillisFixed(TIMEOUT_ONE_SEC);
                 }
             }
         }
         return hostFound;
     }
-
+    
     /**
      * Check if the router address can be reached.
      *
      * @return true if the router can be reached
      */
     private boolean checkRouter() {
-        return testConnection(sessionData.routerAddress, 80, 1_000);
+        return testConnection(sessionData.routerAddress, PORT, TIMEOUT_ONE_SEC);
     }
 
     /**

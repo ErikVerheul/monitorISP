@@ -114,6 +114,11 @@ public class Utilities {
     private static boolean isValidIp(final String ip) {
         return InetAddressUtils.isIPv4Address(ip) || InetAddressUtils.isIPv6Address(ip);
     }
+    
+    public static final int MILIS_IN_SECOND = 1_000;
+    public static final int SEC_IN_MIN = 60;
+    public static final int MIN_IN_HR = 60;
+    public static final int HR_IN_DAY = 24;
 
     /**
      * Convert a duration in milliseconds to string.
@@ -127,10 +132,10 @@ public class Utilities {
         long hour = 0;
         long day = 0;
         if (millis > 0) {
-            second = (millis / 1_000) % 60;
-            minute = (millis / (1_000 * 60)) % 60;
-            hour = (millis / (1_000 * 60 * 60)) % 24;
-            day = millis / (1_000 * 60 * 60 * 24);
+            second = (millis / MILIS_IN_SECOND) % SEC_IN_MIN;
+            minute = (millis / (MILIS_IN_SECOND * SEC_IN_MIN)) % MIN_IN_HR;
+            hour = (millis / (MILIS_IN_SECOND * SEC_IN_MIN * MIN_IN_HR)) % HR_IN_DAY;
+            day = millis / (MILIS_IN_SECOND * SEC_IN_MIN * MIN_IN_HR * HR_IN_DAY);
         }
         return String.format("%02d:%02d:%02d:%02d", day, hour, minute, second) + " [d:h:m:s]";
     }
