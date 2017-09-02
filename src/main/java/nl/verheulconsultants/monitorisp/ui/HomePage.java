@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package nl.verheulconsultants.monitorisp.ui;
 
 import nl.verheulconsultants.monitorisp.service.Host;
@@ -57,14 +56,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Standard Wicket setup.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public final class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
-    private static final ISPController CONTROLLER  = getController();
+    private static final ISPController CONTROLLER = getController();
     private Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
@@ -79,8 +78,7 @@ public final class HomePage extends BasePage {
     private static final int AJAX_UPDATE_INTERVAL = 5;
 
     /**
-     * Wicket initializes this page multiple times.
-     * Be aware not to execute code multiple times if not allowed.
+     * Wicket initializes this page multiple times. Be aware not to execute code multiple times if not allowed.
      */
     public HomePage() {
         // Prevent spurious reloads by checking if the contoller is allready running
@@ -278,7 +276,7 @@ public final class HomePage extends BasePage {
         });
         return addresses;
     }
-    
+
     /**
      * Simple data class that acts as a holder for the data for the router address field.
      */

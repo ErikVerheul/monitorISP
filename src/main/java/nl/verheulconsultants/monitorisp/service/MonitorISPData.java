@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package nl.verheulconsultants.monitorisp.service;
 
 import java.io.FileInputStream;
@@ -40,8 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A DAO with all session data that need to be saved and loaded when the service
- * is brought down.
+ * A DAO with all session data that need to be saved and loaded when the service is brought down.
  *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */

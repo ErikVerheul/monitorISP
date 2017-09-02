@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 public class UtilitiesTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
-    private static final ISPController CONTROLLER  = getController();
+    private static final ISPController CONTROLLER = getController();
 
     /**
      *
@@ -89,7 +89,7 @@ public class UtilitiesTest {
         String expResult = "00:00:01:40 [d:h:m:s]";
         String result = Utilities.millisToTime(millis);
         assertEquals(expResult, result);
-        long dayPlusmillis = millis + 24*60*60*1_000;
+        long dayPlusmillis = millis + 24 * 60 * 60 * 1_000;
         String expResult2 = "01:00:01:40 [d:h:m:s]";
         result = Utilities.millisToTime(dayPlusmillis);
         assertEquals(expResult2, result);

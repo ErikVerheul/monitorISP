@@ -33,7 +33,7 @@ import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
 
 /**
  * Class for storing the different outage occurrences.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class OutageListItem implements Serializable {
@@ -52,7 +52,7 @@ public class OutageListItem implements Serializable {
         this.duration = duration;
         this.cause = cause;
     }
-    
+
     /**
      * Returns the index starting with 1 for the first outage.
      *
@@ -113,9 +113,9 @@ public class OutageListItem implements Serializable {
                 return "service was down";
             case CONTROLLERDOWN:
                 return "controller was down";
-            default: 
+            default:
                 return "unknown outage type";
-        }        
+        }
     }
 
     @Override

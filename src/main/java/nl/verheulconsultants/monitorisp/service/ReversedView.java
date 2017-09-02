@@ -29,33 +29,33 @@ import java.util.List;
 
 /**
  * A helper class to create a upside-down view on the outages list.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
- * 
- * @param <E> 
+ *
+ * @param <E>
  */
-public class ReversedView<E> extends AbstractList<E> implements Serializable{
+public class ReversedView<E> extends AbstractList<E> implements Serializable {
 
     /**
      * The usage.
-     * 
+     *
      * @param <E>
      * @param list
-     * @return 
+     * @return
      */
-    public static <E> List<E> of (List<E> list) {
+    public static <E> List<E> of(List<E> list) {
         return new ReversedView<>(list);
     }
 
     private final List<E> backingList;
 
-    private ReversedView(List<E> backingList){
+    private ReversedView(List<E> backingList) {
         this.backingList = backingList;
     }
 
     @Override
     public E get(int i) {
-        return backingList.get(backingList.size()-i-1);
+        return backingList.get(backingList.size() - i - 1);
     }
 
     @Override

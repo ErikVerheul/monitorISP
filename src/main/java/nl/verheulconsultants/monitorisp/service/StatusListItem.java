@@ -25,7 +25,7 @@ package nl.verheulconsultants.monitorisp.service;
 
 /**
  * A simple class to record the status of the monitor.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class StatusListItem {
@@ -33,25 +33,25 @@ public class StatusListItem {
     String name;
     String value;
     int index;
-    
+
     /**
-     * 
+     *
      * @return the name of the status value
      */
     public String getName() {
         return name;
     }
-    
+
     /**
-     * 
+     *
      * @return the value of this status item
      */
     public String getValue() {
         return value;
     }
-    
+
     /**
-     * 
+     *
      * @return the index number of the status item
      */
     public int getIndex() {

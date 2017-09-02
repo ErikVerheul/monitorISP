@@ -27,7 +27,7 @@ import org.apache.wicket.markup.html.WebPage;
 
 /**
  * Standard Wicket setup.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public abstract class BasePage extends WebPage {

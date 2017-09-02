@@ -27,7 +27,7 @@ import java.io.Serializable;
 
 /**
  * Class for storing a host in a format that matches the Palette requirements.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class Host implements Serializable {
@@ -37,9 +37,8 @@ public class Host implements Serializable {
     String hostAddress;
 
     /**
-     * Palette needs an object with an id and a hostAddress.
-     * Here the hostAddress is the domain address of the host.
-     * 
+     * Palette needs an object with an id and a hostAddress. Here the hostAddress is the domain address of the host.
+     *
      * @param id
      * @param hostAddress
      */
@@ -47,15 +46,15 @@ public class Host implements Serializable {
         this.id = id;
         this.hostAddress = hostAddress;
     }
-    
+
     /**
-     * 
+     *
      * @return the host address
      */
     public String getHostAddress() {
         return hostAddress;
     }
-    
+
     @Override
     public String toString() {
         return "Host [id = " + id + ", address = " + hostAddress + "]";

@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package nl.verheulconsultants.monitorisp.service;
 
 import java.nio.file.FileSystems;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A collection of static utilities.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class Utilities {
@@ -115,7 +114,7 @@ public class Utilities {
     private static boolean isValidIp(final String ip) {
         return InetAddressUtils.isIPv4Address(ip) || InetAddressUtils.isIPv6Address(ip);
     }
-    
+
     public static final int MILIS_IN_SECOND = 1_000;
     public static final int SEC_IN_MIN = 60;
     public static final int MIN_IN_HR = 60;
@@ -156,7 +155,7 @@ public class Utilities {
 
     /**
      * This utility is not yet used.
-     * 
+     *
      * @return the location of the log files
      */
     public static String getLogFileName() {
@@ -177,9 +176,10 @@ public class Utilities {
             return "Log file location not found.";
         }
     }
+
     //Prevent this utility class to be instantiated.
     private Utilities() {
-        
+
     }
 
 }

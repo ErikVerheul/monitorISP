@@ -47,13 +47,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The thread that checks if a given list of hosts on the Internet can be
- * reached.
+ * The thread that checks if a given list of hosts on the Internet can be reached.
  *
- * If successful with one host it sleeps for 5 seconds to try again. If it
- * cannot connect to any host in the list a disconnection is registered. If in
- * this case it cannot connect to the router either the disconnection is
- * registered as a local network failure.
+ * If successful with one host it sleeps for 5 seconds to try again. If it cannot connect to any host in the list a disconnection is registered. If in this case it cannot connect
+ * to the router either the disconnection is registered as a local network failure.
  *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
@@ -84,8 +81,7 @@ public class ISPController extends Thread {
     private long controllerDownTimeStamp = 0L;
 
     /**
-     * The controller running as a thread to check if a number of hosts can be
-     * reached.
+     * The controller running as a thread to check if a number of hosts can be reached.
      */
     public ISPController() {
         sessionData = new MonitorISPData();
@@ -124,9 +120,7 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Initiate with the data of the previous session or, if not possible, with
-     * default values. ToDo: fix logging address = null in choices and selection
-     * while it's not.
+     * Initiate with the data of the previous session or, if not possible, with default values. ToDo: fix logging address = null in choices and selection while it's not.
      *
      * @return true if initiated with previous session data
      */
@@ -148,8 +142,7 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Default initialization. Three known hosts to check connections. One dummy
-     * host is added to the choices to test failed connections.
+     * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
      */
     public void initWithDefaults() {
         HOSTS.clear();
@@ -223,10 +216,8 @@ public class ISPController extends Thread {
         LOGGER.info("The controller has started.");
 
         /**
-         * Outer loop is always loping unless exit = true. Note that the event
-         * that the controller was not running is registered. There are two
-         * causes: 1. The controller was stopped in the UI and restarted. 2. The
-         * service was down and restarted.
+         * Outer loop is always loping unless exit = true. Note that the event that the controller was not running is registered. There are two causes: 1. The controller was
+         * stopped in the UI and restarted. 2. The service was down and restarted.
          */
         do {
             if (!selectedHostsURLs.isEmpty()) {
@@ -304,8 +295,7 @@ public class ISPController extends Thread {
     /**
      * Inner loop checking if connections to the hosts are possible.
      *
-     * When looping busyCheckingConnections == true. Registers the periods when
-     * no connections could be made. Will return at an exitService or stop.
+     * When looping busyCheckingConnections == true. Registers the periods when no connections could be made. Will return at an exitService or stop.
      */
     private void innerLoop(List<String> selectedURLs) {
         long loopStart;
@@ -382,8 +372,7 @@ public class ISPController extends Thread {
     /**
      * A method for test purposes only.
      *
-     * @param yesNo if true all connections are simulated to fail. If false real
-     * connection test are performed.
+     * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
      */
     public void simulateISPfailure(boolean yesNo) {
         if (yesNo) {
@@ -397,8 +386,7 @@ public class ISPController extends Thread {
     /**
      * A method for test purposes only.
      *
-     * @param yesNo if true a connection to the router address will fail. If
-     * false real connection test are performed.
+     * @param yesNo if true a connection to the router address will fail. If false real connection test are performed.
      */
     public void simulateCannotReachRouter(boolean yesNo) {
         if (yesNo) {
@@ -410,13 +398,10 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Try to connect to any host in the list. This method will return almost
-     * immediately when the first host can be reached or take max nrOfHosts x
-     * 1900 mS.
+     * Try to connect to any host in the list. This method will return almost immediately when the first host can be reached or take max nrOfHosts x 1900 mS.
      *
      * @param hURLs the hosts to test
-     * @return true if a host can be contacted and false if not one host from
-     * the list can be reached.
+     * @return true if a host can be contacted and false if not one host from the list can be reached.
      */
     boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
@@ -487,9 +472,7 @@ public class ISPController extends Thread {
     public static final int NUMBER_OF_SLYCES = 10;
 
     /**
-     * Put this thread to sleep for ms milliseconds. Slice the sleep to
-     * exitService fast in case of a stop or exitService. Sleep only one slice
-     * while an outage is ongoing.
+     * Put this thread to sleep for ms milliseconds. Slice the sleep to exitService fast in case of a stop or exitService. Sleep only one slice while an outage is ongoing.
      *
      * @param ms the maximum sleep time
      */

@@ -45,8 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ISPController tests. Each test starts the controller and uses a fresh copy of
- * a set of session data located in the test resources.
+ * ISPController tests. Each test starts the controller and uses a fresh copy of a set of session data located in the test resources.
  */
 public class ISPControllerTest {
 
@@ -255,7 +254,7 @@ public class ISPControllerTest {
         assertTrue("No outages were registered", null != lastOutage);
         assertTrue("The actual last outage is " + lastOutage, lastOutage.getOutageCause() == ISP);
     }
-    
+
     /**
      * Test if a "service was down" record is registered message overrides the ISP can not be reached message.
      */
@@ -284,8 +283,7 @@ public class ISPControllerTest {
     }
 
     /**
-     * Test if a record is registered when the ISP can not be reached and a
-     * wrong router address is entered.
+     * Test if a record is registered when the ISP can not be reached and a wrong router address is entered.
      */
     @Test
     public void testISPInterruptedRegistrationWithFalseRouterAddress() {
@@ -308,8 +306,7 @@ public class ISPControllerTest {
     }
 
     /**
-     * Test if a record is registered when the ISP can not be reached due to an
-     * internal network failure.
+     * Test if a record is registered when the ISP can not be reached due to an internal network failure.
      */
     @Test
     public void testInternalInterruptedRegistration() {
@@ -333,8 +330,7 @@ public class ISPControllerTest {
     }
 
     /**
-     * Test if a record is registered when the ISP can not be reached due to an
-     * internal network failure and a wrong router address is entered.
+     * Test if a record is registered when the ISP can not be reached due to an internal network failure and a wrong router address is entered.
      */
     @Test
     public void testInternalInterruptedRegistrationWithFalseRouterAddress() {
