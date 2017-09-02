@@ -1,4 +1,28 @@
 /*
+ * The MIT License
+ *
+ * Copyright (c) 2015, Verheul Consultants
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+ /*
  * Monitor the availability of the ISP by checking if at least one of a list of selectedHostsURLs on the Internet can be reached. 
  */
 package nl.verheulconsultants.monitorisp.service;
@@ -23,14 +47,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The thread that checks if a given list of hosts on the Internet can be reached.
+ * The thread that checks if a given list of hosts on the Internet can be
+ * reached.
  *
- * If successful with one host it sleeps for 5 seconds to try again. If it cannot connect to any host in the list a disconnection is registered. If in this case
- * it cannot connect to the router either the disconnection is registered as a local network failure.
- * 
+ * If successful with one host it sleeps for 5 seconds to try again. If it
+ * cannot connect to any host in the list a disconnection is registered. If in
+ * this case it cannot connect to the router either the disconnection is
+ * registered as a local network failure.
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class ISPController extends Thread {
+
     public final static int PORT = 80;
     public final static int TIMEOUT_5_SEC = 5_000;
     public final static int TIMEOUT_ONE_SEC = 1_000;
@@ -45,18 +73,18 @@ public class ISPController extends Thread {
     private final MonitorISPData sessionData;
     private ListModel<Host> selectedModel;
     private boolean running = false;
-    private boolean stop = false;
-    private boolean exit = false;
+    private static boolean stop = false;
+    private static boolean exit = false;
     private List<String> selectedHostsURLs;
     private long outageStart = 0L;
-    private long outageEnd;
     private boolean simulateISPFailure;
     private boolean simulateCannotReachRouter;
     private boolean canConnectWithRouter;
     private long controllerDownTimeStamp = 0L;
 
     /**
-     * The controller running as a thread to check if a number of hosts can be reached.
+     * The controller running as a thread to check if a number of hosts can be
+     * reached.
      */
     public ISPController() {
         sessionData = new MonitorISPData();
@@ -95,8 +123,9 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Initiate with the data of the previous session or, if not possible, with default values.
-     * ToDo: fix logging address = null in choices and selection while it's not.
+     * Initiate with the data of the previous session or, if not possible, with
+     * default values. ToDo: fix logging address = null in choices and selection
+     * while it's not.
      *
      * @return true if initiated with previous session data
      */
@@ -118,7 +147,8 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Default initialization. Three known hosts to check connections. One dummy host is added to the choices to test failed connections.
+     * Default initialization. Three known hosts to check connections. One dummy
+     * host is added to the choices to test failed connections.
      */
     public void initWithDefaults() {
         HOSTS.clear();
@@ -179,7 +209,7 @@ public class ISPController extends Thread {
     /**
      * Stop the service thread completely.
      */
-    public void exit() {
+    public void exitService() {
         LOGGER.info("The controller thread exit was called.");
         stop = true;
         exit = true;
@@ -192,8 +222,10 @@ public class ISPController extends Thread {
         LOGGER.info("The controller has started.");
 
         /**
-         * Outer loop is always loping unless exit = true. Note that the event that the controller was not running is registered. There are two causes: 1. The
-         * controller was stopped in the UI and restarted. 2. The service was down and restarted.
+         * Outer loop is always loping unless exit = true. Note that the event
+         * that the controller was not running is registered. There are two
+         * causes: 1. The controller was stopped in the UI and restarted. 2. The
+         * service was down and restarted.
          */
         do {
             if (!selectedHostsURLs.isEmpty()) {
@@ -203,8 +235,8 @@ public class ISPController extends Thread {
                 exit = true;
                 break;
             }
-            // wait for instructions to restart or to exit completely
-            sleepMillisFixed(1_000);
+            // wait for instructions to restart or to exitService completely
+            sleepMillisFixed(TIMEOUT_ONE_SEC);
         } while (!exit);
 
         running = false;
@@ -270,10 +302,9 @@ public class ISPController extends Thread {
 
     /**
      * Inner loop checking if connections to the hosts are possible.
-     * 
-     * When looping busyCheckingConnections == true. 
-     * Registers the periods when no connections could be made. 
-     * Will return at an exit or stop.
+     *
+     * When looping busyCheckingConnections == true. Registers the periods when
+     * no connections could be made. Will return at an exitService or stop.
      */
     private void innerLoop(List<String> selectedURLs) {
         long loopStart;
@@ -286,7 +317,7 @@ public class ISPController extends Thread {
                 sessionData.lastContactWithAnyHost = System.currentTimeMillis();
                 currentISPunavailability = 0L;
                 if (outageStart > 0L) {
-                    outageEnd = sessionData.lastContactWithAnyHost;
+                    long outageEnd = sessionData.lastContactWithAnyHost;
                     sessionData.outages.add(new OutageListItem(sessionData.outages.size(), outageStart,
                             outageEnd, outageEnd - outageStart, canConnectWithRouter ? ISP : INTERNAL));
                     outageStart = 0L;
@@ -350,7 +381,8 @@ public class ISPController extends Thread {
     /**
      * A method for test purposes only.
      *
-     * @param yesNo if true all connections are simulated to fail. If false real connection test are performed.
+     * @param yesNo if true all connections are simulated to fail. If false real
+     * connection test are performed.
      */
     public void simulateISPfailure(boolean yesNo) {
         if (yesNo) {
@@ -364,7 +396,8 @@ public class ISPController extends Thread {
     /**
      * A method for test purposes only.
      *
-     * @param yesNo if true a connection to the router address will fail. If false real connection test are performed.
+     * @param yesNo if true a connection to the router address will fail. If
+     * false real connection test are performed.
      */
     public void simulateCannotReachRouter(boolean yesNo) {
         if (yesNo) {
@@ -376,12 +409,13 @@ public class ISPController extends Thread {
     }
 
     /**
-     * Try to connect to any host in the list.
-     * This method will return almost immediately when the first host can be reached or 
-     * take max nrOfHosts x 1900 mS.
+     * Try to connect to any host in the list. This method will return almost
+     * immediately when the first host can be reached or take max nrOfHosts x
+     * 1900 mS.
      *
      * @param hURLs the hosts to test
-     * @return true if a host can be contacted and false if not one host from the list can be reached.
+     * @return true if a host can be contacted and false if not one host from
+     * the list can be reached.
      */
     boolean checkISP(List<String> hURLs) {
         boolean hostFound = false;
@@ -404,7 +438,7 @@ public class ISPController extends Thread {
         }
         return hostFound;
     }
-    
+
     /**
      * Check if the router address can be reached.
      *
@@ -421,7 +455,7 @@ public class ISPController extends Thread {
      * @param
      * @return true is a connection could be made within the time-out interval
      */
-    private boolean testConnection(String host, Integer port, int timeout) {
+    private static boolean testConnection(String host, Integer port, int timeout) {
         InetAddress inetAddress;
         InetSocketAddress socketAddress;
         try {
@@ -449,15 +483,18 @@ public class ISPController extends Thread {
         }
     }
 
+    public static final int NUMBER_OF_SLYCES = 10;
+
     /**
-     * Put this thread to sleep for ms milliseconds. Slice the sleep to exit fast in case of a stop or exit. Sleep only one slice while an outage is ongoing.
+     * Put this thread to sleep for ms milliseconds. Slice the sleep to
+     * exitService fast in case of a stop or exitService. Sleep only one slice
+     * while an outage is ongoing.
      *
      * @param ms the maximum sleep time
      */
-    private void sleepMillisSliced(long ms) {
-        int sliceNr = 10;
-        long slice = ms / sliceNr;
-        for (int i = 0; i < sliceNr && !exit && !stop; i++) {
+    private static void sleepMillisSliced(long ms) {
+        long slice = ms / NUMBER_OF_SLYCES;
+        for (int i = 0; i < NUMBER_OF_SLYCES && !exit && !stop; i++) {
             try {
                 Thread.sleep(slice);
                 if (!canReachISP) {
@@ -468,13 +505,13 @@ public class ISPController extends Thread {
             }
         }
     }
-    
+
     /**
      * Put this thread to sleep for a fixed time of ms milliseconds.
      *
      * @param ms the fixed sleep time
      */
-    private void sleepMillisFixed(long ms) {
+    private static void sleepMillisFixed(long ms) {
         try {
             Thread.sleep(ms);
         } catch (java.util.concurrent.CancellationException | java.lang.InterruptedException ex) {
@@ -499,7 +536,7 @@ public class ISPController extends Thread {
         StatusListItem x1 = new StatusListItem();
         x1.name = "lastContactWithAnyHost";
         x1.value = new Date(sessionData.lastContactWithAnyHost).toString();
-        x1.index = 2;
+        x1.index = x0.index + 1;
         ret.add(x1);
 
         StatusListItem x2 = new StatusListItem();
@@ -509,37 +546,37 @@ public class ISPController extends Thread {
         } else {
             x2.value = "No failure yet";
         }
-        x2.index = 3;
+        x2.index = x1.index + 1;
         ret.add(x2);
 
         StatusListItem x3 = new StatusListItem();
         x3.name = "numberOfInterruptions";
         x3.value = Long.toString(sessionData.numberOfInterruptions);
-        x3.index = 4;
+        x3.index = x2.index + 1;
         ret.add(x3);
 
         StatusListItem x4 = new StatusListItem();
         x4.name = "failedChecks";
         x4.value = Long.toString(sessionData.failedChecks);
-        x4.index = 5;
+        x4.index = x3.index + 1;
         ret.add(x4);
 
         StatusListItem x5 = new StatusListItem();
         x5.name = "successfulChecks";
         x5.value = Long.toString(sessionData.successfulChecks);
-        x5.index = 6;
+        x5.index = x4.index + 1;
         ret.add(x5);
 
         StatusListItem x6 = new StatusListItem();
         x6.name = "currentISPunavailability";
         x6.value = millisToTime(currentISPunavailability);
-        x6.index = 7;
+        x6.index = x5.index + 1;
         ret.add(x6);
 
         StatusListItem x7 = new StatusListItem();
         x7.name = "totalISPunavailability";
         x7.value = millisToTime(getTotalISPUnavailability());
-        x7.index = 8;
+        x7.index = x6.index + 1;
         ret.add(x7);
 
         StatusListItem x8 = new StatusListItem();
@@ -553,7 +590,7 @@ public class ISPController extends Thread {
                 x8.value = "Cannot say, conroller is not running";
             }
         }
-        x8.index = 9;
+        x8.index = x7.index + 1;
         ret.add(x8);
 
         StatusListItem x9 = new StatusListItem();
@@ -563,7 +600,7 @@ public class ISPController extends Thread {
         } else {
             x9.value = "UNKNOWN, conroller is not running";
         }
-        x9.index = 10;
+        x9.index = x8.index + 1;
         ret.add(x9);
 
         return ret;

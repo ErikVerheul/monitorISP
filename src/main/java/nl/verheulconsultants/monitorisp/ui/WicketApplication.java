@@ -75,11 +75,11 @@ public class WicketApplication extends WebApplication {
 
 
     /**
-     * Kill the running thread and save current session data before service exit.
+     * Kill the running thread and save current session data before service exitService.
      */
     @Override
     public void onDestroy() {
-        CONTROLLER.exit();
+        CONTROLLER.exitService();
         sleepMillis(140);
         if (CONTROLLER.getSessionData().saveData()) {
             LOGGER.info("Session data is saved at exiting the application.");

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package nl.verheulconsultants.monitorisp.ui;
 
 import nl.verheulconsultants.monitorisp.service.Host;
@@ -59,7 +60,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
-public class HomePage extends BasePage {
+public final class HomePage extends BasePage {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
@@ -75,6 +76,7 @@ public class HomePage extends BasePage {
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
     private boolean startAutomatically;
+    private static final int AJAX_UPDATE_INTERVAL = 5;
 
     /**
      * Wicket initializes this page multiple times.
@@ -212,7 +214,7 @@ public class HomePage extends BasePage {
         WebMarkupContainer statusListContainer = new WebMarkupContainer("statusContainer");
         //generate a markup-id so the contents can be updated through an AJAX call
         statusListContainer.setOutputMarkupId(true);
-        statusListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
+        statusListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(AJAX_UPDATE_INTERVAL)));
         // add the list view to the container
         statusListContainer.add(statusListView);
         // finally add the container to the page
@@ -243,7 +245,7 @@ public class HomePage extends BasePage {
         WebMarkupContainer outageListContainer = new WebMarkupContainer("outageContainer");
         //generate a markup-id so the contents can be updated through an AJAX call
         outageListContainer.setOutputMarkupId(true);
-        outageListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5)));
+        outageListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(AJAX_UPDATE_INTERVAL)));
         // add the list view to the container
         outageListContainer.add(outageListView);
         // finally add the container to the page

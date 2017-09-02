@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package nl.verheulconsultants.monitorisp.service;
 
 import java.io.FileInputStream;
@@ -39,8 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A DAO with all session data that need to be saved and loaded when the service is brought down.
- * 
+ * A DAO with all session data that need to be saved and loaded when the service
+ * is brought down.
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class MonitorISPData implements Serializable {
@@ -82,7 +84,7 @@ public class MonitorISPData implements Serializable {
 
     // Check if the fields are set for writing. Some values are not checked as they can be zero. 
     private boolean allSet() {
-        if (null != paletteModel 
+        if (null != paletteModel
                 && !paletteModel.getObject().isEmpty()
                 && null != selected
                 && null != routerAddress
@@ -105,7 +107,7 @@ public class MonitorISPData implements Serializable {
 
     // Check if the fields are read. Some values are not checked as they can be zero or not yet initialized.
     private boolean allRead() {
-        if (null != dataRead.paletteModel 
+        if (null != dataRead.paletteModel
                 && !dataRead.paletteModel.getObject().isEmpty()
                 && !dataRead.selected.isEmpty()
                 && null != dataRead.routerAddress
