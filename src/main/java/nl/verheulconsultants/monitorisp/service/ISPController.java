@@ -73,8 +73,9 @@ public class ISPController extends Thread {
     private final MonitorISPData sessionData;
     private ListModel<Host> selectedModel;
     private boolean running = false;
-    private static boolean stop = false;
-    private static boolean exit = false;
+    // Note: do not try to make stop or exit static
+    private boolean stop = false;
+    private boolean exit = false;
     private List<String> selectedHostsURLs;
     private long outageStart = 0L;
     private boolean simulateISPFailure;
@@ -492,7 +493,7 @@ public class ISPController extends Thread {
      *
      * @param ms the maximum sleep time
      */
-    private static void sleepMillisSliced(long ms) {
+    private void sleepMillisSliced(long ms) {
         long slice = ms / NUMBER_OF_SLYCES;
         for (int i = 0; i < NUMBER_OF_SLYCES && !exit && !stop; i++) {
             try {
