@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 public class ISPControllerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
-    ISPController instance;
+    private static ISPController instance;
 
     /**
      *
