@@ -30,7 +30,7 @@
     <groupId>nl.verheulconsultants.monitorisp</groupId>
     <artifactId>monitorisp</artifactId>
     <packaging>war</packaging>
-    <version>0.72</version>
+    <version>0.73</version>
     <name>MonitorISP</name>
     <description></description>
 
@@ -47,7 +47,7 @@
         </license>
     </licenses>
     <properties>
-        <wicket.version>8.0.0-M6</wicket.version>
+        <wicket.version>8.5.0</wicket.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- allowed values: R7, 1.0, 1.5, 2.0 or none -->
         <wtp.version>none</wtp.version>
@@ -70,7 +70,8 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.21</version>
+            <version>1.7.26</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -90,7 +91,7 @@
         <dependency>
             <groupId>org.eclipse.jetty.aggregate</groupId>
             <artifactId>jetty-all-server</artifactId>
-            <version>8.2.0.v20160908</version>
+            <version>8.1.22.v20160922</version>
             <scope>provided</scope>
         </dependency>
         
