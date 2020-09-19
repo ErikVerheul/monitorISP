@@ -512,19 +512,19 @@ public class ISPController extends Thread {
         List ret = new ArrayList();
 
         StatusListItem x0 = new StatusListItem();
-        x0.name = "startOfService";
+        x0.name = "Start of service";
         x0.value = new Date(sessionData.startOfService).toString();
         x0.index = 1;
         ret.add(x0);
 
         StatusListItem x1 = new StatusListItem();
-        x1.name = "lastContactWithAnyHost";
+        x1.name = "Last contact with any host";
         x1.value = new Date(sessionData.lastContactWithAnyHost).toString();
         x1.index = x0.index + 1;
         ret.add(x1);
 
         StatusListItem x2 = new StatusListItem();
-        x2.name = "lastFail";
+        x2.name = "Last fail";
         if (sessionData.lastFail > 0) {
             x2.value = new Date(sessionData.lastFail).toString();
         } else {
@@ -534,37 +534,37 @@ public class ISPController extends Thread {
         ret.add(x2);
 
         StatusListItem x3 = new StatusListItem();
-        x3.name = "numberOfInterruptions";
+        x3.name = "Number of interruptions";
         x3.value = Long.toString(sessionData.numberOfInterruptions);
         x3.index = x2.index + 1;
         ret.add(x3);
 
         StatusListItem x4 = new StatusListItem();
-        x4.name = "failedChecks";
+        x4.name = "Failed checks";
         x4.value = Long.toString(sessionData.failedChecks);
         x4.index = x3.index + 1;
         ret.add(x4);
 
         StatusListItem x5 = new StatusListItem();
-        x5.name = "successfulChecks";
+        x5.name = "Successful checks";
         x5.value = Long.toString(sessionData.successfulChecks);
         x5.index = x4.index + 1;
         ret.add(x5);
 
         StatusListItem x6 = new StatusListItem();
-        x6.name = "currentISPunavailability";
+        x6.name = "Current ISP unavailability";
         x6.value = millisToTime(currentISPunavailability);
         x6.index = x5.index + 1;
         ret.add(x6);
 
         StatusListItem x7 = new StatusListItem();
-        x7.name = "totalISPunavailability";
+        x7.name = "Total ISP unavailability";
         x7.value = millisToTime(getTotalISPUnavailability());
         x7.index = x6.index + 1;
         ret.add(x7);
 
         StatusListItem x8 = new StatusListItem();
-        x8.name = "outageCausedInternal";
+        x8.name = "Outage caused internal";
         if (NOROUTERADDRESS.equals(sessionData.routerAddress)) {
             x8.value = "Cannot say, router address unknown";
         } else {
