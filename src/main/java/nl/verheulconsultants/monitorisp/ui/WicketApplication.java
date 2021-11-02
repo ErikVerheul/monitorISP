@@ -23,6 +23,9 @@
  */
 package nl.verheulconsultants.monitorisp.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+import nl.verheulconsultants.monitorisp.service.Host;
 import nl.verheulconsultants.monitorisp.service.ISPController;
 import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMillis;
 import org.apache.wicket.markup.html.WebPage;
@@ -44,8 +47,10 @@ public class WicketApplication extends WebApplication {
      *
      */
     public static final ISPController CONTROLLER = new ISPController();
+
     /**
      * Make the CONTROLLER available.
+     *
      * @return the ISPController
      */
     public static ISPController getController() {
@@ -63,16 +68,28 @@ public class WicketApplication extends WebApplication {
         return HomePage.class;
     }
 
+    private List<String> getAddresses(List<Host> hosts) {
+        List<String> addresses = new ArrayList<>();
+        hosts.stream().forEach((h) -> {
+            addresses.add(h.getHostAddress());
+        });
+        return addresses;
+    }
+
     /**
-     * Read the data of the previous session.
+     * Read the data of the previous session. Start the controller.
      *
      * @see org.apache.wicket.Application#init()
      */
     @Override
     public void init() {
         super.init();
+        if (!CONTROLLER.isRunning()) {
+            CONTROLLER.initWithPreviousSessionData();
+            CONTROLLER.doInBackground(getAddresses(CONTROLLER.getSelected()));
+            LOGGER.info("Application init(): The service is started for checking connections with hosts {}", CONTROLLER.getSelected());
+        }
     }
-
 
     /**
      * Kill the running thread and save current session data before service exitService.

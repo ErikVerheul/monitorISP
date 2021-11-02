@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import static nl.verheulconsultants.monitorisp.service.Utilities.*;
 import java.util.Collection;
 import java.util.List;
+import java.time.Duration;
 import nl.verheulconsultants.monitorisp.service.ISPController;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
@@ -50,7 +51,6 @@ import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.io.IClusterable;
-import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,20 +74,12 @@ public final class HomePage extends BasePage {
     private final InputRouterAddress address;
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
-    private boolean startAutomatically;
     private static final int AJAX_UPDATE_INTERVAL = 5;
 
     /**
      * Wicket initializes this page multiple times. Be aware not to execute code multiple times if not allowed.
      */
     public HomePage() {
-        // Prevent spurious reloads by checking if the contoller is allready running
-        // Only start automatically when the previous session data could be read
-        if (CONTROLLER.isRunning()) {
-            startAutomatically = false;
-        } else {
-            startAutomatically = CONTROLLER.initWithPreviousSessionData();
-        }
         address = new InputRouterAddress(CONTROLLER.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
         newUrl = new TextField<>("newHost", Model.of(""));
@@ -212,7 +204,7 @@ public final class HomePage extends BasePage {
         WebMarkupContainer statusListContainer = new WebMarkupContainer("statusContainer");
         //generate a markup-id so the contents can be updated through an AJAX call
         statusListContainer.setOutputMarkupId(true);
-        statusListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(AJAX_UPDATE_INTERVAL)));
+        statusListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.ofSeconds(AJAX_UPDATE_INTERVAL)));
         // add the list view to the container
         statusListContainer.add(statusListView);
         // finally add the container to the page
@@ -243,16 +235,11 @@ public final class HomePage extends BasePage {
         WebMarkupContainer outageListContainer = new WebMarkupContainer("outageContainer");
         //generate a markup-id so the contents can be updated through an AJAX call
         outageListContainer.setOutputMarkupId(true);
-        outageListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.seconds(AJAX_UPDATE_INTERVAL)));
+        outageListContainer.add(new AjaxSelfUpdatingTimerBehavior(Duration.ofSeconds(AJAX_UPDATE_INTERVAL)));
         // add the list view to the container
         outageListContainer.add(outageListView);
         // finally add the container to the page
         add(outageListContainer);
-
-        if (startAutomatically) {
-            LOGGER.info("The controller will be started automatically.");
-            startRunning();
-        }
     }
 
     private void startRunning() {
@@ -263,10 +250,7 @@ public final class HomePage extends BasePage {
             } else {
                 LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", CONTROLLER.getSelected());
             }
-        } else {
-            CONTROLLER.doInBackground(getAddresses(CONTROLLER.getSelected()));
-            LOGGER.info("The service is started for checking connections with hosts {}", CONTROLLER.getSelected());
-        }
+        } 
     }
 
     private List<String> getAddresses(List<Host> hosts) {
