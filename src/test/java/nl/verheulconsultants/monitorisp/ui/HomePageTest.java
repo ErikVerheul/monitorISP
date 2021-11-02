@@ -23,17 +23,17 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Simple test using the WicketTester.
- * 
+ *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class HomePageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePageTest.class);
-    private final static ISPController CONTROLLER  = getController();
+    private final static ISPController CONTROLLER = getController();
     private final WicketApplication application = new WicketApplication();
     private final WicketTester tester = new WicketTester(application);
     private final HomePage homePage = new HomePage();
-    
+
     /**
      * Setup each test with a new instance of the application and set of data consisting of 4 choices all together from which 3 are selected.
      */
@@ -109,7 +109,7 @@ public class HomePageTest {
         CONTROLLER.getSelected().clear();
         CONTROLLER.getSelected().add(newHost);
         System.out.println("These URL's will be removed " + CONTROLLER.getSelected());
-        if (!hosts.removeAll(CONTROLLER.getSelected())) {          
+        if (!hosts.removeAll(CONTROLLER.getSelected())) {
             System.out.println("The model could not be changed.");
         }
         //submit form using inner component 'button' as alternate button
