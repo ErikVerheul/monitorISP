@@ -30,7 +30,7 @@
     <groupId>nl.verheulconsultants.monitorisp</groupId>
     <artifactId>monitorisp</artifactId>
     <packaging>war</packaging>
-    <version>0.74</version>
+    <version>0.75</version>
     <name>MonitorISP</name>
     <description></description>
 
@@ -47,7 +47,7 @@
         </license>
     </licenses>
     <properties>
-        <wicket.version>8.9.0</wicket.version>
+        <wicket.version>9.5.0</wicket.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- allowed values: R7, 1.0, 1.5, 2.0 or none -->
         <wtp.version>none</wtp.version>
@@ -66,12 +66,16 @@
             <version>${wicket.version}</version>
         </dependency>
 
-        <!-- LOGGING DEPENDENCIES - LOG4J with SL4J -->
+        <!-- LOGGING DEPENDENCIES - LOG4J with SL4J see: https://www.javaer101.com/en/article/78846.html -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.0-alpha0</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.26</version>
-            <type>jar</type>
+            <version>2.0.0-alpha0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -79,11 +83,17 @@
             <version>2.13.3</version>
         </dependency>
 
-        <!--  JUNIT DEPENDENCY FOR TESTING -->
+        <!--  Execute JUnit 4 Tests with JUnit 5 see: https://howtodoinjava.com/junit5/junit5-maven-dependency/ -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.5.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>1.5.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -153,8 +163,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>11</source>
+                    <target>11</target>
                     <encoding>UTF-8</encoding>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
