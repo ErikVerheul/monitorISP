@@ -1,6 +1,5 @@
 package nl.verheulconsultants.monitorisp.ui;
 
-import org.apache.wicket.util.time.Duration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
@@ -19,7 +18,7 @@ public class Start {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        int timeout = (int) Duration.ONE_HOUR.getMilliseconds();
+        int timeout = 3600*1000; // one hour in milis
 
         Server server = new Server();
         SocketConnector connector = new SocketConnector();
@@ -69,7 +68,7 @@ public class Start {
         // mBeanContainer.start();
 
         server.setHandler(bb);
-
+        
         try {
             System.out.println(">>> STARTING EMBEDDED JETTY SERVER, PRESS ANY KEY TO STOP");
             server.start();
