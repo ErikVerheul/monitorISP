@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 .palette-theme-default .palette-choices {
  	float: left;
  	width: 40%;
@@ -30,7 +30,7 @@
 .palette-theme-default .palette-selected select {
  	width: 100%;
 }
- 
+
 .palette-theme-default .palette-header {
 	display: block;
 	text-align: center;
@@ -42,7 +42,7 @@
 	border-bottom: 1px solid #729ac2;
 }
 
-.palette-theme-default .palette-buttons { 
+.palette-theme-default .palette-buttons {
  	float: left;
 	text-align: center;
 	padding-left: 10px;
