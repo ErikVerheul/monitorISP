@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015, Verheul Consultants
+ * Copyright (c) 2015-2021, Verheul Consultants
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,33 @@ package nl.verheulconsultants.monitorisp.ui;
 import java.util.ArrayList;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.Host;
-import nl.verheulconsultants.monitorisp.service.ISPController;
-import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMillis;
+//import org.apache.wicket.csp.CSPDirective;
+//import org.apache.wicket.csp.CSPDirectiveSrcValue;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
+import nl.verheulconsultants.monitorisp.service.ISPController;
+import static nl.verheulconsultants.monitorisp.service.Utilities.sleepMillis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Application object for your web application. If you want to run this application without deploying, run the Start class.
+ /**
+ * Application object for your web application.
+ * If you want to run this application without deploying, run the Start class.
  *
- * @see nl.verheulconsultants.monitorisp.Start#main(String[])
- * @author Erik Verheul <erik@verheulconsultants.nl>
+ * @see nl.verheulconsultants.monitorisp.ui.Start#main(String[])
  */
 public class WicketApplication extends WebApplication {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WicketApplication.class);
 
-    /**
-     *
-     */
+    private List<String> getAddresses(List<Host> hosts) {
+        List<String> addresses = new ArrayList<>();
+        hosts.stream().forEach((h) -> {
+            addresses.add(h.getHostAddress());
+        });
+        return addresses;
+    }
+
     public static final ISPController CONTROLLER = new ISPController();
 
     /**
@@ -57,7 +64,7 @@ public class WicketApplication extends WebApplication {
         return CONTROLLER;
     }
 
-    /**
+	/**
      * Set the home page.
      *
      * @return HomePage
@@ -68,15 +75,7 @@ public class WicketApplication extends WebApplication {
         return HomePage.class;
     }
 
-    private List<String> getAddresses(List<Host> hosts) {
-        List<String> addresses = new ArrayList<>();
-        hosts.stream().forEach((h) -> {
-            addresses.add(h.getHostAddress());
-        });
-        return addresses;
-    }
-
-    /**
+	/**
      * Read the data of the previous session. Start the controller.
      *
      * @see org.apache.wicket.Application#init()
@@ -89,6 +88,13 @@ public class WicketApplication extends WebApplication {
             CONTROLLER.doInBackground(getAddresses(CONTROLLER.getSelected()));
             LOGGER.info("Application init(): The service is started for checking connections with hosts {}", CONTROLLER.getSelected());
         }
+        // needed for the styling used by the quickstart
+        //		getCspSettings().blocking()
+        //			.add(CSPDirective.STYLE_SRC, CSPDirectiveSrcValue.SELF)
+        //			.add(CSPDirective.STYLE_SRC, "https://fonts.googleapis.com/css")
+        //			.add(CSPDirective.FONT_SRC, "https://fonts.gstatic.com");
+
+		// add your configuration here
     }
 
     /**
@@ -102,5 +108,4 @@ public class WicketApplication extends WebApplication {
             LOGGER.info("Session data is saved at exiting the application.");
         }
     }
-
 }

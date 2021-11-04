@@ -1,123 +1,68 @@
-body {
-	background-color: white;
-	background-image: url('wicket-logo.png');
-	background-repeat: no-repeat;
-	background-attachment: fixed;
-	background-position: 96% 96%;
-	color: #6F6F6F;
-	font-family: 'Lucida Sans', 'Helvetica', 'Sans-serif', 'sans';
-	font-size: 9pt;
-	line-height: 1.8em;
-	padding: 10px 10px 10px 10px;
-	margin: 10px 10px 10px 10px;
+body, p, li, a { font-family: georgia, times, serif;font-size:13pt;}
+h1, h2, h3 { font-family: 'Yanone Kaffeesatz', arial, serif; }
+body { margin:0;padding:0;}
+#hd {
+	width : 100%;
+	height : 87px;
+	background-color : #092E67;
+	margin-top : 0;
+	padding-top : 10px;
+	border-bottom : 1px solid #888;
+	z-index : 0;
 }
-
-h1,h2,h3,h4,h5,h6,h7,h8 {
-	color: #E9601A;
+#ft {
+	position : absolute;
+	bottom : 0;
+	width : 100%;
+	height : 99px;
+	background-color : #6493D2;
+	border-top : 1px solid #888;
+	z-index : 0;
 }
-
-#extitle {
-	font-size: 12pt;
-	font-weight: bold;
-	color: #E9601A;
-	padding: 10px 10px 10px 10px;
+#logo,#bd {
+	width : 650px;
+	margin: 0 auto;
+	padding: 25px 50px 0 50px;
 }
-
-.feedbackPanelERROR {
-	color: red;
-	list-style: circle;
-	font-weight: bold;
+#logo h1 {
+	color : white;
+	font-size:36pt;
+	display: inline;
 }
-
-.feedbackPanelINFO {
-	color: green;
-	list-style: circle;
-	font-weight: bold;
+#logo img {
+	display:inline;
+	vertical-align: bottom;
+	margin-left : 50px;
+	margin-right : 5px;
 }
-
-#hellomessage {
-	font-size: 30pt;
+body { margin-top : 0; padding-top : 0;}
+#logo, #logo h1 { margin-top : 0; padding-top : 0;}
+#bd {
+	position : absolute;
+	top : 75px;
+	bottom : 75px;
+	left : 50%;
+	margin-left : -325px;
+	z-index : 1;
+	overflow: auto;
+	background-color : #fff;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	-moz-box-shadow: 0px 0px 10px #888;
+	-webkit-box-shadow: 0px 0px 10px #888;
+	box-shadow: 0px 0px 10px #888;
 }
-
-#titleblock {
-	background: #DEDEDE;
-	color: white;
-	font-weight: bold;
-	border-bottom: solid #E9601A;
-	border-width: thin;
-	padding: 2px 2px 2px 6px;
+a, a:visited, a:hover, a:active {
+	color : #6493D2;
 }
-
 h2 {
-	font-size: 1.25em;
+	padding : 0; margin:0;
+	font-size:36pt;
+	color:#FF5500;
 }
-
 h3 {
-	font-size: 1em;
-}
-
-a {
-	color: #6F6F6F;
-	text-decoration: underline;
-}
-
-img {
-	border: none;
-}
-
-pre {
-	font-family: 'Lucida Sans', 'Helvetica', 'Sans serif', 'sans';
-}
-
-th {
-	background: #C3C3C3;
-	color: white;
-	font-weight: bold;
-}
-
-tr.b {
-	background: #F5F5F5;
-}
-
-tr.a {
-	background: #E6E6E5;
-}
-
-tr.none {
-	background: transparent;
-}
-
-a.none {
-	background: transparent;
-	padding-right: 0px;
-}
-
-#inputForm {
-	width: 300px;
-}
-
-#inputForm label {
-	display: block;
-	margin-top: 5px;
-}
-
-#inputForm label.non {
-	display: inline !important;
-}
-
-#inputFormTable td {
-	vertical-align: top;
-	padding: 10px;
-}
-
-#nestedExampleTree {
-	width: 300px;
-}
-
-#feedbackPanel {
-	width: 600px;
-}
-
-#siteSelection {
-	width: 200px;
+	padding : 0; margin:0;
+	font-size:24pt;
+	color:#092E67;
 }

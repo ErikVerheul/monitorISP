@@ -1,70 +1,72 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"  
-      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xmlns:wicket="http://git-wip-us.apache.org/repos/asf/wicket/repo?p=wicket.git;a=blob_plain;f=wicket-core/src/main/resources/META-INF/wicket-1.5.xsd;hb=master"
       xml:lang="en"  
       lang="en"> 
-    <head> 
-        <wicket:head> 
-            <title>ISP monitor</title> 
-        </wicket:head> 
-    </head> 
-    <body> 
-        <wicket:extend>            
-            <form wicket:id="paletteForm">
-                <label>Select the URL's to test against </label> 
-                <br /> 
+  <head>
+    <meta charset="utf-8" />
+    <title>Wicket home page</title>
+    <wicket:head>
+      <title>ISP monitor</title>
+    </wicket:head>
+  </head>
+  <body>
+    <wicket:extend>
+      <form wicket:id="paletteForm">
+        <label>Select the URL's to test against </label>
+        <br />
 
-                <div wicket:id="palette1"></div>
+        <div wicket:id="palette1"></div>
 
-                <label>(optional) Remove the selected hosts from the table </label>
-                <input wicket:id="removeButton" type="submit" value="Remove" />
-                <br /> 
-                <label>Start the service </label>
-                <input wicket:id="startButton" type="submit" value="Start" />
-                <label>Stop the service </label>
-                <input wicket:id="stopButton" type="submit" value="Stop" />
-            </form>           
-            <div wicket:id="feedback">[Feedback Panel]</div>
+        <label>(optional) Remove the selected hosts from the table </label>
+        <input wicket:id="removeButton" type="submit" value="Remove" />
+        <br />
+        <label>Start the service </label>
+        <input wicket:id="startButton" type="submit" value="Start" />
+        <label>Stop the service </label>
+        <input wicket:id="stopButton" type="submit" value="Stop" />
+      </form>
+      <div wicket:id="feedback">[Feedback Panel]</div>
 
-            <form wicket:id="addHostForm">
-                <p>
-                    <label>(optional) Add a host URL to the table </label> 
-                    <br /> 
-                    <input type="text" wicket:id="newHost" size="30"/>
-                </p>
-            </form>
+      <form wicket:id="addHostForm">
+        <p>
+          <label>(optional) Add a host URL to the table </label>
+          <br />
+          <input type="text" wicket:id="newHost" size="30"/>
+        </p>
+      </form>
 
-            <form wicket:id="routerForm">
-                <p>
-                    <label>(optional) Enter your router address </label> 
-                    <br /> 
-                    <input type="text" wicket:id="routerAddress" size="30"/>
-                </p>
-            </form>
+      <form wicket:id="routerForm">
+        <p>
+          <label>(optional) Enter your router address </label>
+          <br />
+          <input type="text" wicket:id="routerAddress" size="30"/>
+        </p>
+      </form>
 
-            <table wicket:id="statusContainer">
-                <tr><th>index</th><th>name</th><th>value</th></tr>
-                <tr wicket:id="statusListView">
-                    <td><span wicket:id="Index">index</span></td>
-                    <td><span wicket:id="Name">hostAddress</span></td>
-                    <td><span wicket:id="Value">date</span></td>
-                </tr>
-            </table>
-            <br />
-            <p>
-                <h1>History of outages</h1>
-            </p>
-            <table wicket:id="outageContainer">
-                <tr><th>index</th><th>start</th><th>end</th><th>duration</th><th>outage cause</th></tr>
-                <tr wicket:id="outageListView">
-                    <td><span wicket:id="Index">index</span></td>
-                    <td><span wicket:id="Start">start</span></td>
-                    <td><span wicket:id="End">end</span></td>
-                    <td><span wicket:id="Duration">duration</span></td>
-                    <td><span wicket:id="OutageCausedInternal">outageCausedInternal</span></td>
-                </tr>
-            </table>
+      <table wicket:id="statusContainer">
+        <tr><th>index</th><th>name</th><th>value</th></tr>
+        <tr wicket:id="statusListView">
+          <td><span wicket:id="Index">index</span></td>
+          <td><span wicket:id="Name">hostAddress</span></td>
+          <td><span wicket:id="Value">date</span></td>
+        </tr>
+      </table>
+      <br />
+      <p>
+        <h1>History of outages</h1>
+      </p>
+      <table wicket:id="outageContainer">
+        <tr><th>index</th><th>start</th><th>end</th><th>duration</th><th>outage cause</th></tr>
+        <tr wicket:id="outageListView">
+          <td><span wicket:id="Index">index</span></td>
+          <td><span wicket:id="Start">start</span></td>
+          <td><span wicket:id="End">end</span></td>
+          <td><span wicket:id="Duration">duration</span></td>
+          <td><span wicket:id="OutageCausedInternal">outageCausedInternal</span></td>
+        </tr>
+      </table>
 
-        </wicket:extend> 
-    </body> 
+    </wicket:extend>
+  </body>
 </html>
