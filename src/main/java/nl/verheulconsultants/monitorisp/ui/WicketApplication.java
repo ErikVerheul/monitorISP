@@ -83,6 +83,8 @@ public class WicketApplication extends WebApplication {
     @Override
     public void init() {
         super.init();
+        // disable Content Security Policy; see https://cwiki.apache.org/confluence/display/WICKET/Migration+to+Wicket+9.0
+        getCspSettings().blocking().disabled();
         if (!CONTROLLER.isRunning()) {
             CONTROLLER.initWithPreviousSessionData();
             CONTROLLER.doInBackground(getAddresses(CONTROLLER.getSelected()));
