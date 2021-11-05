@@ -33,7 +33,9 @@ import nl.verheulconsultants.monitorisp.service.ISPController;
 import nl.verheulconsultants.monitorisp.service.OutageListItem;
 import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.getController;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.extensions.markup.html.form.palette.theme.DefaultTheme;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -67,14 +69,15 @@ public final class HomePage extends BasePage {
     private Palette<Host> palette;
     private final Form<?> formSelectHosts;
     private final Button removeButton;
-    private final Button startButton;
-    private final Button stopButton;
+    private final AjaxButton startStopButton;
     private final TextField<String> newUrl;
+    private final Form<?> formStartStop;
     private final Form<?> formNewHost;
     private final InputRouterAddress address;
     private TextField<String> routerAddress;
     private final Form<?> formRouter;
     private static final int AJAX_UPDATE_INTERVAL = 5;
+    private String startStopLabelText = "Stop";
 
     /**
      * Wicket initializes this page multiple times. Be aware not to execute code multiple times if not allowed.
@@ -106,18 +109,37 @@ public final class HomePage extends BasePage {
             }
         };
 
-        stopButton = new Button("stopButton") {
+        formStartStop = new Form<Void>("startStopForm") {
+        };
+
+        startStopButton = new AjaxButton("btnId") {
             @Override
-            public void onSubmit() {
-                if (CONTROLLER != null
-                        && CONTROLLER.isBusyCheckingConnections()) {
-                    CONTROLLER.stopTemporarily();
-                    LOGGER.info("The service is stopped temporarely.");
+            protected void onSubmit(AjaxRequestTarget target) {
+                if (CONTROLLER != null) {
+                    if (CONTROLLER.isBusyCheckingConnections()) {
+                        CONTROLLER.stopTemporarily();
+                        LOGGER.info("The service is stopped temporarily.");
+                        startStopLabelText = "Start";
+                    } else {
+                        startRunning();
+                        LOGGER.info("The service is started from a temporary stop.");
+                        startStopLabelText = "Stop";
+                    }
                 } else {
-                    LOGGER.info("Can not stop, the controller is not running.");
+                    LOGGER.info("Can not start or stop temporary, the controller is not running.");
+                    startStopLabelText = "The controller is not running";
                 }
+                target.add(this);
             }
         };
+
+        Label startStopLabel = new Label("labelId", new Model<String>() {
+            @Override
+            public String getObject() {
+                return startStopLabelText;
+            }
+        });
+        startStopButton.add(startStopLabel);
 
         formNewHost = new Form<Void>("addHostForm") {
             @Override
@@ -131,13 +153,6 @@ public final class HomePage extends BasePage {
                 } else {
                     error("Wrong host address. Please try again.");
                 }
-            }
-        };
-
-        startButton = new Button("startButton") {
-            @Override
-            public void onSubmit() {
-                startRunning();
             }
         };
 
@@ -165,21 +180,21 @@ public final class HomePage extends BasePage {
         // version 7.x.x
         palette.add(new DefaultTheme());
 
-        add(formSelectHosts);
         formSelectHosts.add(palette);
         formSelectHosts.add(removeButton);
-        formSelectHosts.add(startButton);
-        formSelectHosts.add(stopButton);
+        add(formSelectHosts);
 
         newUrl.setRequired(false);
 
-        add(formNewHost);
-        formNewHost.add(newUrl);
+        formStartStop.add(startStopButton);
+        add(formStartStop);
 
-        add(formRouter);
+        formNewHost.add(newUrl);
+        add(formNewHost);
 
         routerAddress.setRequired(false);
         formRouter.add(routerAddress);
+        add(formRouter);
 
         //get the list of items to display from provider (database, etc)
         //in the form of a LoadableDetachableModel
@@ -250,7 +265,7 @@ public final class HomePage extends BasePage {
             } else {
                 LOGGER.info("CANNOT start twice, the service is allready checking connections with {}", CONTROLLER.getSelected());
             }
-        } 
+        }
     }
 
     private List<String> getAddresses(List<Host> hosts) {

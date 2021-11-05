@@ -20,13 +20,17 @@
 
         <label>(optional) Remove the selected hosts from the table </label>
         <input wicket:id="removeButton" type="submit" value="Remove" />
-        <br />
-        <label>Start the service </label>
-        <input wicket:id="startButton" type="submit" value="Start" />
-        <label>Stop the service </label>
-        <input wicket:id="stopButton" type="submit" value="Stop" />
       </form>
       <div wicket:id="feedback">[Feedback Panel]</div>
+
+      <form wicket:id="startStopForm">
+        <p>
+          <label>Start or stop the service temporarily:</label>
+          <h2 type="submit" wicket:id="btnId">
+            <span wicket:id="labelId">[This text will never be seen, will be replaced by "The var..."]</span>
+          </h2>
+        </p>
+      </form>
 
       <form wicket:id="addHostForm">
         <p>
