@@ -26,8 +26,6 @@ package nl.verheulconsultants.monitorisp.ui;
 import java.util.ArrayList;
 import java.util.List;
 import nl.verheulconsultants.monitorisp.service.Host;
-//import org.apache.wicket.csp.CSPDirective;
-//import org.apache.wicket.csp.CSPDirectiveSrcValue;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import nl.verheulconsultants.monitorisp.service.ISPController;
@@ -90,13 +88,6 @@ public class WicketApplication extends WebApplication {
             CONTROLLER.doInBackground(getAddresses(CONTROLLER.getSelected()));
             LOGGER.info("Application init(): The service is started for checking connections with hosts {}", CONTROLLER.getSelected());
         }
-        // needed for the styling used by the quickstart
-        //		getCspSettings().blocking()
-        //			.add(CSPDirective.STYLE_SRC, CSPDirectiveSrcValue.SELF)
-        //			.add(CSPDirective.STYLE_SRC, "https://fonts.googleapis.com/css")
-        //			.add(CSPDirective.FONT_SRC, "https://fonts.gstatic.com");
-
-		// add your configuration here
     }
 
     /**
