@@ -84,7 +84,7 @@ public class MonitorISPData implements Serializable {
     private boolean allSet() {
         if (null != paletteModel
                 && !paletteModel.getObject().isEmpty()
-                && null != selected
+                && null != selected && !selected.isEmpty()
                 && null != routerAddress
                 && null != outages
                 && startOfService > 0L
