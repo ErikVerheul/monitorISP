@@ -34,13 +34,16 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import static nl.verheulconsultants.monitorisp.service.Utilities.CONTROLLERDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.SERVICEDOWN;
 import static nl.verheulconsultants.monitorisp.service.Utilities.INTERNAL;
 import static nl.verheulconsultants.monitorisp.service.Utilities.ISP;
 import static nl.verheulconsultants.monitorisp.service.Utilities.millisToTime;
+import static nl.verheulconsultants.monitorisp.ui.WicketApplication.CONTROLLER;
 import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.model.util.ListModel;
 import org.slf4j.Logger;
@@ -49,18 +52,16 @@ import org.slf4j.LoggerFactory;
 /**
  * The thread that checks if a given list of hosts on the Internet can be reached.
  *
- * If successful with one host it sleeps for 5 seconds to try again. If it cannot connect to any host in the list a disconnection is registered. If in this case it cannot connect
- * to the router either the disconnection is registered as a local network failure.
+ * If successful with one host it sleeps for 5 seconds to try again. If it cannot connect to any host in the list a disconnection is registered.
+ * If in this case it cannot connect to the router either, the disconnection is registered as a local network failure.
  *
  * @author Erik Verheul <erik@verheulconsultants.nl>
  */
 public class ISPController extends Thread {
-
     public final static int PORT = 80;
     public final static int TIMEOUT_5_SEC = 5_000;
     public final static int TIMEOUT_ONE_SEC = 1_000;
     public final static int TIMEOUT_900_MIL = 900;
-    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPController.class);
     private static final List<Host> HOSTS = new ArrayList<>();
     static final String NOROUTERADDRESS = "unknown";
@@ -73,7 +74,7 @@ public class ISPController extends Thread {
     // Note: do not try to make stop or exit static
     private boolean stop = false;
     private boolean exit = false;
-    private List<String> selectedHostsURLs;
+    private List<String> selectedHostNames;
     private long outageStart = 0L;
     private boolean simulateISPFailure;
     private boolean simulateCannotReachRouter;
@@ -85,7 +86,7 @@ public class ISPController extends Thread {
      */
     public ISPController() {
         sessionData = new MonitorISPData();
-        selectedHostsURLs = new ArrayList<>();
+        selectedHostNames = new ArrayList<>();
         simulateISPFailure = false;
         simulateCannotReachRouter = false;
     }
@@ -103,6 +104,39 @@ public class ISPController extends Thread {
      */
     public List<Host> getSelected() {
         return sessionData.selected;
+    }
+
+    /**
+     * Add a new hosts to the available choices
+     * @param newHostName
+     */
+    public void addChoice(String newHostName) {
+        Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
+        hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), newHostName));
+        CONTROLLER.getPaletteModel().setObject(hostsLocal);
+        if (CONTROLLER.getSessionData().saveData()) {
+            LOGGER.info("Session data is saved.");
+        }
+    }
+
+    /**
+     * Set the selected hosts.
+     * @param iterator
+     */
+    public void setSelected(Iterator<Host> iterator) {
+        selectedHostNames.clear();
+        sessionData.selected.clear();
+        while (iterator.hasNext()) {
+            Host host = iterator.next();
+            // update the current host selection
+            selectedHostNames.add(host.getHostAddress());
+            // update the session data for persistance between sessions
+            sessionData.selected.add(host);
+        }
+        LOGGER.info("The selection contains now {} hosts: {}", sessionData.selected.size(), sessionData.selected);
+        if (CONTROLLER.getSessionData().saveData()) {
+            LOGGER.info("Session data is saved.");
+        }
     }
 
     /**
@@ -129,7 +163,7 @@ public class ISPController extends Thread {
             selectedModel = new ListModel<>(sessionData.selected);
             LOGGER.info("Previous session data are loaded successfully.");
             LOGGER.info("The timestamp read is {}.", new Date(sessionData.timeStamp).toString());
-            LOGGER.info("The choices contain now {} hosts: {}", sessionData.paletteModel.getObject().size(), sessionData.paletteModel.getObject());
+            LOGGER.info("The choices (selected and non-selected) contain now {} hosts: {}", sessionData.paletteModel.getObject().size(), sessionData.paletteModel.getObject());
             LOGGER.info("The selection contains now {} hosts: {}", sessionData.selected.size(), sessionData.selected);
             LOGGER.info("The history contains now {} records", getOutagesSize());
             return true;
@@ -195,7 +229,7 @@ public class ISPController extends Thread {
      */
     public void restart(List<String> hosts) {
         LOGGER.info("The controller thread is restarted.");
-        this.selectedHostsURLs = hosts;
+        this.selectedHostNames = hosts;
         handleControllerWasDown();
         stop = false;
     }
@@ -220,8 +254,8 @@ public class ISPController extends Thread {
          * stopped in the UI and restarted. 2. The service was down and restarted.
          */
         do {
-            if (!selectedHostsURLs.isEmpty()) {
-                innerLoop(selectedHostsURLs);
+            if (!selectedHostNames.isEmpty()) {
+                innerLoop(selectedHostNames);
             } else {
                 LOGGER.warn("Cannot run the service with an empty selection list");
                 exit = true;
@@ -347,7 +381,7 @@ public class ISPController extends Thread {
      */
     public void doInBackground(List<String> hosts) {
         LOGGER.info("The controller thread is created and started.");
-        this.selectedHostsURLs = hosts;
+        this.selectedHostNames = hosts;
         handleServiceWasDown();
         start();
     }
@@ -404,22 +438,28 @@ public class ISPController extends Thread {
      * @return true if a host can be contacted and false if not one host from the list can be reached.
      */
     boolean checkISP(List<String> hURLs) {
+        LOGGER.info("checkISP is executed");
         boolean hostFound = false;
         if (simulateISPFailure) {
             LOGGER.info("Failed ISP check SIMULATED");
         } else {
-            for (String host : hURLs) {
-                // test a TCP connection with the destination host and a time-out.
-                if (testConnection(host, PORT, TIMEOUT_900_MIL)) {
-                    hostFound = true;
-                    sessionData.successfulChecks++;
-                    // when successfull there is no need to try the other selectedHostsURLs
-                    break;
-                } else {
-                    sessionData.failedChecks++;
-                    // wait 1 second before contacting the next host in the list
-                    sleepMillisFixed(TIMEOUT_ONE_SEC);
+            try {
+                for (String host : hURLs) {
+                    LOGGER.info("checkISP: testing host {}", host);
+                    // test a TCP connection with the destination host and a time-out.
+                    if (testConnection(host, PORT, TIMEOUT_900_MIL)) {
+                        hostFound = true;
+                        sessionData.successfulChecks++;
+                        // when successfull there is no need to try the other selectedHostsURLs
+                        break;
+                    } else {
+                        sessionData.failedChecks++;
+                        // wait 1 second before contacting the next host in the list
+                        sleepMillisFixed(TIMEOUT_ONE_SEC);
+                    }
                 }
+            } catch (java.util.ConcurrentModificationException ex) {
+                LOGGER.info("This exception can occur while changing the selected hosts; this test is skipped {}", ex);
             }
         }
         return hostFound;
