@@ -26,7 +26,6 @@ package nl.verheulconsultants.monitorisp.ui;
 import nl.verheulconsultants.monitorisp.service.Host;
 import java.util.ArrayList;
 import static nl.verheulconsultants.monitorisp.service.Utilities.*;
-import java.util.Collection;
 import java.util.List;
 import java.time.Duration;
 import nl.verheulconsultants.monitorisp.service.ISPController;
@@ -35,8 +34,10 @@ import nl.verheulconsultants.monitorisp.service.StatusListItem;
 import static nl.verheulconsultants.monitorisp.ui.WicketApplication.getController;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
+import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
 import org.apache.wicket.extensions.markup.html.form.palette.theme.DefaultTheme;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -66,11 +67,11 @@ public final class HomePage extends BasePage {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(HomePage.class);
     private static final ISPController CONTROLLER = getController();
-    private Palette<Host> palette;
+    private final Palette<Host> palette;
     private final Form<?> formSelectHosts;
-    private final Button removeButton;
+//    private final Button removeButton;
     private final AjaxButton startStopButton;
-    private final TextField<String> newUrl;
+    private final TextField<String> newHostName;
     private final Form<?> formStartStop;
     private final Form<?> formNewHost;
     private final InputRouterAddress address;
@@ -83,35 +84,49 @@ public final class HomePage extends BasePage {
      * Wicket initializes this page multiple times. Be aware not to execute code multiple times if not allowed.
      */
     public HomePage() {
+        ///////////////////////// Show the router address /////////////////////
         address = new InputRouterAddress(CONTROLLER.getRouterAddress());
         routerAddress = new TextField<>("routerAddress", new PropertyModel(address, "address"));
-        newUrl = new TextField<>("newHost", Model.of(""));
+
+        ///////////////////////// Select hosts to test against ////////////////
+        IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("hostAddress", "id");
+        palette = new Palette<>("palette1", CONTROLLER.getSelectedModel(), CONTROLLER.getPaletteModel(), renderer, 10, true) {
+            @Override
+            protected Recorder newRecorderComponent() {
+              Recorder recorder = super.newRecorderComponent();
+              recorder.add(new AjaxFormComponentUpdatingBehavior("change") {
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                  processInput(); // let Palette process input too
+                  LOGGER.info("The selection is changed by the user to {}", getValue());
+                  CONTROLLER.setSelected(getSelectedChoices());
+                }
+              });
+              return recorder;
+            }
+        };
+        palette.add(new DefaultTheme());
+        LOGGER.info("The palette is initiated with choices {}.", CONTROLLER.getPaletteModel());
+        LOGGER.info("The palette is initiated with selection {}.", CONTROLLER.getSelected());
 
         formSelectHosts = new Form<Void>("paletteForm") {
-            @Override
-            protected void onSubmit() {
-                if (CONTROLLER.getSessionData().saveData()) {
-                    LOGGER.info("All data are saved.");
-                }
-            }
         };
+        add(formSelectHosts);
+        formSelectHosts.add(palette);
+//        removeButton = new Button("removeButton") {
+//            @Override
+//            public void onSubmit() {
+//                Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
+//                LOGGER.info("These URL's will be removed {}", CONTROLLER.getSelected());
+//                hostsLocal.removeAll(CONTROLLER.getSelected());
+//                LOGGER.info("The model is changed to {}", CONTROLLER.getPaletteModel());
+//            }
+//        };
+//        formSelectHosts.add(removeButton);
 
-        formRouter = new Form<Void>("routerForm") {
-            @Override
-            protected void onSubmit() {
-                final String addressValue = routerAddress.getModelObject();
-                if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
-                    CONTROLLER.setRouterAddress(addressValue);
-                    LOGGER.info("The router address is set to {}", addressValue);
-                } else {
-                    error("Wrong router address. Please try again or type unknown");
-                }
-            }
-        };
-
+        //////////////////////// Start-Stop button ////////////////////////////
         formStartStop = new Form<Void>("startStopForm") {
         };
-
         startStopButton = new AjaxButton("btnId") {
             @Override
             protected void onSubmit(AjaxRequestTarget target) {
@@ -140,64 +155,50 @@ public final class HomePage extends BasePage {
             }
         });
         startStopButton.add(startStopLabel);
-
-        formNewHost = new Form<Void>("addHostForm") {
-            @Override
-            protected void onSubmit() {
-                final String urlValue = newUrl.getModelObject();
-                if (isValidHostAddress(urlValue)) {
-                    Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
-                    hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), urlValue));
-                    LOGGER.info("The URL {} is added", urlValue);
-                    LOGGER.info("The host list is changed to {}", CONTROLLER.getPaletteModel());
-                } else {
-                    error("Wrong host address. Please try again.");
-                }
-            }
-        };
-
-        removeButton = new Button("removeButton") {
-            @Override
-            public void onSubmit() {
-                Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
-                LOGGER.info("These URL's will be removed {}", CONTROLLER.getSelected());
-                hostsLocal.removeAll(CONTROLLER.getSelected());
-                LOGGER.info("The model is changed to {}", CONTROLLER.getPaletteModel());
-            }
-        };
-
-        // To show a message.
-        add(new FeedbackPanel("feedback"));
-
-        IChoiceRenderer<Host> renderer = new ChoiceRenderer<>("hostAddress", "id");
-        palette = new Palette<>("palette1",
-                CONTROLLER.getSelectedModel(),
-                CONTROLLER.getPaletteModel(),
-                renderer, 10, true, false);
-        LOGGER.info("The palette is initiated with choices {}.", CONTROLLER.getPaletteModel());
-        LOGGER.info("The palette is initiated with selection {}.", CONTROLLER.getSelected());
-
-        // version 7.x.x
-        palette.add(new DefaultTheme());
-
-        formSelectHosts.add(palette);
-        formSelectHosts.add(removeButton);
-        add(formSelectHosts);
-
-        newUrl.setRequired(false);
-
         formStartStop.add(startStopButton);
         add(formStartStop);
 
-        formNewHost.add(newUrl);
+        ////////////////////////// Add new host ///////////////////////////////
+        newHostName = new TextField<>("newHost", Model.of(""));
+        formNewHost = new Form<Void>("addHostForm") {
+            @Override
+            protected void onSubmit() {
+                final String hostName = newHostName.getModelObject();
+                if (isValidHostAddress(hostName)) {
+                    CONTROLLER.addChoice(hostName);
+                    palette.modelChanged();
+                    LOGGER.info("The user added the hostname {} to the available choices.", hostName);
+                } else {
+                    error("Wrong host name. Please try again.");
+                }
+            }
+        };
+        newHostName.setRequired(false);
+        formNewHost.add(newHostName);
         add(formNewHost);
 
+        //////////////////////// Set new router address ///////////////////////
+        formRouter = new Form<Void>("routerForm") {
+            @Override
+            protected void onSubmit() {
+                final String addressValue = routerAddress.getModelObject();
+                if ("unknown".equals(addressValue) || isValidHostAddress(addressValue)) {
+                    CONTROLLER.setRouterAddress(addressValue);
+                    LOGGER.info("The router address is set to {}", addressValue);
+                } else {
+                    error("Wrong router address. Please try again or type unknown");
+                }
+            }
+        };
         routerAddress.setRequired(false);
         formRouter.add(routerAddress);
         add(formRouter);
 
-        //get the list of items to display from provider (database, etc)
-        //in the form of a LoadableDetachableModel
+        //////////////// feedback panel for showing errors etc. ////////////////
+        add(new FeedbackPanel("feedback"));
+
+        //////////////////////// Display Status view //////////////////////////
+        //get the list of items to display from provider (database, etc) in the form of a LoadableDetachableModel
         IModel listStatusViewModel = new LoadableDetachableModel() {
             @Override
             protected Object load() {

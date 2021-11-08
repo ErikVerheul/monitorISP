@@ -13,15 +13,14 @@
   <body>
     <wicket:extend>
       <form wicket:id="paletteForm">
-        <label>Select the URL's to test against </label>
+        <label>Select the hosts to test against </label>
         <br />
 
         <div wicket:id="palette1"></div>
 
-        <label>(optional) Remove the selected hosts from the table </label>
-        <input wicket:id="removeButton" type="submit" value="Remove" />
+        <!--label>(optional) Remove the selected hosts from the table </label>
+        <input wicket:id="removeButton" type="submit" value="Remove" /-->
       </form>
-      <div wicket:id="feedback">[Feedback Panel]</div>
 
       <form wicket:id="startStopForm">
         <p>
@@ -34,7 +33,7 @@
 
       <form wicket:id="addHostForm">
         <p>
-          <label>(optional) Add a host URL to the table </label>
+          <label>(optional) Add a host name to the table </label>
           <br />
           <input type="text" wicket:id="newHost" size="30"/>
         </p>
@@ -42,11 +41,13 @@
 
       <form wicket:id="routerForm">
         <p>
-          <label>(optional) Enter your router address </label>
+          <label>Enter your router address </label>
           <br />
           <input type="text" wicket:id="routerAddress" size="30"/>
         </p>
       </form>
+
+      <div wicket:id="feedback">[Feedback Panel]</div>
 
       <table wicket:id="statusContainer">
         <tr><th>index</th><th>name</th><th>value</th></tr>
