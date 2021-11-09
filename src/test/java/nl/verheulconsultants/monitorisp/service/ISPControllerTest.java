@@ -51,6 +51,7 @@ public class ISPControllerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ISPControllerTest.class);
     private static ISPController instance;
+    private final String TESTROUTERADDRESS = "192.168.0.6";
 
     /**
      *
@@ -240,7 +241,7 @@ public class ISPControllerTest {
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
         //Set this value to your nearest router ip.
-        instance.setRouterAddress("192.168.0.6");
+        instance.setRouterAddress(TESTROUTERADDRESS);
 
         instance.doInBackground(hosts);
         sleepMillis(120);
@@ -264,7 +265,7 @@ public class ISPControllerTest {
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
         //Set this value to your nearest router ip.
-        instance.setRouterAddress("192.168.0.6");
+        instance.setRouterAddress(TESTROUTERADDRESS);
 
         instance.doInBackground(hosts);
         sleepMillis(120);
@@ -313,7 +314,7 @@ public class ISPControllerTest {
         System.out.println("testInternalInterruptedRegistration");
         List<String> hosts = new ArrayList();
         hosts.add("uva.nl");
-        instance.setRouterAddress("192.168.0.6");
+        instance.setRouterAddress(TESTROUTERADDRESS);
         instance.simulateCannotReachRouter(true);
 
         instance.doInBackground(hosts);
