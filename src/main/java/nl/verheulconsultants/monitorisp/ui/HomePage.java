@@ -69,7 +69,7 @@ public final class HomePage extends BasePage {
     private static final ISPController CONTROLLER = getController();
     private final Palette<Host> palette;
     private final Form<?> formSelectHosts;
-//    private final Button removeButton;
+    private final Button removeButton;
     private final AjaxButton startStopButton;
     private final TextField<String> newHostName;
     private final Form<?> formStartStop;
@@ -113,16 +113,17 @@ public final class HomePage extends BasePage {
         };
         add(formSelectHosts);
         formSelectHosts.add(palette);
-//        removeButton = new Button("removeButton") {
-//            @Override
-//            public void onSubmit() {
-//                Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
-//                LOGGER.info("These URL's will be removed {}", CONTROLLER.getSelected());
-//                hostsLocal.removeAll(CONTROLLER.getSelected());
-//                LOGGER.info("The model is changed to {}", CONTROLLER.getPaletteModel());
-//            }
-//        };
-//        formSelectHosts.add(removeButton);
+
+        ////////////////////// Remove available hosts /////////////////////////
+        // note: palette.modelChanged() in AjaxButton does not work!
+        removeButton = new Button("removeButton") {
+            @Override
+            public void onSubmit() {
+                CONTROLLER.removeAvailableHosts();
+                palette.modelChanged();
+            }
+        };
+        formSelectHosts.add(removeButton);
 
         //////////////////////// Start-Stop button ////////////////////////////
         formStartStop = new Form<Void>("startStopForm") {

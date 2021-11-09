@@ -114,9 +114,7 @@ public class ISPController extends Thread {
         Collection<Host> hostsLocal = CONTROLLER.getPaletteModel().getObject();
         hostsLocal.add(new Host(Integer.toString(hostsLocal.size()), newHostName));
         CONTROLLER.getPaletteModel().setObject(hostsLocal);
-        if (CONTROLLER.getSessionData().saveData()) {
-            LOGGER.info("Session data is saved.");
-        }
+        saveSessionData();
     }
 
     /**
@@ -134,6 +132,28 @@ public class ISPController extends Thread {
             sessionData.selected.add(host);
         }
         LOGGER.info("The selection contains now {} hosts: {}", sessionData.selected.size(), sessionData.selected);
+        saveSessionData();
+    }
+
+    public void removeAvailableHosts() {
+        Collection<Host> allHosts = CONTROLLER.getPaletteModel().getObject();
+        Collection<Host> selectedHosts = CONTROLLER.getSelected();
+        LOGGER.info("allHosts = {}", allHosts);
+        LOGGER.info("selectedHosts = {}", selectedHosts);
+        Collection<Host> toRemove = new ArrayList();
+        for (Host host : allHosts) {
+            System.out.println("host = " + host);
+            if (!selectedHosts.contains(host)) {
+                toRemove.add(host);
+            }
+        }
+        toRemove.forEach(host -> {
+            allHosts.remove(host);
+        });
+        saveSessionData();
+    }
+
+    private void saveSessionData() {
         if (CONTROLLER.getSessionData().saveData()) {
             LOGGER.info("Session data is saved.");
         }
